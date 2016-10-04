@@ -30,3 +30,8 @@
 
 # Logging
 *.log
+
+#idea
+*.idea
+*.xml
+*.iml
