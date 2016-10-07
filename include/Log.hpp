@@ -67,7 +67,7 @@ namespace analyzer {
         void DbgLog (const char* message, Args&&... param)
         {
 #ifdef DEBUG
-            std::ofstream fd("prog.log", std::ios::app);
+            std::ofstream fd("../log/prog.log", std::ios::app);
             if (fd.is_open()) {
                 CommonLog(fd, message, param...);
                 fd.close();
@@ -78,7 +78,7 @@ namespace analyzer {
         template <typename... Args>
         void SysLog (const char* message, Args&&... param)
         {
-            std::ofstream fd("prog.log", std::ios::app);
+            std::ofstream fd("../log/prog.log", std::ios::app);
             if (fd.is_open()) {
                 CommonLog(fd, message, param...);
                 fd.close();
