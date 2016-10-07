@@ -38,3 +38,5 @@
 
 #Folders
 /lib
+/tmp
+/coverity
