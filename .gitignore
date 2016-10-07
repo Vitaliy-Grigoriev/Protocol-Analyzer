@@ -35,3 +35,7 @@
 *.idea
 *.xml
 *.iml
+
+#Folders
+/logs
+/lib
