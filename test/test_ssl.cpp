@@ -2,6 +2,7 @@
 #include "../include/Socket.hpp"
 #include "../include/SocketManager.hpp"
 
+
 int main (int argc, char** argv)
 {
     analyzer::net::SocketSSL sock;

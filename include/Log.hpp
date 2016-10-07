@@ -1,5 +1,7 @@
 #include <mutex>
 #include <chrono>
+#include <sstream>
+#include <iomanip>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -84,6 +86,8 @@ namespace analyzer {
                 fd.close();
             }
         }
+
+        void DbgHexDump (const void* /*message*/, const size_t /*size*/, size_t /*line*/ = 16);
 
     } // namespace log.
 } // namespace analyzer.

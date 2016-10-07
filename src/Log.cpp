@@ -13,10 +13,27 @@ namespace analyzer {
             error_mutex.lock();
             auto it = errors.find(err);
             error_mutex.unlock();
-            if (it != errors.end()) {
-                return (*it).second;
-            }
+
+            if (it != errors.end()) { return (*it).second; }
             return ("Unknown error (" + std::to_string(err) + ").");
+        }
+
+        inline std::string get_hex (const size_t value, const int32_t width = 8, bool is_upper = true)
+        {
+            std::ostringstream result;
+            result << std::hex << std::setfill('0') << std::setw(width) << (is_upper ? std::uppercase : std::nouppercase) << value;
+            return result.str();
+        }
+
+        void DbgHexDump (const void* message, const size_t size, size_t line_size)
+        {
+            if (line_size % 2 == 1) { line_size++; }
+            std::ofstream fd("../log/prog.log", std::ios::app);
+            if (fd.is_open()) {
+                //CommonLog(fd, "Hex dump of " << size << " bytes.\n");
+
+                fd.close();
+            }
         }
 
         void Strerror::set_errors () noexcept {
