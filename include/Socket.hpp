@@ -17,6 +17,7 @@
 #include "../include/Log.hpp"
 
 
+#define NUMBER_OF_CTX    3
 #define SSL_METHOD_TLS1  0
 #define SSL_METHOD_TLS11 1
 #define SSL_METHOD_TLS12 2
@@ -57,7 +58,7 @@ namespace analyzer {
             std::chrono::seconds timeout;
             // The Epoll descriptor.
             int32_t epfd = INVALID_SOCKET;
-            // Epoll events.
+            // The Epoll events.
             struct epoll_event event = { };
             // Dummy 2.
             uint32_t nonUsed2 = 0;
@@ -125,7 +126,7 @@ namespace analyzer {
 
         class SSLContext {
         private:
-            SSL_CTX * ctx[3] = { };
+            SSL_CTX * ctx[NUMBER_OF_CTX] = { };
             std::mutex work = { };
 
         public:

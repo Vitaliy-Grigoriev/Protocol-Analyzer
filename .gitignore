@@ -37,6 +37,7 @@
 *.iml
 
 #Folders
+/bin
 /lib
 /tmp
 /coverity

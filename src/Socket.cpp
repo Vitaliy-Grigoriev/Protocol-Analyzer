@@ -11,21 +11,18 @@ namespace analyzer {
             fd = socket(socketFamily, socketType, ipProtocol);
             if (fd == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket: Create socket error - ", log::get_strerror(errno));
-                isErrorOccurred = true;
-                return;
+                isErrorOccurred = true; return;
             }
 
             if (!SetSocketToNonBlock()) {
-                CloseAfterError();
-                return;
+                CloseAfterError(); return;
             }
             log::DbgLog("[+] Socket [", fd,"]: Socket was created.");
 
             epfd = epoll_create1(0);
             if (epfd == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_create1' - ", log::get_strerror(errno));
-                CloseAfterError();
-                return;
+                CloseAfterError(); return;
             }
 
             event.data.fd = fd;
@@ -55,8 +52,7 @@ namespace analyzer {
             int32_t status = getaddrinfo(host, std::to_string(port).c_str(), &hints, &server);
             if (status != 0) {
                 log::DbgLog("[error] Socket [", fd,"]: Error in function 'getaddrinfo' - ", gai_strerror(status));
-                CloseAfterError();
-                return;
+                CloseAfterError(); return;
             }
 
             for (curr = server; curr != nullptr; curr = curr->ai_next)
@@ -238,7 +234,7 @@ namespace analyzer {
         {
             event.events = EPOLLIN;
             if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (s)' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (r)' - ", log::get_strerror(errno));
                 return false;
             }
 
@@ -283,11 +279,9 @@ namespace analyzer {
             {
                 if (shutdown(fd, how) == SOCKET_ERROR) {
                     log::DbgLog("[error] Socket [", fd,"]: Error in function 'shutdown' - ", log::get_strerror(errno));
-                    CloseAfterError();
+                    CloseAfterError(); return;
                 }
-                else {
-                    log::DbgLog("[-] Socket [", fd,"]: Connection closed.");
-                }
+                log::DbgLog("[-] Socket [", fd,"]: Connection closed.");
             }
             isConnectionAlive = false;
         }
@@ -295,9 +289,9 @@ namespace analyzer {
 
         // Close the connection.
         void Socket::Close () {
+            Shutdown();
             if (fd != INVALID_SOCKET) { close(fd); fd = INVALID_SOCKET; }
             if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
-            isConnectionAlive = false;
         }
 
 
