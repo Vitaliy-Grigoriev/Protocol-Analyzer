@@ -86,6 +86,7 @@ namespace analyzer {
 
                 default:
                     log::DbgLog("[error] SocketManager: Error in protocol type.");
+                    delete info;
                     return 0;
             }
 
@@ -127,14 +128,14 @@ namespace analyzer {
             size_t idx = FindFd(fd);
             if (idx != fpos) {
                 if (hosts[idx].second->work_t.try_lock()) {
+                    hosts[idx].second->work_t.unlock();
+
                     if (hosts[idx].second->flagSuccess) {
-                        return std::make_pair(std::move(hosts[idx].second->recv_buffer),
-                                              hosts[idx].second->recv_length);
+                        return data_t(hosts[idx].second->recv_buffer, hosts[idx].second->recv_length);
                     }
                 }
-                hosts[idx].second->work_t.unlock();
             }
-            return std::make_pair(nullptr, 0);
+            return data_t(nullptr, 0);
         }
 
 
@@ -142,8 +143,7 @@ namespace analyzer {
         std::unique_ptr<char[]> NonBlockSocketManager::alloc_memory (const size_t size) noexcept
         {
             try {
-                auto tmp = std::make_unique<char[]>(size);
-                return tmp;
+                return std::make_unique<char[]>(size);
             }
             catch (std::exception &err) {
                 log::DbgLog("[error] SocketManager: Error in function 'alloc_memory' - ", err.what());
@@ -159,5 +159,9 @@ namespace analyzer {
             hosts.clear();
         }
 
-    } // namespace net.
-} // namespace analyzer.
+
+        data_t::data_t (char* in, const size_t size) : data(in), length(size) { }
+        data_t::data_t (std::unique_ptr<char[]>& in, const size_t size) : data(std::move(in)), length(size) { }
+
+    }  // namespace net.
+}  // namespace analyzer.

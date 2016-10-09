@@ -23,6 +23,7 @@ int main (int argc, char** argv)
     //net.Add("fe80::e1c5:45c0:1d03:8e38%eth0", ya, sizeof(ya), 443, TCPv6);
     net.WaitAll();
     analyzer::net::data_t data_1 = net.GetData(t_1);
+    std::cout << "Length: " << data_1.length << std::endl << data_1.data.get();
     analyzer::net::data_t data_2 = net.GetData(t_2);
     analyzer::net::data_t data_3 = net.GetData(t_3);
     analyzer::net::data_t data_4 = net.GetData(t_4);

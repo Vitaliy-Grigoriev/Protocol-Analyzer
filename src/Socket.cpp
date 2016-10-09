@@ -310,5 +310,5 @@ namespace analyzer {
             exHost.clear();
         }
 
-    } // namespace net.
-} // namespace analyzer.
+    }  // namespace net.
+}  // namespace analyzer.

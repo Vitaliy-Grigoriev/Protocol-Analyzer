@@ -188,7 +188,7 @@ namespace analyzer {
             ~SocketSSL ();
         };
 
-    } // namespace net.
-} // namespace analyzer.
+    }  // namespace net.
+}  // namespace analyzer.
 
 #endif //HTTP2_ANALYZER_SOCKET_H

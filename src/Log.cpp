@@ -28,6 +28,7 @@ namespace analyzer {
         void DbgHexDump (const void* message, const size_t size, size_t line_size)
         {
             if (line_size % 2 == 1) { line_size++; }
+
             std::ofstream fd("../log/prog.log", std::ios::app);
             if (fd.is_open()) {
                 //CommonLog(fd, "Hex dump of " << size << " bytes.\n");
@@ -168,5 +169,5 @@ namespace analyzer {
             errors.insert( std::make_pair(EHWPOISON,       "Memory page has hardware error."));
         }
 
-    } // namespace log.
-} // namespace analyzer.
+    }  // namespace log.
+}  // namespace analyzer.

@@ -40,8 +40,15 @@ namespace analyzer {
             std::unique_ptr<Socket> sock;
         };
 
+        struct data_t {
+            std::unique_ptr<char[]> data;
+            size_t length;
+
+            data_t (char * /*in*/, const size_t /*size*/);
+            data_t (std::unique_ptr<char[]> & /*in*/, const size_t /*size*/);
+        };
+
         typedef std::pair<pthread_t, socket_init * > pair_t;
-        typedef std::pair<std::unique_ptr<char[]>, size_t> data_t;
 
         class NonBlockSocketManager {
         private:

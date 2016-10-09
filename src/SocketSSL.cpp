@@ -391,6 +391,6 @@ namespace analyzer {
 
         SSLContext SocketSSL::context;
 
-    } // namespace net.
-} // namespace analyzer.
+    }  // namespace net.
+}  // namespace analyzer.
 
