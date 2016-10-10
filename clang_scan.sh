@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-mkdir tmp && cd tmp && cmake .. && scan-build make
-cd .. && rm -rf tmp
+mkdir check && cd check && cmake -j 4 .. && scan-build make -j 4
+cd .. && rm -rf check

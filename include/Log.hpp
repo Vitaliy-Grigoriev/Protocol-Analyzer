@@ -87,10 +87,10 @@ namespace analyzer {
             }
         }
 
-        void DbgHexDump (const void* /*message*/, const size_t /*size*/, size_t /*line*/ = 16);
+        void DbgHexDump (const char * /*message*/, void * /*data*/, size_t /*size*/, size_t /*line_length*/ = 16);
 
-    } // namespace log.
-} // namespace analyzer.
+    }  // namespace log.
+}  // namespace analyzer.
 
 
-#endif //HTTP2_ANALYZER_LOG_H
+#endif  //HTTP2_ANALYZER_LOG_H

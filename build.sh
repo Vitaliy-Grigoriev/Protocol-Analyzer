@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-mkdir tmp && cd tmp && cmake .. && make
-cd .. && rm -rf tmp
+mkdir build && cd build && cmake -j 4 .. && make -j 4
+cd .. && rm -rf build

@@ -20,13 +20,13 @@ int main (int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    sock.Connect("www.google.ru");
+    sock.Connect("habrahabr.ru");
     if (sock.IsError()) {
         std::cout << "Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
 
-    char buff[] = "GET / HTTP/1.1\r\nHost: www.google.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
+    char buff[] = "GET / HTTP/1.1\r\nHost: habrahabr.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
     sock.Send(buff, strlen(buff));
     if (sock.IsError()) {
         std::cout << "Send fail..." << std::endl;
@@ -40,6 +40,8 @@ int main (int argc, char** argv)
         return EXIT_FAILURE;
     }
     std::cout << "Receiving data length: " << len << std::endl;
+    analyzer::log::DbgLog("HTTP data of www.google.ru.\n", buff_r);
+    analyzer::log::DbgHexDump("HTTP data of www.google.ru.", buff_r, len, 24);
 
     sock.Close();
     return EXIT_SUCCESS;
