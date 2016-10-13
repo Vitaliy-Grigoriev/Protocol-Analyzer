@@ -32,56 +32,59 @@ namespace analyzer {
             if (line_length < 8) { line_length = 8; }
             const size_t full_chunks = size / line_length;
             const size_t last_chunk = size % line_length;
+            const size_t mean_length = line_length / 2;
 
-            std::string hex_dump;
             char* pSource = static_cast<char *>(data);
             const size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
-            const size_t hex_dump_line_length = 11 + 4 * line_length + 7;
+            const size_t hex_dump_line_length = 11 + 4 * line_length + 8;
             const size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;
 
-            // get hex dump header.
-            hex_dump.assign(hex_dump_size, ' ');
-            hex_dump.replace(0, 11, " shift  |  ");
-            for (size_t i = 0; i < line_length / 2; ++i) {
-                hex_dump.replace(11 + i * 3, 3, ' ' + get_hex(i, 2));
+            // Make hex dump header (2 lines).
+            std::string hex_dump(hex_dump_size, ' ');
+            hex_dump.replace(1, 8, "shift  |");
+            for (size_t i = 0; i < line_length; ++i) {
+                if (i < mean_length) { hex_dump.replace(12 + i * 3, 2, get_hex(i, 2)); }
+                else { hex_dump.replace(13 + i * 3, 2, get_hex(i, 2)); }
             }
-            hex_dump.replace(11 + (line_length / 2) * 3, 1, " ");
-            for (size_t i = line_length / 2; i < line_length; ++i) {
-                hex_dump.replace(12 + i * 3, 3, ' ' + get_hex(i, 2));
-            }
-            hex_dump.replace(12 + line_length * 3, 9, "     data");
+            hex_dump.replace(line_length * 3 + 17, 4, "data");
             hex_dump[hex_dump_line_length - 1] = '\n';
             hex_dump.replace(hex_dump_line_length, hex_dump_line_length - 1, hex_dump_line_length - 1, '-');
             hex_dump[hex_dump_line_length + 8] = '|';
             hex_dump[hex_dump_line_length * 2 - 1] = '\n';
 
-            // Output hex data.
+            // Output hex data content.
             for (size_t idx = 0; idx < hex_lines - 2; ++idx)
             {
                 const size_t line = hex_dump_line_length * (idx + 2);
                 hex_dump.replace(line, 11, get_hex(idx * line_length, 8) + '|');
-                for (size_t i = 0; i < line_length / 2 && size != 0; ++i) {
-                    hex_dump.replace(line + 11 + i * 3, 3, ' ' + get_hex(static_cast<size_t>(*pSource), 2));
-                    pSource++;
-                    size--;
-                }
-                hex_dump.replace(line + 11 + (line_length / 2) * 3, 1, " ");
-                for (size_t i = line_length / 2; i < line_length && size != 0; ++i) {
-                    hex_dump.replace(line + 12 + i * 3, 3, ' ' + get_hex(static_cast<size_t>(*pSource), 2));
+                for (size_t i = 0; i < line_length && size != 0; ++i)
+                {
+                    if (i < mean_length) {
+                        hex_dump.replace(line + 12 + i * 3, 2, get_hex(static_cast<size_t>(*pSource), 2));
+                    }
+                    else { hex_dump.replace(line + 13 + i * 3, 2, get_hex(static_cast<size_t>(*pSource), 2)); }
                     pSource++;
                     size--;
                 }
 
                 const size_t hex_data = line_length * 3;
-                hex_dump.replace(line + hex_data + 12, 4, "    ");
                 pSource -= line_length;
                 size += line_length;
-                for (size_t i = 0; i < line_length && size != 0; ++i) {
-                    if (isprint(static_cast<int32_t>(*pSource))) {
-                        hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
+                for (size_t i = 0; i < line_length && size != 0; ++i)
+                {
+                    if (i < mean_length) {
+                        if (isprint(static_cast<int32_t>(*pSource))) {
+                            hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
+                        } else {
+                            hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
+                        }
                     } else {
-                        hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
-                    }
+                        if (isprint(static_cast<int32_t>(*pSource))) {
+                            hex_dump.replace(line + hex_data + 18 + i, 1, pSource, 1);
+                        } else {
+                            hex_dump.replace(line + hex_data + 18 + i, 1, 1, '.');
+                        }
+                    };
                     pSource++;
                     size--;
                 }

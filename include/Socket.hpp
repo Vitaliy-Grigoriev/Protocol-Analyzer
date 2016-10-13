@@ -160,17 +160,17 @@ namespace analyzer {
                                 const uint32_t /*timeout*/ = DEFAULT_TIMEOUT_SSL);
 
             // Connecting to external host.
-            void Connect (const char * /*host*/, const uint16_t /*port*/ = DEFAULT_PORT_SSL) override;
+            void Connect (const char * /*host*/, const uint16_t /*port*/ = DEFAULT_PORT_SSL) override final;
             // Sending the message to external host.
-            int32_t Send (char * /*data*/, size_t /*length*/) override;
+            int32_t Send (char * /*data*/, size_t /*length*/) override final;
             // Receiving the message from external host.
-            int32_t Recv (char * /*data*/, size_t /*length*/, const bool /*noWait*/ = false) override;
+            int32_t Recv (char * /*data*/, size_t /*length*/, const bool /*noWait*/ = false) override final;
             // Receiving the message from external host until reach the end.
             // 1. The socket is no data to read.
             // 2. Has expired connection timeout.
             // 3. The lack of space in the buffer for reading.
             // 4. The socket has not been informed for reading signal.
-            int32_t RecvToEnd (char * /*data*/, size_t /*length*/) override;
+            int32_t RecvToEnd (char * /*data*/, size_t /*length*/) override final;
 
             // Get all available clients ciphers.
             std::list<std::string> GetCiphersList () const;
@@ -181,9 +181,9 @@ namespace analyzer {
             bool SetHttpOnlyProtocol ();
             bool SetHttp2Protocol ();
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
-            void Shutdown (int32_t /*how*/ = SHUT_RDWR) override;
+            void Shutdown (int32_t /*how*/ = SHUT_RDWR) override final;
             // Close the connection.
-            void Close () override;
+            void Close () override final;
             // Destructor.
             ~SocketSSL ();
         };
