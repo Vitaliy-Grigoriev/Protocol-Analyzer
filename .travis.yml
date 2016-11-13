@@ -5,8 +5,17 @@ sudo: required
 os:
   - linux
 
+addons:
+  apt:
+    packages:
+      - clang-3.6
+      - clang-3.7
+      - clang-3.8
+      - clang-3.9
+
 compiler:
   clang:
+    - 3.6
     - 3.7
     - 3.8
     - 3.9
