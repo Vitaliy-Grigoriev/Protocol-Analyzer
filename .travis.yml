@@ -22,6 +22,7 @@ branches:
     - master
 
 before_install:
+  - sudo apt-get install clang
   - sudo apt-get install cmake
 
 install:
