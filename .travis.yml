@@ -1,0 +1,16 @@
+language: cpp
+
+sudo: false
+
+os:
+  - linux
+
+compiler:
+  - clang++-3.9
+  - g++-5
+
+branches:
+  only:
+    - master
+
+install: ./build.sh
