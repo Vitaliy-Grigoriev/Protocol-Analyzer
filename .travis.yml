@@ -6,11 +6,23 @@ os:
   - linux
 
 compiler:
-  - clang++-3.9
-  - g++-5
+  clang:
+    - 3.5
+    - 3.6
+    - 3.7
+    - 3.8
+    - 3.9
+  gcc:
+    - 4.9
+    - 5.0
+    - 6.0
 
 branches:
   only:
     - master
 
-install: ./build.sh
+before_install:
+  - sudo apt-get install cmake
+
+install:
+  - ./build.sh
