@@ -7,23 +7,22 @@ os:
 
 compiler:
   clang:
-    - 3.5
-    - 3.6
     - 3.7
     - 3.8
     - 3.9
-  gcc:
-    - 4.9
-    - 5.0
-    - 6.0
+
+std:
+  - c++11
+  - c++14
 
 branches:
   only:
     - master
 
 before_install:
-  - sudo apt-get install clang
   - sudo apt-get install cmake
 
 install:
+  - $CXX --version
+  - which $CXX
   - ./build.sh
