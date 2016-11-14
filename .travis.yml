@@ -83,8 +83,6 @@ branches:
 script:
   - mkdir build
   - cd build
+  - CMAKE_C_COMPILER=$COMPILER
   - cmake ..
-  - export CXX=$COMPILER
-  - $CXX --version
-  - which $CXX
   - make -j4
