@@ -14,7 +14,6 @@ matrix:
             - g++-4.9
             - cmake
             - cmake-data
-            - libssl-dev
       env: COMPILER=g++-4.9
 
     - os: linux
@@ -28,7 +27,6 @@ matrix:
             - g++-5
             - cmake
             - cmake-data
-            - libssl-dev
       env: COMPILER=g++-5
 
     - os: linux
@@ -43,7 +41,6 @@ matrix:
             - clang-3.6
             - cmake
             - cmake-data
-            - libssl-dev
       env: COMPILER=clang++-3.6
       
     - os: linux
@@ -58,7 +55,6 @@ matrix:
             - clang-3.7
             - cmake
             - cmake-data
-            - libssl-dev
       env: COMPILER=clang++-3.7
       
     - os: linux
@@ -73,7 +69,6 @@ matrix:
             - clang-3.8
             - cmake
             - cmake-data
-            - libssl-dev
       env: COMPILER=clang++-3.8
 
 branches:
@@ -82,6 +77,8 @@ branches:
 
 before_script:
   - sudo apt-get install libssl-dev
+  - whereis libssl
+  - whereis openssl
 
 script:
   - mkdir build
