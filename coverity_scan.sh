@@ -6,7 +6,7 @@ then
  exit 0
 fi
 
-mkdir check && cd check && cmake -j 4 ..
+mkdir check && cd check && cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -j4 ..
 cov-build --dir cov-int make -j 4 && tar czvf myproject.tgz cov-int && curl --form token=7wpvlRSdjmG7H2W5WL0fHw \
   --form email=vit.link420@gmail.com --form file=@myproject.tgz \
   --form version="$1" --form description="$2" \
