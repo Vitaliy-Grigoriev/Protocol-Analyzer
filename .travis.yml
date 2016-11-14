@@ -18,14 +18,6 @@ matrix:
           sources: ['ubuntu-toolchain-r-test']
           packages: ['g++-5']
       env: COMPILER=g++-5
-      
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6']
-      env: COMPILER=g++-6
 
     - os: linux
       compiler: clang
@@ -69,10 +61,14 @@ branches:
 
 before_install:
   - sudo apt-get install cmake
-  - sudo apt-get install libssl-dev
-
-install:
-  - cmake CMAKE_CXX_COMPILER=$COMPILER
+  - sudo apt-get install libssl-dev 
+  - mkdir build
+  - cd build
+  - pwd
+  - CMAKE_CXX_COMPILER=$COMPILER
+  - cmake ..
   - $CXX --version
   - which $CXX
+
+install:
   - make -j4
