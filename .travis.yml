@@ -72,7 +72,7 @@ before_install:
   - sudo apt-get install libssl-dev
 
 install:
-  - cmake CMAKE_CXX_COMPILER=$COMPILER -j4
+  - cmake CMAKE_CXX_COMPILER=$COMPILER
   - $CXX --version
   - which $CXX
   - make -j4
