@@ -51,10 +51,6 @@ matrix:
           packages: ['clang-3.9']
       env: COMPILER=clang++-3.9
 
-std:
-  - c++11
-  - c++14
-
 branches:
   only:
     - master
