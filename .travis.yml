@@ -49,9 +49,9 @@ branches:
 
 before_script:
   - sudo apt-get install libssl-dev
+  - sudo apt-get install cmake
   - sudo add-apt-repository --yes ppa:kalakris-cmake/cmake
   - sudo apt-get update -qq
-  - sudo apt-get install cmake
   - CMAKE_CXX_COMPILER=$COMPILER
 
 script:
