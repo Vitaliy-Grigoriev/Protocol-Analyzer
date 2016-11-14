@@ -83,5 +83,5 @@ branches:
 script:
   - mkdir build
   - cd build
-  - cmake -DCMAKE_C_COMPILER=$COMPILER ..
+  - cmake -DCMAKE_C_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Release ..
   - make -j4
