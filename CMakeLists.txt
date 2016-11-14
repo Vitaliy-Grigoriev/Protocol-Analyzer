@@ -8,8 +8,6 @@ set(CMAKE_INCLUDE_PATH /usr/include/)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_FLAGS_DEBUG "-pthread -lssl -lcrypto -g -std=c++14 -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined -Weverything -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-pthread -lssl -lcrypto -std=c++14 -O3 -DRELEASE")
 
