@@ -3,7 +3,8 @@ project(http2_analyzer)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-set(CMAKE_INCLUDE_PATH /usr/include/)
+set(CMAKE_INCLUDE_PATH /usr/include/openssl)
+set(CMAKE_INCLUDE_PATH /usr/include)
 
 # set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_C_COMPILER "/usr/bin/clang")
