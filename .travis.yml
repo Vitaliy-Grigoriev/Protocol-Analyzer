@@ -59,15 +59,15 @@ branches:
   only:
     - master
 
-before_install:
+before_script:
   - sudo apt-get install cmake
   - sudo apt-get install libssl-dev 
+  - CMAKE_CXX_COMPILER=$COMPILER
+
+script:
   - mkdir build
   - cd build
-  - CMAKE_CXX_COMPILER=$COMPILER
   - cmake ..
   - $CXX --version
   - which $CXX
-
-install:
   - make -j4
