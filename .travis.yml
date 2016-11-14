@@ -42,22 +42,16 @@ matrix:
           sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
           packages: ['clang-3.8']
       env: COMPILER=clang++-3.8
-      
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.9']
-          packages: ['clang-3.9']
-      env: COMPILER=clang++-3.9
 
 branches:
   only:
     - master
 
 before_script:
+  - sudo apt-get install libssl-dev
+  - sudo add-apt-repository --yes ppa:kalakris/cmake
+  - sudo apt-get update -qq
   - sudo apt-get install cmake
-  - sudo apt-get install libssl-dev 
   - CMAKE_CXX_COMPILER=$COMPILER
 
 script:
