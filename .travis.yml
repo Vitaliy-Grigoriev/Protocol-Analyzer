@@ -80,8 +80,10 @@ branches:
   only:
     - master
 
-script:
+before_script:
   - sudo apt-get install libssl-dev
+
+script:
   - mkdir build
   - cd build
   - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Release -j4 ..
