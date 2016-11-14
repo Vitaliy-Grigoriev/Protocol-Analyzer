@@ -7,40 +7,68 @@ matrix:
       compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.9']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages: 
+            - g++-4.9
+            - cmake
+            - cmake-data
       env: COMPILER=g++-4.9
 
     - os: linux
       compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages: 
+            - g++-5
+            - cmake
+            - cmake-data
       env: COMPILER=g++-5
 
     - os: linux
       compiler: clang
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.6']
-          packages: ['clang-3.6']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+            - george-edison55-precise-backports
+          packages: 
+            - clang-3.6
+            - cmake
+            - cmake-data
       env: COMPILER=clang++-3.6
       
     - os: linux
       compiler: clang
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.7']
-          packages: ['clang-3.7']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+            - george-edison55-precise-backports
+          packages: 
+            - clang-3.7
+            - cmake
+            - cmake-data
       env: COMPILER=clang++-3.7
       
     - os: linux
       compiler: clang
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+            - george-edison55-precise-backports
+          packages: 
+            - clang-3.8
+            - cmake
+            - cmake-data
       env: COMPILER=clang++-3.8
 
 branches:
@@ -49,9 +77,7 @@ branches:
 
 before_script:
   - sudo apt-get install libssl-dev
-  - sudo apt-get install cmake
-  - sudo add-apt-repository --yes ppa:kalakris-cmake/cmake
-  - sudo apt-get update -qq
+  - sudo apt-get update -q
   - CMAKE_CXX_COMPILER=$COMPILER
 
 script:
