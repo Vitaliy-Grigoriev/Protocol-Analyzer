@@ -41,3 +41,5 @@
 /lib
 /tmp
 /coverity
+/cmake-build-debug
+/cmake-build-release

@@ -11,7 +11,7 @@ int main (int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    if (!sock.SetHttpOnlyProtocol()) {
+    if (!sock.SetHttp_1_1_OnlyProtocol()) {
         std::cout << "Secure ciphers fail..." << std::endl;
         return EXIT_FAILURE;
     }
@@ -40,8 +40,7 @@ int main (int argc, char** argv)
         return EXIT_FAILURE;
     }
     std::cout << "Receiving data length: " << len << std::endl;
-    analyzer::log::DbgLog("HTTP data of www.google.ru.\n", buff_r);
-    analyzer::log::DbgHexDump("HTTP data of www.google.ru.", buff_r, len, 24);
+    analyzer::log::DbgHexDump("HTTP hex data of www.google.ru\n", buff_r, size_t(len), 24);
 
     sock.Close();
     return EXIT_SUCCESS;

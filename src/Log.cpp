@@ -15,7 +15,7 @@ namespace analyzer {
             error_mutex.unlock();
 
             if (it != errors.end()) { return (*it).second; }
-            return ("Unknown error (" + std::to_string(err) + ").");
+            return std::string("Unknown error (" + std::to_string(err) + ").");
         }
 
         inline std::string get_hex (const size_t value, const int32_t width = 8, bool is_upper = true)

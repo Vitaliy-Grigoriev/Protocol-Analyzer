@@ -21,6 +21,7 @@
 #define SSL_METHOD_TLS1  0
 #define SSL_METHOD_TLS11 1
 #define SSL_METHOD_TLS12 2
+#define SSL_METHOD_TLS13 3
 
 #define SOCKET_ERROR   (-1)
 #define INVALID_SOCKET (-1)
@@ -127,11 +128,10 @@ namespace analyzer {
         class SSLContext {
         private:
             SSL_CTX * ctx[NUMBER_OF_CTX] = { };
-            std::mutex work = { };
 
         public:
             SSLContext () noexcept;
-            SSL_CTX * Get (const uint16_t /*method*/) noexcept;
+            SSL_CTX * Get (const size_t /*method*/) const noexcept;
             ~SSLContext () noexcept;
         };
 
@@ -146,6 +146,8 @@ namespace analyzer {
             SocketSSL (const SocketSSL &) = delete;
             void operator= (const SocketSSL &) = delete;
 
+            // Returns true when the handshake is complete.
+            bool IsHandshakeReady () const;
             // Provide handshake between hosts.
             bool DoHandshakeSSL ();
             // Cleaning after error.
@@ -177,9 +179,9 @@ namespace analyzer {
             // Use only security ciphers in connection.
             bool SetOnlySecureCiphers ();
             // Use ALPN protocol to change the set of application protocols.
-            bool SetHttp2OnlyProtocol ();
-            bool SetHttpOnlyProtocol ();
-            bool SetHttp2Protocol ();
+            bool SetHttpProtocols ();
+            bool SetHttp_1_1_OnlyProtocol ();
+            bool SetHttp_2_0_OnlyProtocol ();
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             void Shutdown (int32_t /*how*/ = SHUT_RDWR) override final;
             // Close the connection.
