@@ -73,7 +73,7 @@ namespace analyzer {
 
 
         // Sending the message to external host.
-        int32_t Socket::Send (char* data, size_t length)
+        int32_t Socket::Send (char* data, std::size_t length)
         {
             if (fd == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket: Socket is invalid.");
@@ -81,7 +81,7 @@ namespace analyzer {
             }
             log::DbgLog("[*] Socket [", fd,"]: Sending data to host '", exHost, "'...");
 
-            size_t idx = 0;
+            std::size_t idx = 0;
             while (length > 0)
             {
                 intmax_t result = send(fd, &data[idx], length, 0);
@@ -94,8 +94,8 @@ namespace analyzer {
                     CloseAfterError(); return -1;
                 }
 
-                length -= static_cast<size_t>(result);
-                idx += static_cast<size_t>(result);
+                length -= static_cast<std::size_t>(result);
+                idx += static_cast<std::size_t>(result);
             }
 
             log::DbgLog("[+] Socket [", fd,"]: Sending data to host '", exHost, "' is successful: ", idx, " bytes.");
@@ -104,7 +104,7 @@ namespace analyzer {
 
 
         // Receiving the message from external host.
-        int32_t Socket::Recv (char* data, size_t length, const bool noWait)
+        int32_t Socket::Recv (char* data, std::size_t length, const bool noWait)
         {
             if (fd == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket: Socket is invalid.");
@@ -113,7 +113,7 @@ namespace analyzer {
             log::DbgLog("[*] Socket [", fd,"]: Receiving data from host '", exHost, "'...");
             const system_clock::time_point limit = system_clock::now() + timeout;
 
-            size_t idx = 0;
+            std::size_t idx = 0;
             while (length > 0 && system_clock::now() < limit)
             {
                 intmax_t result = recv(fd, &data[idx], length, 0);
@@ -130,8 +130,8 @@ namespace analyzer {
                 }
                 if (result == 0) { break; }
 
-                length -= static_cast<size_t>(result);
-                idx += static_cast<size_t>(result);
+                length -= static_cast<std::size_t>(result);
+                idx += static_cast<std::size_t>(result);
                 if (noWait) { break; }
             }
 
@@ -141,7 +141,7 @@ namespace analyzer {
 
 
         // Receiving the message from external host until reach the end.
-        int32_t Socket::RecvToEnd (char* data, size_t length)
+        int32_t Socket::RecvToEnd (char* data, std::size_t length)
         {
             if (fd == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket: Socket is invalid.");
@@ -150,7 +150,7 @@ namespace analyzer {
             log::DbgLog("[*] Socket [", fd,"]: Receiving data from host '", exHost, "'...");
             const system_clock::time_point limit = system_clock::now() + timeout;
 
-            size_t idx = 0;
+            std::size_t idx = 0;
             while (length > 0 && IsReadyForRecv(3000) && system_clock::now() < limit)
             {
                 intmax_t result = recv(fd, &data[idx], length, 0);
@@ -160,8 +160,8 @@ namespace analyzer {
                 }
                 if (result == 0) { break; }
 
-                length -= static_cast<size_t>(result);
-                idx += static_cast<size_t>(result);
+                length -= static_cast<std::size_t>(result);
+                idx += static_cast<std::size_t>(result);
             }
 
             log::DbgLog("[+] Socket [", fd,"]: Receiving data to host '", exHost, "' is successful: ", idx, " bytes.");

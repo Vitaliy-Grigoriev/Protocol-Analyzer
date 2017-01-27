@@ -1,16 +1,17 @@
-cmake_minimum_required(VERSION 3.2.3)
+cmake_minimum_required(VERSION 3.6)
 project(http2_analyzer)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_INCLUDE_PATH /usr/include/)
 
-#set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_C_COMPILER "/usr/bin/clang")
-#set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-set(CMAKE_CXX_FLAGS_DEBUG "-pthread -lssl -lcrypto -g -std=c++14 -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined -Weverything -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -DDEBUG")
-#set(CMAKE_CXX_FLAGS_DEBUG "-pthread -lssl -lcrypto -g -std=c++14 -O0 -fsanitize=thread -fsanitize=undefined -Weverything -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-pthread -lssl -lcrypto -std=c++14 -O3 -DRELEASE")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+set(CMAKE_CXX_FLAGS_DEBUG "-pthread -lssl -lcrypto -g -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined -Weverything -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -DDEBUG")
+#set(CMAKE_CXX_FLAGS_DEBUG "-pthread -lssl -lcrypto -g -O0 -fsanitize=thread -fsanitize=undefined -Weverything -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-pthread -lssl -lcrypto -O3 -DRELEASE")
 
 # -fsanitize=thread -fsanitize=undefined
 # -fsanitize=address -fsanitize=leak -fsanitize=undefined

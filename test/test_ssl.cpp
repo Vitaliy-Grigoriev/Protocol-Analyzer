@@ -40,7 +40,7 @@ int main (int argc, char** argv)
         return EXIT_FAILURE;
     }
     std::cout << "Receiving data length: " << len << std::endl;
-    analyzer::log::DbgHexDump("HTTP hex data of www.google.ru\n", buff_r, size_t(len), 24);
+    analyzer::log::DbgHexDump("HTTP hex data of www.google.ru", buff_r, std::size_t(len), 24);
 
     sock.Close();
     return EXIT_SUCCESS;

@@ -14,14 +14,16 @@
 #define UDPv6 4
 #define DEFAULT_BUFFER_SIZE 1048576 // 1 MB.
 
-
+#pragma once
 #ifndef HTTP2_ANALYZER_SOCKETMANAGER_H
 #define HTTP2_ANALYZER_SOCKETMANAGER_H
+
 
 namespace analyzer {
     namespace net {
 
-        struct socket_init {
+        struct socket_init
+        {
             bool flagSuccess = false;
             // Dummy.
             bool nonUsed1 = false;
@@ -33,24 +35,27 @@ namespace analyzer {
             uint32_t timeout = DEFAULT_TIMEOUT;
             char * send_buffer;
             std::unique_ptr<char[]> recv_buffer = nullptr;
-            size_t send_length;
-            size_t recv_length = 0;
+            std::size_t send_length;
+            std::size_t recv_length = 0;
             std::mutex work_t = { };
             std::string host = "";
             std::unique_ptr<Socket> sock;
         };
 
-        struct data_t {
+        struct data_t
+        {
             std::unique_ptr<char[]> data;
-            size_t length;
+            std::size_t length;
 
-            data_t (char * /*in*/, const size_t /*size*/);
-            data_t (std::unique_ptr<char[]> & /*in*/, const size_t /*size*/);
+            data_t (char * /*in*/, const std::size_t /*size*/);
+            data_t (std::unique_ptr<char[]> & /*in*/, const std::size_t /*size*/);
         };
 
         typedef std::pair<pthread_t, socket_init * > pair_t;
 
-        class NonBlockSocketManager {
+
+        class NonBlockSocketManager
+        {
         private:
             // Dummy.
             int32_t nonUsed = 0;
@@ -64,22 +69,22 @@ namespace analyzer {
 
             // Function, which work in thread.
             static void * thread_worker (void * /*arg*/);
-            // Function, which allocate dinamic memory.
-            static std::unique_ptr<char[]> alloc_memory (const size_t /*size*/) noexcept;
+            // Function, which allocate dynamic memory.
+            static std::unique_ptr<char[]> alloc_memory (const std::size_t /*size*/) noexcept;
             // Function, which find Socket descriptor.
-            size_t FindFd (const pthread_t /*fd*/) const;
+            std::size_t FindFd (const pthread_t /*fd*/) const;
 
         public:
-            static const size_t fpos = SIZE_MAX;
+            static const std::size_t fpos = SIZE_MAX;
             // Constructor.
             NonBlockSocketManager();
 
             // Adding a new connection to the pool.
-            pthread_t Add (const char *   /*host*/,
-                           char *         /*buffer*/,
-                           const size_t   /*length*/,
-                           const uint16_t /*port*/     = DEFAULT_PORT,
-                           const uint16_t /*protocol*/ = TCPv4);
+            pthread_t Add (const char *      /*host*/,
+                           char *            /*buffer*/,
+                           const std::size_t /*length*/,
+                           const uint16_t    /*port*/     = DEFAULT_PORT,
+                           const uint16_t    /*protocol*/ = TCPv4);
 
 
             // Wait thread by descriptor.

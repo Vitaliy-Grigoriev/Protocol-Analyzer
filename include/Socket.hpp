@@ -33,7 +33,7 @@
 #define DEFAULT_TIMEOUT_SSL  7    // sec.
 #define DEFAULT_TIME_SIGWAIT (-1) // msec.
 
-
+#pragma once
 #ifndef HTTP2_ANALYZER_SOCKET_H
 #define HTTP2_ANALYZER_SOCKET_H
 
@@ -104,15 +104,15 @@ namespace analyzer {
             // Connecting to external host.
             virtual void Connect (const char * /*host*/, const uint16_t /*port*/ = DEFAULT_PORT);
             // Sending the message to external host over TCP.
-            virtual int32_t Send (char * /*data*/, size_t /*length*/);
+            virtual int32_t Send (char * /*data*/, std::size_t /*length*/);
             // Receiving the message from external host over TCP.
-            virtual int32_t Recv (char * /*data*/, size_t /*length*/, const bool /*noWait*/ = false);
+            virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, const bool /*noWait*/ = false);
             // Receiving the message from external host until reach the end over TCP.
             // 1. The socket is no data to read.
             // 2. Has expired connection timeout.
             // 3. The lack of space in the buffer for reading.
             // 4. The socket has not been informed for reading signal.
-            virtual int32_t RecvToEnd (char * /*data*/, size_t /*length*/);
+            virtual int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/);
 
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR);
@@ -131,7 +131,7 @@ namespace analyzer {
 
         public:
             SSLContext () noexcept;
-            SSL_CTX * Get (const size_t /*method*/) const noexcept;
+            SSL_CTX * Get (const std::size_t /*method*/) const noexcept;
             ~SSLContext () noexcept;
         };
 
@@ -164,15 +164,15 @@ namespace analyzer {
             // Connecting to external host.
             void Connect (const char * /*host*/, const uint16_t /*port*/ = DEFAULT_PORT_SSL) override final;
             // Sending the message to external host.
-            int32_t Send (char * /*data*/, size_t /*length*/) override final;
+            int32_t Send (char * /*data*/, std::size_t /*length*/) override final;
             // Receiving the message from external host.
-            int32_t Recv (char * /*data*/, size_t /*length*/, const bool /*noWait*/ = false) override final;
+            int32_t Recv (char * /*data*/, std::size_t /*length*/, const bool /*noWait*/ = false) override final;
             // Receiving the message from external host until reach the end.
             // 1. The socket is no data to read.
             // 2. Has expired connection timeout.
             // 3. The lack of space in the buffer for reading.
             // 4. The socket has not been informed for reading signal.
-            int32_t RecvToEnd (char * /*data*/, size_t /*length*/) override final;
+            int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) override final;
 
             // Get all available clients ciphers.
             std::list<std::string> GetCiphersList () const;

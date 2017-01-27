@@ -18,31 +18,36 @@ namespace analyzer {
             return std::string("Unknown error (" + std::to_string(err) + ").");
         }
 
-        inline std::string get_hex (const size_t value, const int32_t width = 8, bool is_upper = true)
+
+        inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true)
         {
             std::ostringstream result;
-            result << std::hex << std::setfill('0') << std::setw(width) << (is_upper ? std::uppercase : std::nouppercase) << value;
+            if (is_upper) { result.setf(std::ios_base::uppercase); }
+            result << std::hex << std::setfill('0') << std::setw(width) << value;
             return result.str();
         }
 
-        void DbgHexDump (const char* message, void* data, size_t size, size_t line_length)
+
+        // Need to add three flag: is_offset, is_data, is_upper...
+        // Need to add dependency length of the offset from the length of data ().
+        void DbgHexDump (const char* message, void* data, std::size_t size, std::size_t line_length)
         {
 #ifdef DEBUG
             if (line_length % 2 == 1) { line_length++; }
             if (line_length < 8) { line_length = 8; }
-            const size_t full_chunks = size / line_length;
-            const size_t last_chunk = size % line_length;
-            const size_t mean_length = line_length / 2;
+            const std::size_t full_chunks = size / line_length;
+            const std::size_t last_chunk = size % line_length;
+            const std::size_t mean_length = line_length / 2;
 
             char* pSource = static_cast<char *>(data);
-            const size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
-            const size_t hex_dump_line_length = 11 + 4 * line_length + 8;
-            const size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;
+            const std::size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
+            const std::size_t hex_dump_line_length = 11 + 4 * line_length + 8;
+            const std::size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;
 
             // Make hex dump header (2 lines).
             std::string hex_dump(hex_dump_size, ' ');
             hex_dump.replace(1, 8, "shift  |");
-            for (size_t i = 0; i < line_length; ++i) {
+            for (std::size_t i = 0; i < line_length; ++i) {
                 if (i < mean_length) { hex_dump.replace(12 + i * 3, 2, get_hex(i, 2)); }
                 else { hex_dump.replace(13 + i * 3, 2, get_hex(i, 2)); }
             }
@@ -53,25 +58,25 @@ namespace analyzer {
             hex_dump[hex_dump_line_length * 2 - 1] = '\n';
 
             // Output hex data content.
-            for (size_t idx = 0; idx < hex_lines - 2; ++idx)
+            for (std::size_t idx = 0; idx < hex_lines - 2; ++idx)
             {
-                const size_t line = hex_dump_line_length * (idx + 2);
+                const std::size_t line = hex_dump_line_length * (idx + 2);
                 hex_dump.replace(line, 11, get_hex(idx * line_length, 8) + '|');
-                for (size_t i = 0; i < line_length && size != 0; ++i)
+                for (std::size_t i = 0; i < line_length && size != 0; ++i)
                 {
                     if (i < mean_length) {
-                        hex_dump.replace(line + 12 + i * 3, 2, get_hex(static_cast<size_t>(*pSource), 2));
+                        hex_dump.replace(line + 12 + i * 3, 2, get_hex(static_cast<std::size_t>(*pSource), 2));
                     }
-                    else { hex_dump.replace(line + 13 + i * 3, 2, get_hex(static_cast<size_t>(*pSource), 2)); }
+                    else { hex_dump.replace(line + 13 + i * 3, 2, get_hex(static_cast<std::size_t>(*pSource), 2)); }
                     pSource++;
                     size--;
                 }
 
-                const size_t hex_data = line_length * 3;
+                const std::size_t hex_data = line_length * 3;
                 pSource -= line_length;
                 size += line_length;
-                for (size_t i = 0; i < line_length && size != 0; ++i)
-                {
+                for (std::size_t i = 0; i < line_length && size != 0; ++i)
+                { // bug with cyrillic symbols...
                     if (i < mean_length) {
                         if (isprint(static_cast<int32_t>(*pSource))) {
                             hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
@@ -99,7 +104,8 @@ namespace analyzer {
 #endif
         }
 
-        void Strerror::set_errors () noexcept {
+        void Strerror::set_errors () noexcept
+        {
             errors.insert( std::make_pair(EPERM,           "Operation not permitted."));
             errors.insert( std::make_pair(ENOENT,          "No such file or directory."));
             errors.insert( std::make_pair(ESRCH,           "No such process."));

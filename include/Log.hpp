@@ -7,6 +7,7 @@
 #include <iostream>
 #include <unordered_map>
 
+#pragma once
 #ifndef HTTP2_ANALYZER_LOG_H
 #define HTTP2_ANALYZER_LOG_H
 
