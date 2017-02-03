@@ -11,25 +11,32 @@
 #ifndef HTTP2_ANALYZER_LOG_H
 #define HTTP2_ANALYZER_LOG_H
 
+#define GET_ERROR(error) (*log::StrSysError::Instance())(error)
 
 namespace analyzer {
     namespace log {
 
-        class Strerror {
-        private:
-            std::unordered_map<int32_t, std::string> errors;
-            std::mutex error_mutex = { };
+        extern "C" std::mutex log_mutex;
 
-            void set_errors () noexcept;
+        class StrSysError
+        {
+        private:
+            static std::mutex error_mutex;
+            static StrSysError * volatile pInstance;
+
+            StrSysError (StrSysError &&) = delete;
+            StrSysError (const StrSysError &) = delete;
+            StrSysError & operator= (StrSysError &&) = delete;
+            StrSysError & operator= (const StrSysError &) = delete;
+
+        protected:
+            StrSysError () { }
+            ~StrSysError () { delete pInstance; }
 
         public:
-            Strerror() noexcept;
+            static StrSysError * Instance();
             std::string operator() (const int32_t /*err*/) noexcept;
-            ~Strerror() noexcept;
         };
-
-        extern "C" std::mutex log_mutex;
-        extern "C" Strerror get_strerror;
 
 
         inline std::string get_time () {
@@ -60,10 +67,9 @@ namespace analyzer {
         template <typename... Args>
         void CommonLog (std::ostream& fd, const char* message, Args&&... param)
         {
-            log_mutex.lock();
+            std::lock_guard<std::mutex> lock(log_mutex);
             fd << '[' << get_time() << "]  ---  " << message;
             output_values(fd, param...);
-            log_mutex.unlock();
         }
 
         template <typename... Args>
@@ -88,7 +94,7 @@ namespace analyzer {
             }
         }
 
-        void DbgHexDump (const char * /*message*/, void * /*data*/, size_t /*size*/, size_t /*line_length*/ = 16);
+        void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*line_length*/ = 16);
 
     }  // namespace log.
 }  // namespace analyzer.

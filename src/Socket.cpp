@@ -1,3 +1,6 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "../include/Socket.hpp"
 
 namespace analyzer {
@@ -10,7 +13,7 @@ namespace analyzer {
             log::DbgLog("[*] Socket: Creating socket...");
             fd = socket(socketFamily, socketType, ipProtocol);
             if (fd == INVALID_SOCKET) {
-                log::DbgLog("[error] Socket: Create socket error - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket: Create socket error - ", GET_ERROR(errno));
                 isErrorOccurred = true; return;
             }
 
@@ -21,13 +24,13 @@ namespace analyzer {
 
             epfd = epoll_create1(0);
             if (epfd == INVALID_SOCKET) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_create1' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_create1' - ", GET_ERROR(errno));
                 CloseAfterError(); return;
             }
 
             event.data.fd = fd;
             if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) == SOCKET_ERROR) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl' - ", GET_ERROR(errno));
                 CloseAfterError();
             }
         }
@@ -64,7 +67,7 @@ namespace analyzer {
                     freeaddrinfo(server);
                     return;
                 }
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'connect' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'connect' - ", GET_ERROR(errno));
             }
             log::SysLog("[error] Socket [", fd,"]: Connecting to host '", exHost, "' on port '", port,"' failed.");
             freeaddrinfo(server);
@@ -90,7 +93,7 @@ namespace analyzer {
                         if (!IsReadyForSend(3000)) { CloseAfterError(); return -1; }
                         continue;
                     }
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'send' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'send' - ", GET_ERROR(errno));
                     CloseAfterError(); return -1;
                 }
 
@@ -125,7 +128,7 @@ namespace analyzer {
                         }
                         continue;
                     }
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'recv' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'recv' - ", GET_ERROR(errno));
                     CloseAfterError(); return -1;
                 }
                 if (result == 0) { break; }
@@ -155,7 +158,7 @@ namespace analyzer {
             {
                 intmax_t result = recv(fd, &data[idx], length, 0);
                 if (result == SOCKET_ERROR) {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'recv' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'recv' - ", GET_ERROR(errno));
                     CloseAfterError(); return -1;
                 }
                 if (result == 0) { break; }
@@ -174,7 +177,7 @@ namespace analyzer {
         {
             event.events = EPOLLIN | EPOLLOUT;
             if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl' - ", GET_ERROR(errno));
                 return 0;
             }
 
@@ -182,7 +185,7 @@ namespace analyzer {
             int32_t wfd = epoll_wait(epfd, &events, 1, time);
             if (wfd == 1) {
                 if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", GET_ERROR(errno));
                 }
                 else if ((events.events & EPOLLIN) != 0u && (events.events & EPOLLOUT) != 0u) {
                     return 3;
@@ -190,12 +193,12 @@ namespace analyzer {
                 else if ((events.events & EPOLLIN) != 0u) { return 1; }
                 else if ((events.events & EPOLLOUT) != 0u) { return 2; }
                 else {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", GET_ERROR(errno));
                 }
             }
             else if (wfd == 0) { log::DbgLog("[*] Socket [", fd,"]: In function 'epoll_wait' - Timeout expired."); }
             else {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait' - ", GET_ERROR(errno));
             }
             return 0;
         }
@@ -206,7 +209,7 @@ namespace analyzer {
         {
             event.events = EPOLLOUT;
             if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (s)' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (s)' - ", GET_ERROR(errno));
                 return false;
             }
 
@@ -214,16 +217,16 @@ namespace analyzer {
             int32_t wfd = epoll_wait(epfd, &events, 1, time);
             if (wfd == 1) {
                 if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", GET_ERROR(errno));
                 }
                 else if ((events.events & EPOLLOUT) != 0u) { return true; }
                 else {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", GET_ERROR(errno));
                 }
             }
             else if (wfd == 0) { log::DbgLog("[*] Socket [", fd,"]: In function 'epoll_wait (s)' - Timeout expired."); }
             else {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (s)' - ", GET_ERROR(errno));
             }
             return false;
         }
@@ -234,7 +237,7 @@ namespace analyzer {
         {
             event.events = EPOLLIN;
             if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (r)' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_ctl (r)' - ", GET_ERROR(errno));
                 return false;
             }
 
@@ -242,16 +245,16 @@ namespace analyzer {
             int32_t wfd = epoll_wait(epfd, &events, 1, time);
             if (wfd == 1) {
                 if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", GET_ERROR(errno));
                 }
                 else if ((events.events & EPOLLIN) != 0u) { return true; }
                 else {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", GET_ERROR(errno));
                 }
             }
             else if (wfd == 0) { log::DbgLog("[*] Socket [", fd,"]: In function 'epoll_wait (r)' - Timeout expired."); }
             else {
-                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Error in function 'epoll_wait (r)' - ", GET_ERROR(errno));
             }
             return false;
         }
@@ -261,11 +264,11 @@ namespace analyzer {
         bool Socket::SetSocketToNonBlock () {
             int32_t flags = fcntl(fd, F_GETFL, 0);
             if (flags == INVALID_SOCKET) {
-                log::DbgLog("[error] Socket [", fd,"]: Getting socket options error - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Getting socket options error - ", GET_ERROR(errno));
                 return false;
             }
             if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == INVALID_SOCKET) {
-                log::DbgLog("[error] Socket [", fd,"]: Setting socket options error - ", log::get_strerror(errno));
+                log::DbgLog("[error] Socket [", fd,"]: Setting socket options error - ", GET_ERROR(errno));
                 return false;
             }
             return true;
@@ -278,7 +281,7 @@ namespace analyzer {
             if (fd != INVALID_SOCKET && socketType == SOCK_STREAM && isConnectionAlive)
             {
                 if (shutdown(fd, how) == SOCKET_ERROR) {
-                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'shutdown' - ", log::get_strerror(errno));
+                    log::DbgLog("[error] Socket [", fd,"]: Error in function 'shutdown' - ", GET_ERROR(errno));
                     CloseAfterError(); return;
                 }
                 log::DbgLog("[-] Socket [", fd,"]: Connection closed.");

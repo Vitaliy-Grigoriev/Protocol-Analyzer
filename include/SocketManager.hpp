@@ -64,8 +64,10 @@ namespace analyzer {
             // The set of external host.
             std::vector<pair_t> hosts;
 
+            NonBlockSocketManager (NonBlockSocketManager &&) = delete;
             NonBlockSocketManager (const NonBlockSocketManager &) = delete;
-            void operator= (const NonBlockSocketManager &) = delete;
+            NonBlockSocketManager & operator= (NonBlockSocketManager &&) = delete;
+            NonBlockSocketManager & operator= (const NonBlockSocketManager &) = delete;
 
             // Function, which work in thread.
             static void * thread_worker (void * /*arg*/);

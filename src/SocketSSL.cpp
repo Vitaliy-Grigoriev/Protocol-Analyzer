@@ -1,3 +1,6 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "../include/Socket.hpp"
 
 namespace analyzer {
@@ -391,8 +394,6 @@ namespace analyzer {
 
         SSLContext::~SSLContext () noexcept
         {
-            EVP_cleanup();
-            ERR_free_strings();
             SSL_CTX_free( ctx[SSL_METHOD_TLS1] );
             SSL_CTX_free( ctx[SSL_METHOD_TLS11] );
             SSL_CTX_free( ctx[SSL_METHOD_TLS12] );

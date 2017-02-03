@@ -1,15 +1,33 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "../include/Log.hpp"
 
 namespace analyzer {
     namespace log {
 
-        Strerror get_strerror;
         std::mutex log_mutex;
+        static std::unordered_map<int32_t, std::string> errors;
 
-        Strerror::Strerror() noexcept { set_errors(); }
-        Strerror::~Strerror() noexcept { errors.clear(); }
+        void SetErrorStrings() noexcept;
 
-        std::string Strerror::operator() (const int32_t err) noexcept {
+        std::mutex StrSysError::error_mutex = { };
+        StrSysError* volatile StrSysError::pInstance { nullptr };
+
+        StrSysError* StrSysError::Instance()
+        {
+            if (pInstance == nullptr) {
+                std::lock_guard<std::mutex> lock(error_mutex);
+                if (pInstance == nullptr) {
+                    SetErrorStrings();
+                    pInstance = new StrSysError();
+                }
+            }
+            return pInstance;
+        }
+
+        std::string StrSysError::operator() (const int32_t err) noexcept
+        {
             error_mutex.lock();
             auto it = errors.find(err);
             error_mutex.unlock();
@@ -104,7 +122,7 @@ namespace analyzer {
 #endif
         }
 
-        void Strerror::set_errors () noexcept
+        void SetErrorStrings() noexcept
         {
             errors.insert( std::make_pair(EPERM,           "Operation not permitted."));
             errors.insert( std::make_pair(ENOENT,          "No such file or directory."));

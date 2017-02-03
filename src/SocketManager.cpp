@@ -1,3 +1,6 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "../include/SocketManager.hpp"
 
 namespace analyzer {
@@ -92,7 +95,7 @@ namespace analyzer {
             pthread_t thread_id;
             const int32_t result = pthread_create(&thread_id, nullptr, thread_worker, static_cast<void*>(info));
             if (result != 0) {
-                log::DbgLog("[error] SocketManager: Error in function 'pthread_create' - ", log::get_strerror(result));
+                log::DbgLog("[error] SocketManager: Error in function 'pthread_create' - ", GET_ERROR(result));
                 return 0;
             }
 
@@ -105,7 +108,7 @@ namespace analyzer {
         {
             const int32_t result = pthread_join(fd, nullptr);
             if (result != 0) {
-                log::DbgLog("[error] SocketManager: Error in function 'pthread_join' - ", log::get_strerror(result));
+                log::DbgLog("[error] SocketManager: Error in function 'pthread_join' - ", GET_ERROR(result));
             }
         }
 
@@ -115,7 +118,7 @@ namespace analyzer {
             for (auto&& it : hosts) {
                 int32_t result = pthread_join(it.first, nullptr);
                 if (result != 0) {
-                    log::DbgLog("[error] SocketManager: Error in function 'pthread_join' - ", log::get_strerror(result));
+                    log::DbgLog("[error] SocketManager: Error in function 'pthread_join' - ", GET_ERROR(result));
                 }
                 std::cout << it.first << "   " << it.second->flagSuccess << std::endl; //.......DEBUG...ONLY.......
             }

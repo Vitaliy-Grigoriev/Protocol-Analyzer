@@ -1,15 +1,12 @@
 #include <list>
-#include <mutex>
 #include <cerrno>
 #include <string>
 #include <cstring>
 #include <netdb.h>
 #include <fcntl.h>
-#include <cstdint>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
-#include </usr/include/stdlib.h>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -78,8 +75,10 @@ namespace analyzer {
             void CloseAfterError ();
 
         private:
+            Socket (Socket &&) = delete;
             Socket (const Socket &) = delete;
-            void operator= (const Socket &) = delete;
+            Socket & operator= (Socket &&) = delete;
+            Socket & operator= (const Socket &) = delete;
             // Set Socket to Non-Blocking state.
             bool SetSocketToNonBlock ();
 
@@ -143,8 +142,10 @@ namespace analyzer {
             // I/O object.
             BIO * bio = nullptr;
 
+            SocketSSL (SocketSSL &&) = delete;
             SocketSSL (const SocketSSL &) = delete;
-            void operator= (const SocketSSL &) = delete;
+            SocketSSL & operator= (SocketSSL &&) = delete;
+            SocketSSL & operator= (const SocketSSL &) = delete;
 
             // Returns true when the handshake is complete.
             bool IsHandshakeReady () const;
