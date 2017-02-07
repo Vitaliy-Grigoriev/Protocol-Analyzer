@@ -8,15 +8,17 @@
 
 #include "../include/Socket.hpp"
 
+
+#pragma once
+#ifndef HTTP2_ANALYZER_SOCKETMANAGER_HPP
+#define HTTP2_ANALYZER_SOCKETMANAGER_HPP
+
+
 #define TCPv4 1
 #define TCPv6 2
 #define UDPv4 3
 #define UDPv6 4
 #define DEFAULT_BUFFER_SIZE 1048576 // 1 MB.
-
-#pragma once
-#ifndef HTTP2_ANALYZER_SOCKETMANAGER_H
-#define HTTP2_ANALYZER_SOCKETMANAGER_H
 
 
 namespace analyzer {
@@ -107,4 +109,4 @@ namespace analyzer {
 } // namespace analyzer.
 
 
-#endif //HTTP2_ANALYZER_SOCKETMANAGER_H
+#endif // HTTP2_ANALYZER_SOCKETMANAGER_HPP

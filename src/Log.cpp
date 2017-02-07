@@ -6,7 +6,7 @@
 namespace analyzer {
     namespace log {
 
-        std::mutex log_mutex;
+        std::mutex log_mutex = { };
         static std::unordered_map<int32_t, std::string> errors;
 
         void SetErrorStrings() noexcept;
@@ -26,14 +26,14 @@ namespace analyzer {
             return pInstance;
         }
 
-        std::string StrSysError::operator() (const int32_t err) noexcept
+        std::string StrSysError::operator() (const int32_t error) noexcept
         {
             error_mutex.lock();
-            auto it = errors.find(err);
+            auto it = errors.find(error);
             error_mutex.unlock();
 
             if (it != errors.end()) { return (*it).second; }
-            return std::string("Unknown error (" + std::to_string(err) + ").");
+            return std::string("Unknown error (" + std::to_string(error) + ").");
         }
 
 
@@ -50,7 +50,6 @@ namespace analyzer {
         // Need to add dependency length of the offset from the length of data ().
         void DbgHexDump (const char* message, void* data, std::size_t size, std::size_t line_length)
         {
-#ifdef DEBUG
             if (line_length % 2 == 1) { line_length++; }
             if (line_length < 8) { line_length = 8; }
             const std::size_t full_chunks = size / line_length;
@@ -114,13 +113,9 @@ namespace analyzer {
                 hex_dump[line + hex_dump_line_length - 1] = '\n';
             }
 
-            std::ofstream fd("../log/prog.log", std::ios::app);
-            if (fd.is_open()) {
-                CommonLog(fd, message, '\n', hex_dump, '\n');
-                fd.close();
-            }
-#endif
+            __common_log(message, '\n', hex_dump, '\n');
         }
+
 
         void SetErrorStrings() noexcept
         {

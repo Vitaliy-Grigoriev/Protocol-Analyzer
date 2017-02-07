@@ -6,8 +6,8 @@
 namespace analyzer {
     namespace net {
 
-        SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout) :
-                Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
+        SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout)
+                : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
         {
             if (Socket::IsError()) { return; }
             if (method >= NUMBER_OF_CTX) {
@@ -347,9 +347,9 @@ namespace analyzer {
 
 
         // Check SSL library error.
-        std::string CheckErrors ()
+        inline std::string CheckErrors ()
         {
-            size_t err = ERR_get_error();
+            std::size_t err = ERR_get_error();
             if (err != 0) { return ERR_error_string(err, nullptr); }
             return "NO ERROR.";
         }
@@ -386,7 +386,7 @@ namespace analyzer {
             log::DbgLog("[+] SSLContext: Initialize SSL library is successful.");
         }
 
-        SSL_CTX* SSLContext::Get (const size_t method) const noexcept
+        SSL_CTX* SSLContext::Get (const std::size_t method) const noexcept
         {
             if (method < NUMBER_OF_CTX) { return ctx[method]; }
             return nullptr;

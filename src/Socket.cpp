@@ -7,8 +7,8 @@ namespace analyzer {
     namespace net {
 
         // Constructor.
-        Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time) :
-                socketFamily(family), socketType(type), ipProtocol(protocol), timeout(std::chrono::seconds(time))
+        Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time)
+                : socketFamily(family), socketType(type), ipProtocol(protocol), timeout(std::chrono::seconds(time))
         {
             log::DbgLog("[*] Socket: Creating socket...");
             fd = socket(socketFamily, socketType, ipProtocol);

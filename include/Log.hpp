@@ -7,11 +7,14 @@
 #include <iostream>
 #include <unordered_map>
 
+
 #pragma once
-#ifndef HTTP2_ANALYZER_LOG_H
-#define HTTP2_ANALYZER_LOG_H
+#ifndef HTTP2_ANALYZER_LOG_HPP
+#define HTTP2_ANALYZER_LOG_HPP
+
 
 #define GET_ERROR(error) (*log::StrSysError::Instance())(error)
+
 
 namespace analyzer {
     namespace log {
@@ -35,69 +38,64 @@ namespace analyzer {
 
         public:
             static StrSysError * Instance();
-            std::string operator() (const int32_t /*err*/) noexcept;
+            std::string operator() (const int32_t /*error*/) noexcept;
         };
 
 
-        inline std::string get_time () {
+        inline std::string __get_time_string() noexcept {
             using std::chrono::system_clock;
             time_t time = system_clock::to_time_t(system_clock::now());
             std::string curr_time = ctime(&time);
             return curr_time.erase(19, 6).erase(0, 11);
         }
 
-        inline void output_values (std::ostream& fd) {
+        static inline void __output_values (std::ostream& fd) {
             fd << std::endl;
             fd.flush();
         }
 
-        template <typename T>
-        inline void output_values (std::ostream& fd, const T& value) {
+        template<typename T>
+        void __output_values (std::ostream& fd, const T& value) {
             fd << value;
-            output_values(fd);
+            __output_values(fd);
         }
 
-        template <typename T, typename... Args>
-        inline void output_values (std::ostream& fd, const T& value, Args&&... param) {
+        template<typename T, typename... Args>
+        void __output_values (std::ostream& fd, const T& value, Args&&... param) {
             fd << value;
-            output_values(fd, param...);
+            __output_values(fd, param...);
         }
-
 
         template <typename... Args>
-        void CommonLog (std::ostream& fd, const char* message, Args&&... param)
+        void __common_log (const char* message, Args&&... param)
         {
             std::lock_guard<std::mutex> lock(log_mutex);
-            fd << '[' << get_time() << "]  ---  " << message;
-            output_values(fd, param...);
+            std::ofstream fd("../log/prog.log", std::ios::app);
+            if (fd.is_open()) {
+                fd << '[' << __get_time_string().c_str() << "]  ---  " << message;
+                __output_values(fd, param...);
+                fd.close();
+            }
         }
 
         template <typename... Args>
         void DbgLog (const char* message, Args&&... param)
         {
 #ifdef DEBUG
-            std::ofstream fd("../log/prog.log", std::ios::app);
-            if (fd.is_open()) {
-                CommonLog(fd, message, param...);
-                fd.close();
-            }
+            __common_log(message, param...);
 #endif
         }
 
         template <typename... Args>
         void SysLog (const char* message, Args&&... param)
         {
-            std::ofstream fd("../log/prog.log", std::ios::app);
-            if (fd.is_open()) {
-                CommonLog(fd, message, param...);
-                fd.close();
-            }
+            __common_log(message, param...);
         }
+
 
         void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*line_length*/ = 16);
 
     }  // namespace log.
 }  // namespace analyzer.
 
-
-#endif  //HTTP2_ANALYZER_LOG_H
+#endif  // HTTP2_ANALYZER_LOG_HPP

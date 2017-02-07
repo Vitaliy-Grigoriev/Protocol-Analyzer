@@ -2,8 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <iostream>
-#include "../include/Socket.hpp"
-#include "../include/SocketManager.hpp"
+#include "../include/Api.hpp"
 
 
 int main (int argc, char** argv)

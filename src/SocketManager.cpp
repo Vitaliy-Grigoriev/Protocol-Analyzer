@@ -6,7 +6,10 @@
 namespace analyzer {
     namespace net {
 
-        NonBlockSocketManager::NonBlockSocketManager() : timeout(DEFAULT_TIMEOUT) { }
+        NonBlockSocketManager::NonBlockSocketManager()
+                : timeout(DEFAULT_TIMEOUT)
+        { }
+
         void NonBlockSocketManager::SetTimeout (const uint32_t time) { timeout = time; }
 
 
@@ -56,7 +59,11 @@ namespace analyzer {
         }
 
 
-        pthread_t NonBlockSocketManager::Add (const char* host, char* buffer, const size_t length, const uint16_t port, const uint16_t protocol)
+        pthread_t NonBlockSocketManager::Add (const char* host,
+                                              char* buffer,
+                                              const std::size_t length,
+                                              const uint16_t port,
+                                              const uint16_t protocol)
         {
             auto info = new socket_init;
             info->host = host;
@@ -96,6 +103,7 @@ namespace analyzer {
             const int32_t result = pthread_create(&thread_id, nullptr, thread_worker, static_cast<void*>(info));
             if (result != 0) {
                 log::DbgLog("[error] SocketManager: Error in function 'pthread_create' - ", GET_ERROR(result));
+                delete info;
                 return 0;
             }
 
@@ -113,25 +121,25 @@ namespace analyzer {
         }
 
 
-        void NonBlockSocketManager::WaitAll () const
+        void NonBlockSocketManager::WaitAll() const
         {
             for (auto&& it : hosts) {
                 int32_t result = pthread_join(it.first, nullptr);
                 if (result != 0) {
                     log::DbgLog("[error] SocketManager: Error in function 'pthread_join' - ", GET_ERROR(result));
                 }
-                std::cout << it.first << "   " << it.second->flagSuccess << std::endl; //.......DEBUG...ONLY.......
+                std::cout << "Threat ID: " << it.first << "   " << it.second->flagSuccess << std::endl; //..DEBUG...ONLY..
             }
         }
 
 
         data_t NonBlockSocketManager::GetData (const pthread_t fd) const
         {
-            std::size_t idx = FindFd(fd);
+            const std::size_t idx = FindFd(fd);
             if (idx != fpos) {
-                if (hosts[idx].second->work_t.try_lock()) {
+                if (hosts[idx].second->work_t.try_lock())
+                {
                     hosts[idx].second->work_t.unlock();
-
                     if (hosts[idx].second->flagSuccess) {
                         return data_t(hosts[idx].second->recv_buffer, hosts[idx].second->recv_length);
                     }
@@ -142,7 +150,7 @@ namespace analyzer {
 
 
         // Function, which allocate dynamic memory.
-        std::unique_ptr<char[]> NonBlockSocketManager::alloc_memory (const size_t size) noexcept
+        std::unique_ptr<char[]> NonBlockSocketManager::alloc_memory (const std::size_t size) noexcept
         {
             try {
                 return std::make_unique<char[]>(size);
@@ -154,6 +162,7 @@ namespace analyzer {
         }
 
 
+        // Destructor.
         NonBlockSocketManager::~NonBlockSocketManager() {
             for (auto&& it : hosts) {
                 delete it.second;
@@ -162,8 +171,13 @@ namespace analyzer {
         }
 
 
-        data_t::data_t (char* in, const size_t size) : data(in), length(size) { }
-        data_t::data_t (std::unique_ptr<char[]>& in, const size_t size) : data(std::move(in)), length(size) { }
+        data_t::data_t (char* in, const std::size_t size)
+                : data(in), length(size)
+        { }
+
+        data_t::data_t (std::unique_ptr<char[]>& in, const std::size_t size)
+                : data(std::move(in)), length(size)
+        { }
 
     }  // namespace net.
 }  // namespace analyzer.

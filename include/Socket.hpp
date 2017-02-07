@@ -14,6 +14,11 @@
 #include "../include/Log.hpp"
 
 
+#pragma once
+#ifndef HTTP2_ANALYZER_SOCKET_HPP
+#define HTTP2_ANALYZER_SOCKET_HPP
+
+
 #define NUMBER_OF_CTX    3
 #define SSL_METHOD_TLS1  0
 #define SSL_METHOD_TLS11 1
@@ -30,9 +35,6 @@
 #define DEFAULT_TIMEOUT_SSL  7    // sec.
 #define DEFAULT_TIME_SIGWAIT (-1) // msec.
 
-#pragma once
-#ifndef HTTP2_ANALYZER_SOCKET_H
-#define HTTP2_ANALYZER_SOCKET_H
 
 namespace analyzer {
     namespace net {
@@ -121,8 +123,8 @@ namespace analyzer {
             virtual ~Socket ();
         };
 
-        // Check SSL library error.
-        std::string CheckErrors ();
+        // Check SSL library error when it occur.
+        inline std::string CheckErrors ();
 
         class SSLContext {
         private:
@@ -194,4 +196,4 @@ namespace analyzer {
     }  // namespace net.
 }  // namespace analyzer.
 
-#endif  //HTTP2_ANALYZER_SOCKET_H
+#endif  // HTTP2_ANALYZER_SOCKET_HPP
