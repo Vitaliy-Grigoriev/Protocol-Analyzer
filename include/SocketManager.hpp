@@ -41,13 +41,13 @@ namespace analyzer {
             std::size_t recv_length = 0;
             std::mutex work_t = { };
             std::string host = "";
-            std::unique_ptr<Socket> sock;
+            std::unique_ptr<Socket> sock = nullptr;
         };
 
         struct data_t
         {
-            std::unique_ptr<char[]> data;
-            std::size_t length;
+            std::unique_ptr<char[]> data = nullptr;
+            std::size_t length = 0;
 
             data_t (char * /*in*/, const std::size_t /*size*/);
             data_t (std::unique_ptr<char[]> & /*in*/, const std::size_t /*size*/);
@@ -94,7 +94,7 @@ namespace analyzer {
             // Wait thread by descriptor.
             void Wait (const pthread_t /*fd*/) const;
             // Wait all threads.
-            void WaitAll () const;
+            void WaitAll() const;
 
             data_t GetData (const pthread_t /*fd*/) const;
 
@@ -109,4 +109,4 @@ namespace analyzer {
 } // namespace analyzer.
 
 
-#endif // HTTP2_ANALYZER_SOCKETMANAGER_HPP
+#endif  // HTTP2_ANALYZER_SOCKETMANAGER_HPP

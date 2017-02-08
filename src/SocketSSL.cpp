@@ -331,6 +331,23 @@ namespace analyzer {
             return (ssl != nullptr && SSL_is_init_finished(ssl));
         }
 
+        // Get selected ALPN protocol by server.
+        HTTP_VERSION SocketSSL::GetSelectedHttpProtocols() const
+        {
+            if (!IsHandshakeReady()) { return HTTP_VERSION::ERROR; }
+
+            uint32_t length = 0;
+            const unsigned char* proto = nullptr;
+
+            SSL_get0_alpn_selected(ssl, &proto, &length);
+            if (length > 0) {
+                const std::string p(reinterpret_cast<const char*>(proto), length);
+                if (p == "h2") { return HTTP_VERSION::HTTP2_0; }
+                return HTTP_VERSION::HTTP1_1;
+            }
+            return HTTP_VERSION::ERROR;
+        }
+
         // Cleaning after error.
         void SocketSSL::CleaningAfterError ()
         {

@@ -5,7 +5,7 @@
 #include "../include/Api.hpp"
 
 
-int main (int argc, char** argv)
+int main ()
 {
     analyzer::net::SocketSSL sock;
     if (sock.IsError()) {
@@ -14,11 +14,11 @@ int main (int argc, char** argv)
     }
 
     if (!sock.SetHttp_1_1_OnlyProtocol()) {
-        std::cout << "Secure ciphers fail..." << std::endl;
+        std::cout << "Set HTTP/1.1 only failed..." << std::endl;
         return EXIT_FAILURE;
     }
     if (!sock.SetOnlySecureCiphers()) {
-        std::cout << "Secure ciphers fail..." << std::endl;
+        std::cout << "Secure ciphers failed..." << std::endl;
         return EXIT_FAILURE;
     }
 

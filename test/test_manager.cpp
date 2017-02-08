@@ -5,7 +5,7 @@
 #include "../include/Api.hpp"
 
 
-int main (int argc, char** argv)
+int main ()
 {
     analyzer::net::NonBlockSocketManager net;
     char ya[] = "GET / HTTP/1.1\r\nHost: ya.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";

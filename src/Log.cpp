@@ -9,7 +9,7 @@ namespace analyzer {
         std::mutex log_mutex = { };
         static std::unordered_map<int32_t, std::string> errors;
 
-        void SetErrorStrings() noexcept;
+        static void SetErrorStrings() noexcept;
 
         std::mutex StrSysError::error_mutex = { };
         StrSysError* volatile StrSysError::pInstance { nullptr };
@@ -37,12 +37,20 @@ namespace analyzer {
         }
 
 
-        inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true)
+        static inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true)
         {
             std::ostringstream result;
             if (is_upper) { result.setf(std::ios_base::uppercase); }
             result << std::hex << std::setfill('0') << std::setw(width) << value;
             return result.str();
+        }
+
+        std::string __get_time_string() noexcept
+        {
+            using std::chrono::system_clock;
+            time_t time = system_clock::to_time_t(system_clock::now());
+            std::string curr_time = ctime(&time);
+            return curr_time.erase(19, 6).erase(0, 11);
         }
 
 
@@ -117,7 +125,7 @@ namespace analyzer {
         }
 
 
-        void SetErrorStrings() noexcept
+        static void SetErrorStrings() noexcept
         {
             errors.insert( std::make_pair(EPERM,           "Operation not permitted."));
             errors.insert( std::make_pair(ENOENT,          "No such file or directory."));

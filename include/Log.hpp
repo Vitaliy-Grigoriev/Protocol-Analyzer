@@ -33,8 +33,8 @@ namespace analyzer {
             StrSysError & operator= (const StrSysError &) = delete;
 
         protected:
-            StrSysError () { }
-            ~StrSysError () { delete pInstance; }
+            StrSysError() = default;
+            ~StrSysError() { delete pInstance; }
 
         public:
             static StrSysError * Instance();
@@ -42,12 +42,7 @@ namespace analyzer {
         };
 
 
-        inline std::string __get_time_string() noexcept {
-            using std::chrono::system_clock;
-            time_t time = system_clock::to_time_t(system_clock::now());
-            std::string curr_time = ctime(&time);
-            return curr_time.erase(19, 6).erase(0, 11);
-        }
+        std::string __get_time_string() noexcept;
 
         static inline void __output_values (std::ostream& fd) {
             fd << std::endl;
@@ -93,6 +88,7 @@ namespace analyzer {
         }
 
 
+        // Output in log file the data in hex dump form with byte shift.
         void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*line_length*/ = 16);
 
     }  // namespace log.

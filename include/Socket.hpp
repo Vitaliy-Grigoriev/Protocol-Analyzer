@@ -35,6 +35,8 @@
 #define DEFAULT_TIMEOUT_SSL  7    // sec.
 #define DEFAULT_TIME_SIGWAIT (-1) // msec.
 
+enum HTTP_VERSION : uint16_t { ERROR = 0, HTTP1_1 = 1, HTTP2_0 = 2 };
+
 
 namespace analyzer {
     namespace net {
@@ -63,6 +65,15 @@ namespace analyzer {
             // Dummy 2.
             uint32_t nonUsed2 = 0;
 
+
+            Socket (Socket &&) = delete;
+            Socket (const Socket &) = delete;
+            Socket & operator= (Socket &&) = delete;
+            Socket & operator= (const Socket &) = delete;
+            // Set Socket to Non-Blocking state.
+            bool SetSocketToNonBlock();
+
+
         protected:
             // The Socket descriptor.
             int32_t fd = INVALID_SOCKET;
@@ -74,15 +85,8 @@ namespace analyzer {
             // Checks availability socket on read.
             bool IsReadyForRecv (const int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
             // Cleaning after error.
-            void CloseAfterError ();
+            void CloseAfterError();
 
-        private:
-            Socket (Socket &&) = delete;
-            Socket (const Socket &) = delete;
-            Socket & operator= (Socket &&) = delete;
-            Socket & operator= (const Socket &) = delete;
-            // Set Socket to Non-Blocking state.
-            bool SetSocketToNonBlock ();
 
         public:
             // Constructor.
@@ -92,13 +96,13 @@ namespace analyzer {
                              const uint32_t /*timeout*/  = DEFAULT_TIMEOUT);
 
             // Return Socket descriptor.
-            inline int32_t GetFd () const { return fd; }
+            inline int32_t GetFd() const { return fd; }
             // Return Timeout of connection.
-            inline std::chrono::seconds GetTimeout () const { return timeout; }
+            inline std::chrono::seconds GetTimeout() const { return timeout; }
             // Return Socket error state.
-            inline bool IsError () const { return isErrorOccurred; }
+            inline bool IsError() const { return isErrorOccurred; }
             // Return Socket connection state.
-            inline bool IsAlive () const { return isConnectionAlive; }
+            inline bool IsAlive() const { return isConnectionAlive; }
             // Checks availability socket on read/write.
             uint16_t CheckSocketState (const int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
 
@@ -118,22 +122,22 @@ namespace analyzer {
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR);
             // Close the connection.
-            virtual void Close ();
+            virtual void Close();
             // Destructor.
-            virtual ~Socket ();
+            virtual ~Socket();
         };
 
         // Check SSL library error when it occur.
-        inline std::string CheckErrors ();
+        inline std::string CheckErrors();
 
         class SSLContext {
         private:
             SSL_CTX * ctx[NUMBER_OF_CTX] = { };
 
         public:
-            SSLContext () noexcept;
+            SSLContext() noexcept;
             SSL_CTX * Get (const std::size_t /*method*/) const noexcept;
-            ~SSLContext () noexcept;
+            ~SSLContext() noexcept;
         };
 
 
@@ -150,11 +154,11 @@ namespace analyzer {
             SocketSSL & operator= (const SocketSSL &) = delete;
 
             // Returns true when the handshake is complete.
-            bool IsHandshakeReady () const;
+            bool IsHandshakeReady() const;
             // Provide handshake between hosts.
-            bool DoHandshakeSSL ();
+            bool DoHandshakeSSL();
             // Cleaning after error.
-            void CleaningAfterError ();
+            void CleaningAfterError();
 
         public:
             static SSLContext context;
@@ -178,19 +182,21 @@ namespace analyzer {
             int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) override final;
 
             // Get all available clients ciphers.
-            std::list<std::string> GetCiphersList () const;
+            std::list<std::string> GetCiphersList() const;
             // Use only security ciphers in connection.
-            bool SetOnlySecureCiphers ();
+            bool SetOnlySecureCiphers();
             // Use ALPN protocol to change the set of application protocols.
-            bool SetHttpProtocols ();
-            bool SetHttp_1_1_OnlyProtocol ();
-            bool SetHttp_2_0_OnlyProtocol ();
+            bool SetHttpProtocols();
+            bool SetHttp_1_1_OnlyProtocol();
+            bool SetHttp_2_0_OnlyProtocol();
+            // Get selected ALPN protocol by server.
+            HTTP_VERSION GetSelectedHttpProtocols() const;
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             void Shutdown (int32_t /*how*/ = SHUT_RDWR) override final;
             // Close the connection.
-            void Close () override final;
+            void Close() override final;
             // Destructor.
-            ~SocketSSL ();
+            ~SocketSSL();
         };
 
     }  // namespace net.
