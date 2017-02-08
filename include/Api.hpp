@@ -1,6 +1,3 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 #pragma once
 #ifndef HTTP2_ANALYZER_API_HPP
 #define HTTP2_ANALYZER_API_HPP
@@ -11,6 +8,6 @@
 
 #include "Socket.hpp"
 #include "SocketManager.hpp"
+#include "Http.hpp"
 
-
-#endif // HTTP2_ANALYZER_API_HPP
+#endif  // HTTP2_ANALYZER_API_HPP

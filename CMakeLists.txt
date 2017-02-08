@@ -17,12 +17,22 @@ set(CMAKE_CXX_FLAGS_RELEASE "-pthread -lssl -lcrypto -O3 -DRELEASE")
 # -fsanitize=address -fsanitize=leak -fsanitize=undefined
 # -fsanitize=memory -fno-omit-frame-pointer -fsanitize=undefined
 
-set(SSL_TEST test/test_ssl.cpp)
-add_executable(test_ssl ${SSL_TEST})
-set(MANAGER_TEST test/test_manager.cpp)
-add_executable(test_manager ${MANAGER_TEST})
-set(SOCKET_LIB src/Socket.cpp include/Socket.hpp src/SocketManager.cpp include/SocketManager.hpp src/Log.cpp include/Log.hpp src/SocketSSL.cpp)
-add_library(Socket ${SOCKET_LIB})
+set(LOGGING_LIB src/Log.cpp include/Log.hpp)
+add_library(Logging ${LOGGING_LIB})
+set(SOCKET_LIB src/Socket.cpp src/SocketSSL.cpp include/Socket.hpp src/SocketManager.cpp include/SocketManager.hpp)
+add_library(Socket ${SOCKET_LIB} ${LOGGING_LIB})
+set(HTTP_LIB src/Http.cpp src/Http.cpp include/Http.hpp)
+add_library(Http ${HTTP_LIB} ${LOGGING_LIB})
 
-target_link_libraries(test_ssl Socket)
-target_link_libraries(test_manager Socket)
+
+set(SSL_TEST test/test_ssl.cpp include/Api.hpp)
+add_executable(test_ssl ${SSL_TEST})
+set(MANAGER_TEST test/test_manager.cpp include/Api.hpp)
+add_executable(test_manager ${MANAGER_TEST})
+set(HTTP2_NEGOTIATION_TEST test/test_http2_negotiation.cpp include/Api.hpp)
+add_executable(test_http2_negotiation ${HTTP2_NEGOTIATION_TEST})
+
+
+target_link_libraries(test_ssl Socket Http)
+target_link_libraries(test_manager Socket Http)
+target_link_libraries(test_http2_negotiation Socket Http)
