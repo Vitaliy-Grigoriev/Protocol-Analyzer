@@ -7,7 +7,7 @@ install:
   # Update docker-engine using Ubuntu 'trusty' apt repo
   - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
   - echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update
+  - sudo apt-get update -q
   - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
   - docker --version
   
@@ -29,8 +29,12 @@ branches:
   only:
     - master
 
+before_script:
+  - docker-compose up --build -d
+
 script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Release -j4 ..
-  - make -j4
+  - pwd
+  - uname -a
+
+after_script:
+  - docker-compose down
