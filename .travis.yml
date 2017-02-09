@@ -3,9 +3,6 @@ dist: trusty
 
 language: cpp
 
-env:
-  DOCKER_COMPOSE_VERSION: 1.11.1
-
 install:
   # Update docker-engine using Ubuntu 'trusty' apt repo
   - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
@@ -15,7 +12,7 @@ install:
   - docker --version
   
   - sudo rm /usr/local/bin/docker-compose
-  - sudo curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  - sudo curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
   - sudo chmod +x /usr/local/bin/docker-compose
   - docker-compose --version
 
