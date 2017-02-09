@@ -15,13 +15,6 @@ install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
-
-  # Setup your application stack. You may need to tweak these commands if you
-  # doing out-of-the-ordinary docker-compose builds.
-  - docker-compose pull
-  - docker-compose build
-  - docker-compose start
-  - docker ps
   
   - sudo apt-get install libssl-dev
 
