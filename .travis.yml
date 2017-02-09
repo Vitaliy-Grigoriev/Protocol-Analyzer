@@ -23,6 +23,8 @@ install:
   - docker-compose start
   - docker ps
   
+  - sudo apt-get install libssl-dev
+  
 matrix:
   include:
     - os: linux
@@ -96,11 +98,6 @@ matrix:
 branches:
   only:
     - master
-
-before_script:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q
-  - sudo apt-get install libssl-dev
 
 script:
   - mkdir build
