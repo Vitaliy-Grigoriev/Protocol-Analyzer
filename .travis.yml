@@ -1,6 +1,31 @@
-language: cpp
 sudo: required
+dist: trusty
 
+language: cpp
+
+env:
+  DOCKER_COMPOSE_VERSION: 1.11.1
+
+install:
+  # Update docker-engine using Ubuntu 'trusty' apt repo
+  - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
+  - echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update -q
+  - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+  - docker --version
+  
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+  - docker-compose --version
+
+  # Setup your application stack. You may need to tweak these commands if you
+  # doing out-of-the-ordinary docker-compose builds.
+  - docker-compose pull
+  - docker-compose build
+  - docker-compose start
+  - docker ps
+  
 matrix:
   include:
     - os: linux
