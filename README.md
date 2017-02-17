@@ -1,5 +1,5 @@
 # http2-analyzer
-HTTP/2.0 protocol fuzzer.
+Fuzz testing framework for HTTP/1.1 and HTTP/2.0 protocols.
 
 <a href="https://scan.coverity.com/projects/vitaliy-grigoriev-http2-analyzer">
   <img alt="Coverity Scan Build Status"
