@@ -1,7 +1,7 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/Log.hpp"
+#include "../include/analyzer/Log.hpp"
 
 namespace analyzer {
     namespace log {
@@ -9,12 +9,13 @@ namespace analyzer {
         std::mutex log_mutex = { };
         static std::unordered_map<int32_t, std::string> errors;
 
-        static void SetErrorStrings() noexcept;
+        static void SetErrorStrings(void) noexcept;
 
         std::mutex StrSysError::error_mutex = { };
-        StrSysError* volatile StrSysError::pInstance { nullptr };
+        StrSysError * volatile StrSysError::pInstance { nullptr };
 
-        StrSysError* StrSysError::Instance()
+
+        StrSysError* StrSysError::Instance(void)
         {
             if (pInstance == nullptr) {
                 std::lock_guard<std::mutex> lock(error_mutex);
@@ -25,6 +26,7 @@ namespace analyzer {
             }
             return pInstance;
         }
+
 
         std::string StrSysError::operator() (const int32_t error) noexcept
         {
@@ -45,7 +47,7 @@ namespace analyzer {
             return result.str();
         }
 
-        std::string __get_time_string() noexcept
+        std::string __get_time_string(void) noexcept
         {
             using std::chrono::system_clock;
             time_t time = system_clock::to_time_t(system_clock::now());
@@ -125,7 +127,7 @@ namespace analyzer {
         }
 
 
-        static void SetErrorStrings() noexcept
+        static void SetErrorStrings(void) noexcept
         {
             errors.insert( std::make_pair(EPERM,           "Operation not permitted."));
             errors.insert( std::make_pair(ENOENT,          "No such file or directory."));

@@ -1,10 +1,22 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/Socket.hpp"
+#include "../include/analyzer/Socket.hpp"
 
 namespace analyzer {
     namespace net {
+        /**
+         * @fn inline static std::string CheckSSLErrors(void);
+         * @brief Check SSL library error.
+         * @return The SSL library error in string form.
+         */
+        inline static std::string CheckSSLErrors(void)
+        {
+            const std::size_t err = ERR_get_error();
+            if (err != 0) { return ERR_error_string(err, nullptr); }
+            return std::string("NO ANY OCCUR ERROR!!!");
+        }
+
 
         SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout)
                 : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
@@ -17,13 +29,14 @@ namespace analyzer {
 
             ssl = SSL_new(context.Get(method));
             if (ssl == nullptr) {
-                log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_new' - ", CheckErrors());
+                log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_new' - ", CheckSSLErrors());
                 CleaningAfterError(); return;
             }
 
             if (ciphers != nullptr) {
                 if (SSL_set_cipher_list(ssl, ciphers) == 0) {
-                    log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_set_cipher_list' - ", CheckErrors());
+                    log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_set_cipher_list' - ",
+                                CheckSSLErrors());
                     CleaningAfterError(); return;
                 }
             }
@@ -34,7 +47,7 @@ namespace analyzer {
             // Create new I/O object.
             bio = BIO_new_socket(fd, BIO_NOCLOSE);
             if (bio == nullptr) {
-                log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'BIO_new_socket' - ", CheckErrors());
+                log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'BIO_new_socket' - ", CheckSSLErrors());
                 CleaningAfterError(); return;
             }
 
@@ -90,7 +103,7 @@ namespace analyzer {
                         if (!IsReadyForSend(3000)) { CleaningAfterError(); return -1; }
                         continue;
                     }
-                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_write' - ", CheckErrors());
+                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_write' - ", CheckSSLErrors());
                     CleaningAfterError(); return -1;
                 }
 
@@ -130,7 +143,7 @@ namespace analyzer {
                         }
                         continue;
                     }
-                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_read' - ", CheckErrors());
+                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_read' - ", CheckSSLErrors());
                     CleaningAfterError(); return -1;
                 }
                 if (result == 0) { break; }
@@ -166,7 +179,7 @@ namespace analyzer {
 
                 if (result < 0) {
                     if (BIO_should_retry(bio)) { continue; }
-                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_read' - ", CheckErrors());
+                    log::DbgLog("[error] SocketSSL: Error in function 'SSL_read' - ", CheckSSLErrors());
                     CloseAfterError(); return -1;
                 }
                 if (result == 0) { break; }
@@ -180,7 +193,7 @@ namespace analyzer {
         }
 
 
-        bool SocketSSL::DoHandshakeSSL ()
+        bool SocketSSL::DoHandshakeSSL()
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -205,7 +218,7 @@ namespace analyzer {
                         if (!IsReadyForSend(3000)) { CleaningAfterError(); break; }
                         continue;
                     }
-                    log::DbgLog("[error] SocketSSL [", fd,"]: Handshake failed - ", CheckErrors());
+                    log::DbgLog("[error] SocketSSL [", fd,"]: Handshake failed - ", CheckSSLErrors());
                     break;
                 }
             }
@@ -213,19 +226,19 @@ namespace analyzer {
         }
 
 
-        std::list<std::string> SocketSSL::GetCiphersList () const
+        std::list<std::string> SocketSSL::GetCiphersList() const
         {
             std::list<std::string> result;
-            STACK_OF(SSL_CIPHER) *ciphers_list = SSL_get_ciphers(ssl);
+            STACK_OF(SSL_CIPHER)* ciphers_list = SSL_get_ciphers(ssl);
             for (int32_t i = 0; i < sk_SSL_CIPHER_num(ciphers_list); ++i) {
-                const SSL_CIPHER *cipher = sk_SSL_CIPHER_value(ciphers_list, i);
+                const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers_list, i);
                 result.emplace_back(SSL_CIPHER_get_name(cipher));
             }
             return result;
         }
 
 
-        bool SocketSSL::SetOnlySecureCiphers ()
+        bool SocketSSL::SetOnlySecureCiphers()
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -253,7 +266,7 @@ namespace analyzer {
         }
 
 
-        bool SocketSSL::SetHttp_2_0_OnlyProtocol ()
+        bool SocketSSL::SetHttp_2_0_OnlyProtocol()
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -265,12 +278,12 @@ namespace analyzer {
                 log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/2.0 is successful.");
                 return true;
             }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_2_0_OnlyProtocol' - ", CheckErrors());
+            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_2_0_OnlyProtocol' - ", CheckSSLErrors());
             return false;
         }
 
 
-        bool SocketSSL::SetHttp_1_1_OnlyProtocol ()
+        bool SocketSSL::SetHttp_1_1_OnlyProtocol()
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -282,12 +295,12 @@ namespace analyzer {
                 log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/1.1 is successful.");
                 return true;
             }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_1_1_OnlyProtocol' - ", CheckErrors());
+            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_1_1_OnlyProtocol' - ", CheckSSLErrors());
             return false;
         }
 
 
-        bool SocketSSL::SetHttpProtocols ()
+        bool SocketSSL::SetHttpProtocols()
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -302,7 +315,7 @@ namespace analyzer {
                 log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/2.0 and http/1.1 is successful.");
                 return true;
             }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttpProtocols' - ", CheckErrors());
+            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttpProtocols' - ", CheckSSLErrors());
             return false;
         }
 
@@ -312,21 +325,21 @@ namespace analyzer {
             if (ssl != nullptr) {
                 int32_t res = SSL_shutdown(ssl);
                 if (res == 0) { SSL_shutdown(ssl); }
-                else { log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_shutdown' - ", CheckErrors()); }
+                else { log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SSL_shutdown' - ", CheckSSLErrors()); }
             }
             Socket::Shutdown(how);
         }
 
 
         // Close connection.
-        void SocketSSL::Close ()
+        void SocketSSL::Close()
         {
             if (ssl != nullptr) { Shutdown(); SSL_free(ssl); ssl = nullptr; }
             Socket::Close();
         }
 
         // Returns true when the handshake is complete.
-        bool SocketSSL::IsHandshakeReady () const
+        bool SocketSSL::IsHandshakeReady() const
         {
             return (ssl != nullptr && SSL_is_init_finished(ssl));
         }
@@ -348,31 +361,32 @@ namespace analyzer {
             return HTTP_VERSION::ERROR;
         }
 
+        // Get selected cipher name in ssl connection.
+        std::string SocketSSL::GetSelectedCipherName() const
+        {
+            if (!IsHandshakeReady()) { return std::string(""); }
+
+            const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl);
+            return std::string(SSL_CIPHER_get_name(cipher));
+        }
+
         // Cleaning after error.
-        void SocketSSL::CleaningAfterError ()
+        void SocketSSL::CleaningAfterError()
         {
             if (ssl != nullptr) { SSL_free(ssl); ssl = nullptr; }
             Socket::CloseAfterError();
         }
 
         // Destructor.
-        SocketSSL::~SocketSSL () {
+        SocketSSL::~SocketSSL() {
             if (ssl != nullptr) { SSL_free(ssl); ssl = nullptr; }
             Socket::Close();
         }
 
 
 
-        // Check SSL library error.
-        inline std::string CheckErrors ()
-        {
-            std::size_t err = ERR_get_error();
-            if (err != 0) { return ERR_error_string(err, nullptr); }
-            return "NO ERROR.";
-        }
 
-
-        SSLContext::SSLContext () noexcept
+        SSLContext::SSLContext() noexcept
         {
             // Initialize readable error messages.
             ERR_load_BIO_strings();
@@ -387,17 +401,17 @@ namespace analyzer {
 
             ctx[SSL_METHOD_TLS1] = SSL_CTX_new( TLSv1_client_method() );
             if (ctx[SSL_METHOD_TLS1] == nullptr) {
-                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.0)' - ", CheckErrors());
+                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.0)' - ", CheckSSLErrors());
                 abort();
             }
             ctx[SSL_METHOD_TLS11] = SSL_CTX_new( TLSv1_1_client_method() );
             if (ctx[SSL_METHOD_TLS11] == nullptr) {
-                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.1)' - ", CheckErrors());
+                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.1)' - ", CheckSSLErrors());
                 abort();
             }
             ctx[SSL_METHOD_TLS12] = SSL_CTX_new( TLSv1_2_client_method() );
             if (ctx[SSL_METHOD_TLS12] == nullptr) {
-                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.2)' - ", CheckErrors());
+                log::DbgLog("[error] SSLContext: Error in function 'SSL_CTX_new (TLSv1.2)' - ", CheckSSLErrors());
                 abort();
             }
             log::DbgLog("[+] SSLContext: Initialize SSL library is successful.");
@@ -409,7 +423,7 @@ namespace analyzer {
             return nullptr;
         }
 
-        SSLContext::~SSLContext () noexcept
+        SSLContext::~SSLContext() noexcept
         {
             SSL_CTX_free( ctx[SSL_METHOD_TLS1] );
             SSL_CTX_free( ctx[SSL_METHOD_TLS11] );

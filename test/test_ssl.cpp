@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <iostream>
-#include "../include/Api.hpp"
+#include "../include/analyzer/Api.hpp"
 
 
 int main ()
@@ -27,6 +27,8 @@ int main ()
         std::cout << "Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
+
+    std::cout << "Cipher name: " << sock.GetSelectedCipherName().c_str() << std::endl;
 
     char buff[] = "GET / HTTP/1.1\r\nHost: habrahabr.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
     sock.Send(buff, sizeof(buff));
