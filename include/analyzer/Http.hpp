@@ -3,7 +3,7 @@
 #define HTTP2_ANALYZER_HTTP_HPP
 
 
-#include "../include/Log.hpp"
+#include "Log.hpp"
 
 
 namespace analyzer {
@@ -19,11 +19,11 @@ namespace analyzer {
 
         public:
             // Constructor.
-            __HTTP_Interface() = default;
+            __HTTP_Interface(void) = default;
             // Parsing the HTTP header.
-            virtual void ParseHeader() = 0;
+            virtual void ParseHeader(void) = 0;
             // Destructor.
-            virtual ~__HTTP_Interface() = default;
+            virtual ~__HTTP_Interface(void);
         };
 
 
@@ -37,10 +37,10 @@ namespace analyzer {
             explicit HTTP1_1 (void * /*data*/, const std::size_t /*length*/);
 
             // Parsing the HTTP/1.1 header.
-            void ParseHeader() override final;
+            void ParseHeader(void) override final;
 
             // Destructor.
-            ~HTTP1_1();
+            ~HTTP1_1(void);
         };
 
     }  // namespace http.

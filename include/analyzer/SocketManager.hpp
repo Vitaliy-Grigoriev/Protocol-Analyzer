@@ -1,12 +1,10 @@
 #include <map>
 #include <ctime>
 #include <vector>
-#include <memory>
-#include <cstdint>
 #include <pthread.h>
 #include <exception>
 
-#include "../include/Socket.hpp"
+#include "Socket.hpp"
 
 
 #pragma once

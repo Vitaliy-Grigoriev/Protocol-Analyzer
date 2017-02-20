@@ -11,7 +11,7 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
-#include "../include/Log.hpp"
+#include "Log.hpp"
 
 
 #pragma once
@@ -127,8 +127,7 @@ namespace analyzer {
             virtual ~Socket();
         };
 
-        // Check SSL library error when it occur.
-        inline std::string CheckErrors();
+
 
         class SSLContext {
         private:
@@ -139,6 +138,7 @@ namespace analyzer {
             SSL_CTX * Get (const std::size_t /*method*/) const noexcept;
             ~SSLContext() noexcept;
         };
+
 
 
         class SocketSSL : public Socket {
@@ -191,6 +191,8 @@ namespace analyzer {
             bool SetHttp_2_0_OnlyProtocol();
             // Get selected ALPN protocol by server.
             HTTP_VERSION GetSelectedHttpProtocols() const;
+            // Get selected cipher name in ssl connection.
+            std::string GetSelectedCipherName() const;
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             void Shutdown (int32_t /*how*/ = SHUT_RDWR) override final;
             // Close the connection.
