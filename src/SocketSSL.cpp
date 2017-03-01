@@ -193,7 +193,7 @@ namespace analyzer {
         }
 
 
-        bool SocketSSL::DoHandshakeSSL()
+        bool SocketSSL::DoHandshakeSSL(void)
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -226,7 +226,7 @@ namespace analyzer {
         }
 
 
-        std::list<std::string> SocketSSL::GetCiphersList() const
+        std::list<std::string> SocketSSL::GetCiphersList(void) const
         {
             std::list<std::string> result;
             STACK_OF(SSL_CIPHER)* ciphers_list = SSL_get_ciphers(ssl);
@@ -238,7 +238,7 @@ namespace analyzer {
         }
 
 
-        bool SocketSSL::SetOnlySecureCiphers()
+        bool SocketSSL::SetOnlySecureCiphers(void)
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
@@ -247,7 +247,7 @@ namespace analyzer {
 
             std::string secure;
             std::list<std::string> current = GetCiphersList();
-            for (auto it : current) {
+            for (auto&& it : current) {
                 if (it.find("SRP") == it.npos && it.find("DH-") == it.npos      &&
                     it.find("RC4") == it.npos && it.find("CAMELLIA") == it.npos &&
                     it.find("MD5") == it.npos && it.find("SEED") == it.npos     &&
@@ -266,57 +266,53 @@ namespace analyzer {
         }
 
 
-        bool SocketSSL::SetHttp_2_0_OnlyProtocol()
+        bool SocketSSL::SetInternalProtocol (const unsigned char* proto, std::size_t length)
         {
-            if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
-                log::DbgLog("[error] SocketSSL: Socket is invalid.");
-                return false;
-            }
-
-            unsigned char proto[] = { 2, 'h', '2' };
-            if (SSL_set_alpn_protos(ssl, &proto[0], sizeof(proto)) == 0) {
-                log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/2.0 is successful.");
+            if (SSL_set_alpn_protos(ssl, &proto[0], static_cast<uint32_t>(length)) == 0) {
+                log::DbgLog("[+] SocketSSL [", fd,"]: Set ALPN protocol is successful.");
                 return true;
             }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_2_0_OnlyProtocol' - ", CheckSSLErrors());
+            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetInternalProtocol' - ", CheckSSLErrors());
             return false;
         }
 
 
-        bool SocketSSL::SetHttp_1_1_OnlyProtocol()
+        bool SocketSSL::SetHttp_2_0_OnlyProtocol(void)
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
                 return false;
             }
 
-            unsigned char proto[] = { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
-            if (SSL_set_alpn_protos(ssl, &proto[0], sizeof(proto)) == 0) {
-                log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/1.1 is successful.");
-                return true;
-            }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttp_1_1_OnlyProtocol' - ", CheckSSLErrors());
-            return false;
+            const unsigned char proto[] = { 2, 'h', '2' };
+            return SetInternalProtocol(proto, sizeof(proto));
         }
 
 
-        bool SocketSSL::SetHttpProtocols()
+        bool SocketSSL::SetHttp_1_1_OnlyProtocol(void)
         {
             if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
                 log::DbgLog("[error] SocketSSL: Socket is invalid.");
                 return false;
             }
 
-            unsigned char proto[] = {
+            const unsigned char proto[] = { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
+            return SetInternalProtocol(proto, sizeof(proto));
+        }
+
+
+        bool SocketSSL::SetHttpProtocols(void)
+        {
+            if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
+                log::DbgLog("[error] SocketSSL: Socket is invalid.");
+                return false;
+            }
+
+            const unsigned char proto[] = {
                     2, 'h', '2',
                     8, 'h', 't', 't', 'p', '/', '1', '.', '1'
             };
-            if (SSL_set_alpn_protos(ssl, &proto[0], sizeof(proto)) == 0) {
-                log::DbgLog("[+] SocketSSL [", fd,"]: Change protocol to http/2.0 and http/1.1 is successful.");
-                return true;
-            }
-            log::DbgLog("[error] SocketSSL [", fd,"]: Error in function 'SetHttpProtocols' - ", CheckSSLErrors());
-            return false;
+            return SetInternalProtocol(proto, sizeof(proto));
         }
 
 
@@ -332,53 +328,64 @@ namespace analyzer {
 
 
         // Close connection.
-        void SocketSSL::Close()
+        void SocketSSL::Close(void)
         {
             if (ssl != nullptr) { Shutdown(); SSL_free(ssl); ssl = nullptr; }
             Socket::Close();
         }
 
         // Returns true when the handshake is complete.
-        bool SocketSSL::IsHandshakeReady() const
+        bool SocketSSL::IsHandshakeReady(void) const
         {
             return (ssl != nullptr && SSL_is_init_finished(ssl));
         }
 
-        // Get selected ALPN protocol by server.
-        HTTP_VERSION SocketSSL::GetSelectedHttpProtocols() const
+        // Get selected ALPN protocol by server in string type.
+        std::string SocketSSL::GetRawSelectedProtocol(void) const
         {
-            if (!IsHandshakeReady()) { return HTTP_VERSION::ERROR; }
-
+            if (!IsHandshakeReady()) { return std::string(); }
             uint32_t length = 0;
             const unsigned char* proto = nullptr;
 
             SSL_get0_alpn_selected(ssl, &proto, &length);
             if (length > 0) {
-                const std::string p(reinterpret_cast<const char*>(proto), length);
-                if (p == "h2") { return HTTP_VERSION::HTTP2_0; }
+                return std::string(reinterpret_cast<const char*>(proto), length);
+            }
+            return std::string();
+        }
+
+        // Get selected ALPN protocol by server.
+        protocol::http::HTTP_VERSION SocketSSL::GetSelectedProtocol(void) const
+        {
+            using protocol::http::HTTP_VERSION;
+            if (!IsHandshakeReady()) { return HTTP_VERSION::UNKNOWN; }
+
+            const std::string proto = GetRawSelectedProtocol();
+            if (proto.size() > 0) {
+                if (proto == "h2") { return HTTP_VERSION::HTTP2_0; }
                 return HTTP_VERSION::HTTP1_1;
             }
-            return HTTP_VERSION::ERROR;
+            return HTTP_VERSION::UNKNOWN;
         }
 
         // Get selected cipher name in ssl connection.
-        std::string SocketSSL::GetSelectedCipherName() const
+        std::string SocketSSL::GetSelectedCipherName(void) const
         {
-            if (!IsHandshakeReady()) { return std::string(""); }
+            if (!IsHandshakeReady()) { return std::string(); }
 
             const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl);
             return std::string(SSL_CIPHER_get_name(cipher));
         }
 
         // Cleaning after error.
-        void SocketSSL::CleaningAfterError()
+        void SocketSSL::CleaningAfterError(void)
         {
             if (ssl != nullptr) { SSL_free(ssl); ssl = nullptr; }
             Socket::CloseAfterError();
         }
 
         // Destructor.
-        SocketSSL::~SocketSSL() {
+        SocketSSL::~SocketSSL(void) {
             if (ssl != nullptr) { SSL_free(ssl); ssl = nullptr; }
             Socket::Close();
         }
@@ -386,7 +393,7 @@ namespace analyzer {
 
 
 
-        SSLContext::SSLContext() noexcept
+        SSLContext::SSLContext(void) noexcept
         {
             // Initialize readable error messages.
             ERR_load_BIO_strings();
@@ -423,7 +430,7 @@ namespace analyzer {
             return nullptr;
         }
 
-        SSLContext::~SSLContext() noexcept
+        SSLContext::~SSLContext(void) noexcept
         {
             SSL_CTX_free( ctx[SSL_METHOD_TLS1] );
             SSL_CTX_free( ctx[SSL_METHOD_TLS11] );

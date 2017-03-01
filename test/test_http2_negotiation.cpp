@@ -5,8 +5,18 @@
 #include "../include/analyzer/Api.hpp"
 
 
-int main ()
+int main(void)
 {
+    const auto protos = analyzer::utility::CheckALPNSupportedProtocols("www.google.com");
+    if (protos.size() > 0) {
+        std::cout << "Find next protocols: " << std::endl;
+        for (auto &&p : protos) {
+            std::cout << p << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+
     analyzer::net::SocketSSL sock;
     if (sock.IsError()) {
         std::cout << "Socket fail..." << std::endl;
@@ -28,16 +38,17 @@ int main ()
         return EXIT_FAILURE;
     }
 
-    switch (sock.GetSelectedHttpProtocols())
+    std::cout << "Selected:   ";
+    switch (sock.GetSelectedProtocol())
     {
-        case HTTP_VERSION::HTTP1_1:
+        case analyzer::protocol::http::HTTP_VERSION::HTTP1_1:
             std::cout << "HTTP/1.1 protocol." << std::endl;
             break;
-        case HTTP_VERSION::HTTP2_0:
+        case analyzer::protocol::http::HTTP_VERSION::HTTP2_0:
             std::cout << "HTTP/2.0 protocol." << std::endl;
             break;
-        case HTTP_VERSION::ERROR:
-            std::cout << "ALPN protocol ERROR." << std::endl;
+        case analyzer::protocol::http::HTTP_VERSION::UNKNOWN:
+            std::cout << "ALPN protocol UNKNOWN." << std::endl;
             break;
     }
 

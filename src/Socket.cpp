@@ -261,7 +261,7 @@ namespace analyzer {
 
 
         // Set Socket to Non-Blocking state.
-        bool Socket::SetSocketToNonBlock () {
+        bool Socket::SetSocketToNonBlock (void) {
             int32_t flags = fcntl(fd, F_GETFL, 0);
             if (flags == INVALID_SOCKET) {
                 log::DbgLog("[error] Socket [", fd,"]: Getting socket options error - ", GET_ERROR(errno));
@@ -291,7 +291,7 @@ namespace analyzer {
 
 
         // Close the connection.
-        void Socket::Close () {
+        void Socket::Close (void) {
             Shutdown();
             if (fd != INVALID_SOCKET) { close(fd); fd = INVALID_SOCKET; }
             if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
@@ -299,14 +299,14 @@ namespace analyzer {
 
 
         // Cleaning after error.
-        void Socket::CloseAfterError () {
+        void Socket::CloseAfterError (void) {
             Close();
             isErrorOccurred = true;
         }
 
 
         // Destructor.
-        Socket::~Socket() {
+        Socket::~Socket(void) {
             if (fd != INVALID_SOCKET) { close(fd); fd = INVALID_SOCKET; }
             if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
             isConnectionAlive = false;

@@ -11,7 +11,9 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
+
 #include "Log.hpp"
+#include "Http.hpp"
 
 
 #pragma once
@@ -20,10 +22,10 @@
 
 
 #define NUMBER_OF_CTX    3
-#define SSL_METHOD_TLS1  0
-#define SSL_METHOD_TLS11 1
-#define SSL_METHOD_TLS12 2
-#define SSL_METHOD_TLS13 3
+#define SSL_METHOD_TLS1  0  // 0x0301
+#define SSL_METHOD_TLS11 1  // 0x0302
+#define SSL_METHOD_TLS12 2  // 0x0303
+#define SSL_METHOD_TLS13 3  // 0x0304
 
 #define SOCKET_ERROR   (-1)
 #define INVALID_SOCKET (-1)
@@ -33,13 +35,16 @@
 
 #define DEFAULT_TIMEOUT      5    // sec.
 #define DEFAULT_TIMEOUT_SSL  7    // sec.
-#define DEFAULT_TIME_SIGWAIT (-1) // msec.
-
-enum HTTP_VERSION : uint16_t { ERROR = 0, HTTP1_1 = 1, HTTP2_0 = 2 };
+#define DEFAULT_TIME_SIGWAIT (-1) // milli sec.
 
 
 namespace analyzer {
+    /**
+     * @namespace net
+     * @brief The namespace that contain definitions of network transports.
+     */
     namespace net {
+
         using std::chrono::system_clock;
 
         class Socket {
@@ -71,7 +76,7 @@ namespace analyzer {
             Socket & operator= (Socket &&) = delete;
             Socket & operator= (const Socket &) = delete;
             // Set Socket to Non-Blocking state.
-            bool SetSocketToNonBlock();
+            bool SetSocketToNonBlock(void);
 
 
         protected:
@@ -85,7 +90,7 @@ namespace analyzer {
             // Checks availability socket on read.
             bool IsReadyForRecv (const int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
             // Cleaning after error.
-            void CloseAfterError();
+            void CloseAfterError(void);
 
 
         public:
@@ -96,13 +101,13 @@ namespace analyzer {
                              const uint32_t /*timeout*/  = DEFAULT_TIMEOUT);
 
             // Return Socket descriptor.
-            inline int32_t GetFd() const { return fd; }
+            inline int32_t GetFd(void) const { return fd; }
             // Return Timeout of connection.
             inline std::chrono::seconds GetTimeout() const { return timeout; }
             // Return Socket error state.
-            inline bool IsError() const { return isErrorOccurred; }
+            inline bool IsError(void) const { return isErrorOccurred; }
             // Return Socket connection state.
-            inline bool IsAlive() const { return isConnectionAlive; }
+            inline bool IsAlive(void) const { return isConnectionAlive; }
             // Checks availability socket on read/write.
             uint16_t CheckSocketState (const int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
 
@@ -122,9 +127,9 @@ namespace analyzer {
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR);
             // Close the connection.
-            virtual void Close();
+            virtual void Close(void);
             // Destructor.
-            virtual ~Socket();
+            virtual ~Socket(void);
         };
 
 
@@ -134,9 +139,9 @@ namespace analyzer {
             SSL_CTX * ctx[NUMBER_OF_CTX] = { };
 
         public:
-            SSLContext() noexcept;
+            SSLContext(void) noexcept;
             SSL_CTX * Get (const std::size_t /*method*/) const noexcept;
-            ~SSLContext() noexcept;
+            ~SSLContext(void) noexcept;
         };
 
 
@@ -154,11 +159,11 @@ namespace analyzer {
             SocketSSL & operator= (const SocketSSL &) = delete;
 
             // Returns true when the handshake is complete.
-            bool IsHandshakeReady() const;
+            bool IsHandshakeReady(void) const;
             // Provide handshake between hosts.
-            bool DoHandshakeSSL();
+            bool DoHandshakeSSL(void);
             // Cleaning after error.
-            void CleaningAfterError();
+            void CleaningAfterError(void);
 
         public:
             static SSLContext context;
@@ -181,24 +186,29 @@ namespace analyzer {
             // 4. The socket has not been informed for reading signal.
             int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) override final;
 
+            // Return the SSL object.
+            inline SSL * GetSSL(void) const { return ssl; }
             // Get all available clients ciphers.
-            std::list<std::string> GetCiphersList() const;
+            std::list<std::string> GetCiphersList(void) const;
             // Use only security ciphers in connection.
-            bool SetOnlySecureCiphers();
+            bool SetOnlySecureCiphers(void);
             // Use ALPN protocol to change the set of application protocols.
-            bool SetHttpProtocols();
-            bool SetHttp_1_1_OnlyProtocol();
-            bool SetHttp_2_0_OnlyProtocol();
+            bool SetInternalProtocol (const unsigned char * /*proto*/, std::size_t /*length*/);
+            bool SetHttpProtocols(void);
+            bool SetHttp_1_1_OnlyProtocol(void);
+            bool SetHttp_2_0_OnlyProtocol(void);
+            // Get selected ALPN protocol by server in string type.
+            std::string GetRawSelectedProtocol(void) const;
             // Get selected ALPN protocol by server.
-            HTTP_VERSION GetSelectedHttpProtocols() const;
+            protocol::http::HTTP_VERSION GetSelectedProtocol(void) const;
             // Get selected cipher name in ssl connection.
-            std::string GetSelectedCipherName() const;
+            std::string GetSelectedCipherName(void) const;
             // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
             void Shutdown (int32_t /*how*/ = SHUT_RDWR) override final;
             // Close the connection.
-            void Close() override final;
+            void Close(void) override final;
             // Destructor.
-            ~SocketSSL();
+            ~SocketSSL(void);
         };
 
     }  // namespace net.
