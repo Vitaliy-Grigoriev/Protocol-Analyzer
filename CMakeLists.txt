@@ -16,18 +16,20 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -fsanitize=leak -fsanitize=
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DRELEASE -Wno-documentation -Wno-padded")
 
 
-set(LOGGING_LIB      include/analyzer/Log.hpp     src/Log.cpp)
-set(HTTP_LIB         include/analyzer/Http.hpp    src/Http.cpp)
-set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp   src/Timer.cpp)
+set(LOGGING_LIB      include/analyzer/Log.hpp         src/Log.cpp)
+set(HTTP_LIB         include/analyzer/Http.hpp        src/Http.cpp include/analyzer/ProtocolLayer.hpp)
+set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp       src/Timer.cpp)
+set(UTILITIES_LIB    include/analyzer/Utilities.hpp   src/Utilities.cpp)
 set(SOCKET_LIB       include/analyzer/Socket.hpp include/analyzer/SocketManager.hpp   src/Socket.cpp src/SocketSSL.cpp src/SocketManager.cpp)
 
 add_library(Logging      ${LOGGING_LIB})
 add_library(Diagnostic   ${DIAGNOSTIC_LIB})
 add_library(Http         ${HTTP_LIB}   ${LOGGING_LIB} ${DIAGNOSTIC_LIB})
 add_library(Socket       ${SOCKET_LIB} ${LOGGING_LIB} ${DIAGNOSTIC_LIB})
+add_library(Utilities    ${UTILITIES_LIB} ${SOCKET_LIB} ${HTTP_LIB} ${LOGGING_LIB} ${DIAGNOSTIC_LIB})
 
-target_link_libraries(Socket   ssl crypto pthread)
-
+target_link_libraries(Utilities   ssl crypto)
+target_link_libraries(Socket      ssl crypto pthread)
 
 set(SSL_TEST                 test/test_ssl.cpp)
 set(TIMING_TEST              test/test_timing.cpp)
@@ -42,4 +44,4 @@ add_executable(test_http2_negotiation   ${HTTP2_NEGOTIATION_TEST})
 target_link_libraries(test_timing              Diagnostic)
 target_link_libraries(test_ssl                 Socket Http)
 target_link_libraries(test_manager             Socket Http)
-target_link_libraries(test_http2_negotiation   Socket Http)
+target_link_libraries(test_http2_negotiation   Socket Http Utilities)
