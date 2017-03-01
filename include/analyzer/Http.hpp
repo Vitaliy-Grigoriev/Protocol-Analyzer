@@ -4,46 +4,70 @@
 
 
 #include "Log.hpp"
+#include "ProtocolLayer.hpp"
 
 
 namespace analyzer {
-    namespace http {
-
-        // Interface of HTTP/x.x classes.
-        class __HTTP_Interface {
-        protected:
-            __HTTP_Interface (__HTTP_Interface &&) = delete;
-            __HTTP_Interface (const __HTTP_Interface &) = delete;
-            __HTTP_Interface & operator= (__HTTP_Interface &&) = delete;
-            __HTTP_Interface & operator= (const __HTTP_Interface &) = delete;
-
-        public:
-            // Constructor.
-            __HTTP_Interface(void) = default;
-            // Parsing the HTTP header.
-            virtual void ParseHeader(void) = 0;
-            // Destructor.
-            virtual ~__HTTP_Interface(void);
-        };
+    namespace protocol {
+        /**
+         * @namespace http
+         * @brief The namespace that contain definitions of http protocols.
+         */
+        namespace http {
+            /**
+             * @enum HTTP_VERSION
+             * @brief The versions of the HTTP protocols.
+             */
+            enum HTTP_VERSION : uint16_t {
+                UNKNOWN = 0, HTTP1_1 = 1, HTTP2_0 = 2
+            };
 
 
-        // HTTP/1.1 implementation.
-        class HTTP1_1 : public virtual __HTTP_Interface {
-        private:
+            /**
+             * @class HttpHeader Http.hpp "include/analyzer/Http.hpp"
+             * @brief HTTP/1.1 and HTTP/2.0 headers.
+             */
+            class HttpHeader {
 
 
-        public:
-            // Constructor.
-            explicit HTTP1_1 (void * /*data*/, const std::size_t /*length*/);
 
-            // Parsing the HTTP/1.1 header.
-            void ParseHeader(void) override final;
+            };
 
-            // Destructor.
-            ~HTTP1_1(void);
-        };
 
-    }  // namespace http.
+            /**
+             * @class http Http.hpp "include/analyzer/Http.hpp"
+             * @brief HTTP/1.1 and HTTP/2.0 implementations.
+             */
+            class http : virtual public ProtocolLayer {
+            private:
+
+
+            public:
+                /**
+                 * @fn explicit http (void *, const std::size_t, HTTP_VERSION);
+                 * @brief Constructor of HTTP protocol class.
+                 * @param [in] data - The raw data from the socket.
+                 * @param [in] length - The size of the raw data in bytes.
+                 * @param [in] HTTP_VERSION - The version of the considered protocol.
+                 */
+                explicit http (void * /*data*/, const std::size_t /*length*/, HTTP_VERSION /*version*/);
+                /**
+                 * @fn explicit http (const std::string &, HTTP_VERSION);
+                 * @brief Constructor of HTTP protocol class.
+                 * @param [in] data - The raw data from the socket.
+                 * @param [in] HTTP_VERSION - The version of the considered protocol.
+                 */
+                explicit http (const std::string & /*data*/, HTTP_VERSION /*version*/);
+
+                // Parsing the HTTP/1.1 and HTTP/2.0 header.
+                void ParseHeader(void) override final;
+
+                // Destructor.
+                ~http(void);
+            };
+
+        }  // namespace http.
+    }  // namespace protocol.
 }  // namespace analyzer.
 
 

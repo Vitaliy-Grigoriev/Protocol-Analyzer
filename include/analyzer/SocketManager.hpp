@@ -79,7 +79,7 @@ namespace analyzer {
         public:
             static const std::size_t fpos = SIZE_MAX;
             // Constructor.
-            NonBlockSocketManager();
+            NonBlockSocketManager(void);
 
             // Adding a new connection to the pool.
             pthread_t Add (const char *      /*host*/,
@@ -92,7 +92,7 @@ namespace analyzer {
             // Wait thread by descriptor.
             void Wait (const pthread_t /*fd*/) const;
             // Wait all threads.
-            void WaitAll() const;
+            void WaitAll(void) const;
 
             data_t GetData (const pthread_t /*fd*/) const;
 
@@ -100,7 +100,7 @@ namespace analyzer {
             void SetTimeout (const uint32_t /*time*/);
 
             // Destructor.
-            ~NonBlockSocketManager();
+            ~NonBlockSocketManager(void);
         };
 
     } // namespace net.

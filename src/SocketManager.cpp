@@ -3,10 +3,12 @@
 
 #include "../include/analyzer/SocketManager.hpp"
 
+#include <iostream> //..DEBUG...ONLY..
+
 namespace analyzer {
     namespace net {
 
-        NonBlockSocketManager::NonBlockSocketManager()
+        NonBlockSocketManager::NonBlockSocketManager(void)
                 : timeout(DEFAULT_TIMEOUT)
         { }
 
@@ -121,7 +123,7 @@ namespace analyzer {
         }
 
 
-        void NonBlockSocketManager::WaitAll() const
+        void NonBlockSocketManager::WaitAll(void) const
         {
             for (auto&& it : hosts) {
                 int32_t result = pthread_join(it.first, nullptr);
@@ -163,7 +165,7 @@ namespace analyzer {
 
 
         // Destructor.
-        NonBlockSocketManager::~NonBlockSocketManager() {
+        NonBlockSocketManager::~NonBlockSocketManager(void) {
             for (auto&& it : hosts) {
                 delete it.second;
             }

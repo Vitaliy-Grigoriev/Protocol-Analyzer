@@ -4,25 +4,27 @@
 #include "../include/analyzer/Http.hpp"
 
 namespace analyzer {
-    namespace http {
+    namespace protocol {
+        namespace http {
 
-        // Constructor.
-        HTTP1_1::HTTP1_1 (void* data, const std::size_t length)
-        { }
+            http::http (void* data, const std::size_t length, HTTP_VERSION version)
+            {
+                const char* iterator = static_cast<const char*>(data);
+            }
+
+            http::http (const std::string& data, HTTP_VERSION version)
+            { }
+
+            void http::ParseHeader(void)
+            { }
+
+            http::~http(void)
+            { }
 
 
-        // Parsing the HTTP/1.1 header.
-        void HTTP1_1::ParseHeader(void)
-        { }
+        }  // namespace http.
 
+        ProtocolLayer::~ProtocolLayer(void) { }
 
-        // Destructor.
-        HTTP1_1::~HTTP1_1(void)
-        { }
-
-
-        __HTTP_Interface::~__HTTP_Interface(void)
-        { }
-
-    }  // namespace http.
+    }  // namespace protocol.
 }  // namespace analyzer.

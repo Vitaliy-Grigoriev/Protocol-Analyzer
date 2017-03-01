@@ -1,18 +1,22 @@
-#pragma once
-#ifndef HTTP2_ANALYZER_TIMER_HPP
-#define HTTP2_ANALYZER_TIMER_HPP
-
-
 #include <ratio>
 #include <chrono>
 #include <fstream>
 #include <cstdint>
 
 
+#pragma once
+#ifndef HTTP2_ANALYZER_TIMER_HPP
+#define HTTP2_ANALYZER_TIMER_HPP
+
+
 namespace analyzer {
+    /**
+     * @namespace diagnostic
+     * @brief The namespace that contain definitions of diagnostic tools.
+     */
     namespace diagnostic {
         /**
-         * @class Timer timer.hpp "include/timer.hpp"
+         * @class Timer timer.hpp "include/analyzer/timer.hpp"
          * @brief Class that check the performance.
          */
         class Timer
@@ -31,7 +35,7 @@ namespace analyzer {
 
         public:
             /**
-             * @class Count timer.hpp "include/timer.hpp"
+             * @class Count timer.hpp "include/analyzer/timer.hpp"
              * @brief Class that contain the internal values of Timer class.
              */
             class Count {
@@ -57,11 +61,11 @@ namespace analyzer {
                 /**
                  * @fn template <typename T> typename T::rep GetTime() const;
                  * @brief Function that returns the time in the corresponding form.
-                 * @tparam T - The object of the std::chrono::duration.
+                 * @tparam [in] T - The object of the std::chrono::duration.
                  * @return Return the time value in the various form.
                  */
                 template <typename T>
-                typename T::rep GetTime() const
+                typename T::rep GetTime(void) const
                 {
                     using std::chrono::duration_cast;
                     if (state) {
