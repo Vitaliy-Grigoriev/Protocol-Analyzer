@@ -1,12 +1,8 @@
 #include <mutex>
 #include <chrono>
-#include <memory>
-#include <sstream>
 #include <iomanip>
 #include <cstdint>
 #include <fstream>
-#include <iostream>
-#include <unordered_map>
 
 
 #pragma once
@@ -22,6 +18,10 @@
 
 
 namespace analyzer {
+    /**
+     * @namespace log
+     * @brief The namespace that contain definition of logging and error classes.
+     */
     namespace log {
         /**
          * @var extern std::mutex log_mutex;
@@ -30,7 +30,7 @@ namespace analyzer {
         extern std::mutex log_mutex;
 
         /**
-         * @class StrSysError Log.hpp "include/Log.hpp"
+         * @class StrSysError Log.hpp "include/analyzer/Log.hpp"
          * @brief This singleton class defined the interface of receipt an system error.
          *
          * This singleton class is thread-safe.
@@ -39,11 +39,6 @@ namespace analyzer {
         class StrSysError
         {
         private:
-            /**
-             * @var static std::mutex error_mutex;
-             * @brief A internal class value for synchronize threads.
-             */
-            static std::mutex error_mutex;
             /**
              * @var static StrSysError * volatile pInstance;
              * @brief The main instance of singleton StrSysError class.
@@ -60,7 +55,7 @@ namespace analyzer {
              * @fn StrSysError::StrSysError(void);
              * @brief Protect constructor.
              */
-            StrSysError(void) = default;
+            StrSysError(void);
             /**
              * @fn StrSysError::~StrSysError(void);
              * @brief Protect destructor.

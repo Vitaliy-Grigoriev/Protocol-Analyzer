@@ -3,24 +3,39 @@
 
 #include "../include/analyzer/Log.hpp"
 
+#include <unordered_map>
+
 namespace analyzer {
     namespace log {
 
+
         std::mutex log_mutex = { };
+        /**
+          * @var static std::mutex init_mutex;
+          * @brief A one time mutex value for synchronize threads.
+          */
+        static std::mutex init_mutex = { };
+        /**
+          * @var static std::unordered_map<int32_t, std::string> errors;
+          * @brief Container that consist of the string definitions of system errors.
+          */
         static std::unordered_map<int32_t, std::string> errors;
 
+        /**
+          * @fn static void SetErrorStrings(void) noexcept;
+          * @brief Function that fills the container of the system error values.
+          */
         static void SetErrorStrings(void) noexcept;
 
-        std::mutex StrSysError::error_mutex = { };
         StrSysError * volatile StrSysError::pInstance { nullptr };
 
+        StrSysError::StrSysError(void) { SetErrorStrings(); }
 
         StrSysError* StrSysError::Instance(void)
         {
             if (pInstance == nullptr) {
-                std::lock_guard<std::mutex> lock(error_mutex);
+                std::lock_guard<std::mutex> lock(init_mutex);
                 if (pInstance == nullptr) {
-                    SetErrorStrings();
                     pInstance = new StrSysError();
                 }
             }
@@ -30,10 +45,7 @@ namespace analyzer {
 
         std::string StrSysError::operator() (const int32_t error) noexcept
         {
-            error_mutex.lock();
-            auto it = errors.find(error);
-            error_mutex.unlock();
-
+            const auto it = errors.find(error);
             if (it != errors.end()) { return (*it).second; }
             return std::string("Unknown error (" + std::to_string(error) + ").");
         }
