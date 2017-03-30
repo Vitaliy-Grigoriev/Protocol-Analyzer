@@ -7,11 +7,12 @@
 </a>
 
 <h3><b>The framework in the deep development.</b> Version 0.0.3.</h3>
-------------
+--------------
 
 <h3><b>Requirements</b></h3>
 
 The following package is required to build the http2-analyzer library:
 
 * OpenSSL >= 1.0.2h
+* Compiler that support C++17 (clang 4.0.0 by default in CMake).
 
