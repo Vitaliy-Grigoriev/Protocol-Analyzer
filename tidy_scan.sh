@@ -2,7 +2,7 @@
 
 if [ $# -lt 1 ]
 then
- echo "Error in input parameters."
+ clang-tidy src/*.cpp -checks=*,-google-default-arguments,-modernize-redundant-void-arg,-llvm-include-order -- -std=c++14 -Iinclude -I/usr/include
  exit 0
 fi
 
@@ -26,6 +26,18 @@ fi
 
 if [ $1 -eq 4 ]
 then
-clang-tidy src/SocketManager.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude -I/usr/include
+clang-tidy src/Task.cpp src/TaskManager.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude -I/usr/include
+exit 0
+fi
+
+if [ $1 -eq 5 ]
+then
+clang-tidy src/Common src/Utilities.cpp src/Timer.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude -I/usr/include
+exit 0
+fi
+
+if [ $1 -eq 6 ]
+then
+clang-tidy src/Protocol.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude -I/usr/include
 exit 0
 fi

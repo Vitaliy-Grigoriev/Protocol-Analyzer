@@ -1,13 +1,26 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <map>
 #include <iostream>
+
 #include "../include/analyzer/Api.hpp"
 
 
-int main ()
+int main(void)
 {
-    analyzer::net::SocketSSL sock;
+    const std::string host = "habrahabr.ru";
+    const auto protos = analyzer::utility::CheckSupportedTLSProtocols(host);
+    if (protos.empty() == false)
+    {
+        std::cout << "Find next protocols on the host (" << host << "): " << std::endl;
+        for (auto&& p : protos) {
+            std::cout << p << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    analyzer::net::SocketSSL sock(SSL_METHOD_TLS12, nullptr, DEFAULT_TIMEOUT_SSL);
     if (sock.IsError()) {
         std::cout << "Socket fail..." << std::endl;
         return EXIT_FAILURE;
@@ -22,7 +35,7 @@ int main ()
         return EXIT_FAILURE;
     }
 
-    sock.Connect("habrahabr.ru");
+    sock.Connect(host.c_str());
     if (sock.IsError()) {
         std::cout << "Connection fail..." << std::endl;
         return EXIT_FAILURE;
@@ -44,7 +57,6 @@ int main ()
         return EXIT_FAILURE;
     }
     std::cout << "Receiving data length: " << len << std::endl;
-    analyzer::log::DbgHexDump("HTTP hex data of www.google.ru", buff_recv, std::size_t(len), 24);
 
     sock.Close();
     return EXIT_SUCCESS;

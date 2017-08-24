@@ -1,0 +1,82 @@
+{
+    "Protocol":
+    {
+        "ProtocolName": "name",
+        "NetworkSettings":
+        {
+            "Global":
+            {
+                "Transport": "tcp/udp"
+            },
+            "Local":
+            {
+                "Port": 333
+            },
+            "Destination":
+            {
+                "Host": "172.35.29.104",
+                "Port": 444
+            }
+        },
+        "RequestLayers":
+        {
+            "Layer1":
+            {
+                "LayerID": 1,
+                "LayerName": "name",
+	            "Description": "string",
+                "Fields":
+                [
+                    {
+                        "Name": "simple",
+                        "Condition": "optional/required",
+                        "Permission": "const/volatile",
+	                    "Amount": "single/multiple",
+                        "Type": "bool/char/int16/int32/int64/float/double/string",
+                        "Size": 5,
+	                    "Value": "",
+                        "ValidValues":
+                        {
+	                        "Range": "1-65535",
+	                        "Values": [ 52, 37, 307 ],
+	                        "Characters": "a-z, A-S, 1-9"
+	                    },
+                        "Dependence": { "ID": "1", "Type": "size/require" }
+                    },
+                    {
+	                    "Name": "complex",
+	                    "Condition": "optional/required",
+	                    "Amount": "single/multiple",
+	                    "Type": "multiple",
+	                    "Definition":
+	                    [
+		                    {
+			                    "Index": 1,
+			                    "Permission": "const",
+			                    "Type": "bool/char/int16/int32/int64/float/double/string",
+			                    "Size": 2
+		                    },
+		                    {
+			                    "Index": 2,
+			                    "Permission": "volatile",
+			                    "Type": "bool/char/int16/int32/int64/float/double/string",
+			                    "Size": 4
+		                    }
+	                    ],
+	                    "Size": 6,
+	                    "ValidValues": [ "value1", "value2" ],
+	                    "Dependence": { "ID": "1", "Type": "size/require" }
+                    }
+                ]
+            },
+            "Layer2":
+            {
+
+            }
+        },
+        "ResponseLayers":
+        {
+
+        }
+    }
+}

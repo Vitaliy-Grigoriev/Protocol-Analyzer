@@ -1,12 +1,11 @@
+#pragma once
+#ifndef HTTP2_ANALYZER_TIMER_HPP
+#define HTTP2_ANALYZER_TIMER_HPP
+
 #include <ratio>
 #include <chrono>
 #include <fstream>
 #include <cstdint>
-
-
-#pragma once
-#ifndef HTTP2_ANALYZER_TIMER_HPP
-#define HTTP2_ANALYZER_TIMER_HPP
 
 
 namespace analyzer {
@@ -21,6 +20,7 @@ namespace analyzer {
          */
         class Timer
         {
+        private:
             typedef std::chrono::duration<std::size_t, std::nano>   nano_t;
             typedef std::chrono::duration<std::size_t, std::micro>  micro_t;
             typedef std::chrono::duration<std::size_t, std::milli>  milli_t;
@@ -59,13 +59,13 @@ namespace analyzer {
                 bool state = false;
 
                 /**
-                 * @fn template <typename T> typename T::rep GetTime() const;
+                 * @fn template <typename T> typename T::rep GetTime() const noexcept;
                  * @brief Function that returns the time in the corresponding form.
                  * @tparam [in] T - The object of the std::chrono::duration.
                  * @return Return the time value in the various form.
                  */
                 template <typename T>
-                typename T::rep GetTime(void) const
+                typename T::rep GetTime(void) const noexcept
                 {
                     using std::chrono::duration_cast;
                     if (state) {
@@ -75,26 +75,26 @@ namespace analyzer {
                 }
 
             public:
-                std::size_t NanoSeconds(void) const;
-                std::size_t MicroSeconds(void) const;
-                std::size_t MilliSeconds(void) const;
-                double Seconds(void) const;
-                double Minutes(void) const;
-                double Hours(void) const;
+                std::size_t NanoSeconds(void) const noexcept;
+                std::size_t MicroSeconds(void) const noexcept;
+                std::size_t MilliSeconds(void) const noexcept;
+                double Seconds(void) const noexcept;
+                double Minutes(void) const noexcept;
+                double Hours(void) const noexcept;
 
                 /**
-                 * @fn friend std::ostream & operator<< (std::ostream& out, const Count& in);
+                 * @fn friend std::ostream & operator<< (std::ostream& out, const Count& in) noexcept;
                  * @brief An overloaded operator in the output stream.
                  * @param [out] out - The object of the 'std::ostream &' type.
                  * @param [in] in - The object of the 'const Count &' type.
                  * @return Return the value of time in seconds.
                  */
-                friend std::ostream & operator<< (std::ostream& out, const Count& in) {
+                friend std::ostream & operator<< (std::ostream& out, const Count& in) noexcept {
                     out << in.Seconds();
                     return out;
                 }
-                operator double(void) const;
-                operator size_t(void) const;
+                explicit operator double(void) const noexcept;
+                explicit operator size_t(void) const noexcept;
             };
 
         private:
@@ -104,50 +104,50 @@ namespace analyzer {
              */
             Count count = { };
             /**
-             * @fn static inline std::chrono::time_point GetCurrentTime(void) const;
+             * @fn static inline std::chrono::time_point GetCurrentTime(void) const noexcept;
              * @brief Function that returns current time in ticks.
              * @return The current time in process ticks.
              */
-            static inline timepoint_t GetCurrentTime(void) {
+            static inline timepoint_t GetCurrentTime(void) noexcept {
                 return std::chrono::high_resolution_clock::now();
             }
 
         public:
             /**
-             * @fn explicit Timer (bool = false);
+             * @fn explicit Timer (bool = false) noexcept;
              * @brief Constructor of Timer diagnostic class.
              * @param [in] start - Flag that indicate start the timer when constructor call or not.
              */
-            explicit Timer (bool /*start*/ = false);
+            explicit Timer (bool /*start*/ = false) noexcept;
             /**
              * @fn void Start(void);
              * @brief Function that starts the timer.
              */
-            void Start(void);
+            void Start(void) noexcept;
             /**
-             * @fn Timer & Pause(void);
+             * @fn Timer & Pause(void) noexcept;
              * @brief Function that pauses the timer.
              * @return Timer - A reference to the Timer class.
              */
-            Timer & Pause(void);
+            Timer & Pause(void) noexcept;
             /**
-             * @fn Timer::Count & PauseGetCount(void);
+             * @fn Timer::Count & PauseGetCount(void) noexcept;
              * @brief Function that pauses the timer and return a process ticks.
              * @return Timer::Count - A reference of the Count class.
              */
-            Timer::Count & PauseGetCount(void);
+            Timer::Count & PauseGetCount(void) noexcept;
             /**
-             * @fn void Reset (bool = false);
+             * @fn void Reset (bool = false) noexcept;
              * @brief Function that resets the timer and starts it if needed.
              * @param [in] start - Flag that indicate start the timer when constructor call or not.
              */
-            void Reset (bool /*start*/ = false);
+            void Reset (bool /*start*/ = false) noexcept;
             /**
-             * @fn const Timer::Count & GetCount(void) const;
+             * @fn const Timer::Count & GetCount(void) const noexcept;
              * @brief Function that returns the reference of the Count class.
              * @return Timer::Count - A reference of the Count class.
              */
-            const Timer::Count & GetCount(void) const;
+            const Timer::Count & GetCount(void) const noexcept;
             /**
              * @fn ~Timer(void) = default;
              * @brief Destructor of Timer diagnostic class.
