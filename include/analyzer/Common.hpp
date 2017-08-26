@@ -2,10 +2,10 @@
 #ifndef HTTP2_ANALYZER_COMMON_HPP
 #define HTTP2_ANALYZER_COMMON_HPP
 
-
 #include <limits>
 #include <random>
 #include <memory>
+#include <chrono>
 #include <sstream>
 #include <cstring>
 #include <cstdint>
@@ -13,8 +13,6 @@
 #include <exception>
 #include <algorithm>
 #include <type_traits>
-
-#include "Log.hpp"
 
 
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
@@ -35,8 +33,7 @@ namespace analyzer::common
         try {
             return std::make_unique<T>();
         }
-        catch (std::exception& err) {
-            log::SysLog("[error] alloc_memory: Occur following error - '", err.what(), "'.");
+        catch (std::exception& /*err*/) {
             return nullptr;
         }
     }
@@ -57,8 +54,7 @@ namespace analyzer::common
             memcpy(mem.get(), data, size);
             return mem;
         }
-        catch (std::exception& err) {
-            LOG_ERROR("alloc_memory: Occur following error - '", err.what(), "'.");
+        catch (std::exception& /*err*/) {
             return nullptr;
         }
     }
@@ -126,6 +122,14 @@ namespace analyzer::common
      * @return The vector of string values.
      */
     std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
+
+
+    /**
+     * @fn std::string clockToString (std::chrono::system_clock::time_point) noexcept;
+     * @brief Function that convert time point to calendar datetime in string format.
+     * @return Calendar datetime in string format.
+     */
+    std::string clockToString (std::chrono::system_clock::time_point /*time*/) noexcept;
 
 
     template <typename T = char>

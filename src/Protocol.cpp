@@ -5,8 +5,6 @@
 
 #include "../include/analyzer/Log.hpp"
 #include "../include/analyzer/Socket.hpp"
-#include "../include/analyzer/Common.hpp"
-#include "../include/analyzer/Protocol.hpp"
 
 
 #define MAX_URL_LENGTH 2048 // Microsoft Internet Explorer
@@ -33,7 +31,7 @@ namespace analyzer::net::protocols
             }
             else {
                 isErrorOccur = true;
-                log::DbgLog("[error] ParseURI: Incorrect input link - '", link, "'.");
+                LOG_ERROR("ParseURI: Incorrect input link - '", link, "'.");
                 return;
             }
 
@@ -47,7 +45,7 @@ namespace analyzer::net::protocols
 
         }
         isErrorOccur = true;
-        log::DbgLog("[error] ParseURI: The input link has zero length.");
+        LOG_ERROR("ParseURI: The input link has zero length.");
     }
 
     ParseURI::ParseURI (const std::string& link)

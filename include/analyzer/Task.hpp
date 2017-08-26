@@ -2,13 +2,13 @@
 #ifndef HTTP2_ANALYZER_TASK_HPP
 #define HTTP2_ANALYZER_TASK_HPP
 
-
 #include <mutex>
 #include <atomic>
 #include <vector>
 #include <pthread.h>
 #include <unordered_map>
 
+#include "Log.hpp"
 #include "Common.hpp"
 
 
@@ -22,55 +22,63 @@ namespace analyzer::task
      */
     enum TASK_STATES : uint32_t
     {
-        TASK_STATE_ERROR = 0,        // This state set if the task finished with error and wait for return the result.
-        TASK_STATE_TIMEOUT = 1,      // This state set if timeout expired (after that the id live 5 seconds).
-        TASK_STATE_SKIP = 2,         // This state set if anyone skip the task.
-        TASK_STATE_INIT = 3,         // This state set in constructor.
-        TASK_STATE_IN_PROGRESS = 4,  // This state set in start function before start new thread with task.
-        TASK_STATE_PENDING = 5,      // This state set in thread after the task finished and wait for return the result.
-        TASK_STATE_FINISHED = 6      // This state set in wait functions after the result was returned.
+        TASK_STATE_IDLE = 0,         // This state set if the task has not started yet.
+        TASK_STATE_ERROR = 1,        // This state set if the task finished with error and wait for return the result.
+        TASK_STATE_TIMEOUT = 2,      // This state set if timeout expired (after that the id live 5 seconds).
+        TASK_STATE_SKIP = 3,         // This state set if anyone skip the task.
+        TASK_STATE_INIT = 4,         // This state set in initializing function.
+        TASK_STATE_IN_PROGRESS = 5,  // This state set in start function before start new thread with task.
+        TASK_STATE_PENDING = 6,      // This state set in thread after the task finished and wait for return the result.
+        TASK_STATE_FINISHED = 7      // This state set in wait functions after the result was returned.
     };
 
     /**
-      * @class Context Task.hpp "include/analyzer/Task.hpp"
+      * @class TaskContext Task.hpp "include/analyzer/Task.hpp"
       * @brief The context of the new task that determines its status and needed values.
-      * @note The worker thread must be lock the mutex 'work_t' on the start and unlock it on the finish.
       */
-    class Context
+    class TaskContext
     {
     private:
         const std::string workerName;
-        mutable time::time_point start_time;
+        mutable time::time_point startTime;
         std::atomic<std::chrono::seconds> timeout;
         std::atomic<uint32_t> status;
         std::atomic<int32_t> exitCode;
 
     public:
-        Context (Context &&) = delete;
-        Context (const Context &) = delete;
-        Context & operator= (Context &&) = delete;
-        Context & operator= (const Context &) = delete;
+        TaskContext (TaskContext &&) = delete;
+        TaskContext (const TaskContext &) = delete;
+        TaskContext & operator= (TaskContext &&) = delete;
+        TaskContext & operator= (const TaskContext &) = delete;
 
 
-        explicit Context (const std::string& name, uint32_t time_out = DEFAULT_TIMEOUT_TASK_THREAD) noexcept
-                : workerName(name), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_INIT), exitCode(0)
+        explicit TaskContext (const std::string& name, uint32_t time_out = DEFAULT_TIMEOUT_TASK_THREAD) noexcept
+                : workerName(name), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_IDLE), exitCode(0)
         { }
 
         inline std::string GetWorkerName(void) const noexcept { return workerName; }
 
-        inline void SetStartTime(time::time_point start) noexcept { start_time = start; }
-        inline time::time_point GetStartTime(void) const noexcept { return start_time; }
+        inline void SetStartTime(time::time_point start) noexcept
+        {
+            startTime = start;
+            LOG_TRACE("TaskContext.SetStartTime: Task '", workerName, "' start time: ", common::clockToString(startTime), '.');
+        }
+        inline time::time_point GetStartTime(void) const noexcept { return startTime; }
 
         inline void SetTimeOut (std::chrono::seconds new_timeout) noexcept { timeout.store(new_timeout, std::memory_order_release); }
         inline std::chrono::seconds GetTimeOut(void) const noexcept { return timeout.load(std::memory_order_acquire); }
 
-        inline void SetStatus (const uint32_t new_status) noexcept { status.store(new_status, std::memory_order_seq_cst); }
+        inline void SetStatus (const uint32_t new_status) noexcept
+        {
+            status.store(new_status, std::memory_order_seq_cst);
+            LOG_TRACE("TaskContext.SetStatus: Task '", workerName, "' changed status: ", status.load(std::memory_order_seq_cst), '.');
+        }
         inline uint32_t GetStatus(void) const noexcept { return status.load(std::memory_order_seq_cst); }
 
         inline void SetExitCode (const int32_t new_code) noexcept { exitCode.store(new_code, std::memory_order_relaxed); }
         inline int32_t GetExitCode(void) const noexcept { return exitCode.load(std::memory_order_relaxed); }
 
-        virtual ~Context(void);
+        virtual ~TaskContext(void);
     };
 
     /**
@@ -88,15 +96,15 @@ namespace analyzer::task
      */
     class TaskManager
     {
-        using task_value_t = std::pair<pthread_t, Context *>;
+        using task_value_t = std::pair<pthread_t, TaskContext *>;
 
     private:
         /**
-         * @class PoolID Task.hpp "include/analyzer/Task.hpp"
+         * @class ThreadPool Task.hpp "include/analyzer/Task.hpp"
          * @brief This class defined the work with pool of thread IDs.
          * @note It is the internal class of TaskManager class.
          */
-        class PoolID
+        class ThreadPool
         {
             friend class TaskManager;
 
@@ -106,13 +114,13 @@ namespace analyzer::task
             std::unordered_map<std::size_t, task_value_t> id_set = { };
 
         public:
-            PoolID(void) = default;
-            ~PoolID(void) = default;
+            ThreadPool(void) = default;
+            ~ThreadPool(void) = default;
 
-            PoolID (PoolID &&) = delete;
-            PoolID (const PoolID &) = delete;
-            PoolID & operator= (PoolID &&) = delete;
-            PoolID & operator= (const PoolID &) = delete;
+            ThreadPool (ThreadPool &&) = delete;
+            ThreadPool (const ThreadPool &) = delete;
+            ThreadPool & operator= (ThreadPool &&) = delete;
+            ThreadPool & operator= (const ThreadPool &) = delete;
 
 
             std::size_t AddID (const task_value_t & /*value*/) noexcept;
@@ -125,7 +133,7 @@ namespace analyzer::task
 
     private:
         pthread_t manager_thread_id;
-        PoolID pool = { };
+        ThreadPool pool = { };
 
     public:
         TaskManager (TaskManager &&) = delete;
@@ -137,7 +145,7 @@ namespace analyzer::task
         TaskManager(void) noexcept;
 
         // Adding a new task to the pool.
-        std::size_t AddTask (Worker * /*worker*/, Context * /*context*/) noexcept;
+        std::size_t AddTask (Worker * /*worker*/, TaskContext * /*context*/) noexcept;
         // Skip the task.
         void SkipTask (std::size_t /*fd*/) noexcept;
 

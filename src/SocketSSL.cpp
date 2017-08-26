@@ -1,7 +1,6 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/analyzer/Common.hpp"
 #include "../include/analyzer/Socket.hpp"
 
 
@@ -276,8 +275,8 @@ namespace analyzer::net
 #if ( defined(DEBUG) )
         std::ostringstream buff;
         const auto result = common::split(secure, ';');
-        std::copy(result.begin(), result.end(), std::ostream_iterator<std::string>(buff, "\n\t\t\t\t"));
-        LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting following ciphers:\n\t\t\t\t", buff.str());
+        std::copy(result.begin(), result.end(), std::ostream_iterator<std::string>(buff, "\n|-----------------\n|"));
+        LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting following ciphers:\n|-----------------\n|", buff.str());
 #endif
         return true;
     }

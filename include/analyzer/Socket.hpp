@@ -3,6 +3,7 @@
 #define HTTP2_ANALYZER_SOCKET_HPP
 
 #include <list>
+#include <atomic>
 #include <cerrno>
 #include <string>
 #include <cstring>
@@ -18,6 +19,7 @@
 
 #include "Log.hpp"
 #include "Http.hpp"
+#include "Common.hpp"
 
 
 #define TCPv4 1
@@ -41,7 +43,9 @@
 
 #define DEFAULT_TIMEOUT      5    // sec.
 #define DEFAULT_TIMEOUT_SSL  7    // sec.
+
 #define DEFAULT_TIME_SIGWAIT (-1) // milli sec.
+#define MAXIMUM_SOCKET_DESCRIPTORS 1024 // Maximum descriptors for epoll_wait().
 
 #define DEFAULT_RECEIVE_CHUNK 100 // Chunk part for receive massage.
 
@@ -54,6 +58,90 @@ namespace analyzer::net
       * @brief The type of the complete functor in Socket.Recv method.
       */
     using CompleteFunctor = bool (*) (const char *, std::size_t);
+
+
+    /**
+     * @class SocketStatePool Socket.hpp "include/analyzer/Socket.hpp"
+     * @brief This singleton class defined the interface of checking the status of socket descriptors.
+     * @note You must delete socket descriptor after you do not need it anymore.
+     *
+     * This singleton class is thread-safe.
+     */
+    class SocketStatePool
+    {
+    private:
+        /**
+         * @var int32_t epoll_fd;
+         * @brief The Epoll descriptor.
+         * @note Epoll is thread-safe.
+         */
+        int32_t epoll_fd = INVALID_SOCKET;
+
+        /**
+         * @var struct epoll_event * events;
+         * @brief The Epoll event structures.
+         * @note The size of this structures defined as MAXIMUM_SOCKET_DESCRIPTORS.
+         */
+        std::unique_ptr<struct epoll_event[]> events = nullptr;
+
+        /**
+         * @var std::atomic<uint16_t> countOfDescriptors;
+         * @brief The number of all socket descriptors under observation.
+         */
+        std::atomic<uint16_t> countOfDescriptors = 0;
+
+    protected:
+        /**
+         * @fn SocketStatePool(void);
+         * @brief Protect constructor.
+         */
+        SocketStatePool(void) noexcept;
+
+        /**
+         * @fn ~SocketStatePool(void) = default;
+         * @brief Protect default destructor.
+         */
+        ~SocketStatePool(void) = default;
+
+    public:
+        SocketStatePool (SocketStatePool &&) = delete;
+        SocketStatePool (const SocketStatePool &) = delete;
+        SocketStatePool & operator= (SocketStatePool &&) = delete;
+        SocketStatePool & operator= (const SocketStatePool &) = delete;
+
+        /**
+         * @fn static SocketsStatePool & Instance(void);
+         * @brief Function that return the instance of the singleton class.
+         * @return The instance of singleton class.
+         */
+        static SocketStatePool & Instance(void) noexcept;
+
+        /**
+         * @fn bool AddSocketDescriptor (int32_t, uint32_t);
+         * @brief Function that adding new socket descriptor to epoll set.
+         * @param fd - Socket descriptor.
+         * @param events - One or more EPOLL_EVENTS values.
+         * @return Boolean value that indicate the adding status.
+         */
+        //bool AddSocketDescriptor (int32_t /*fd*/, uint32_t /*events*/);
+
+        /**
+         * @fn bool DeleteSocketDescriptor (int32_t);
+         * @brief Function that remove socket descriptor from epoll set.
+         * @param fd - Socket descriptor.
+         * @return Boolean value that indicate the removal status.
+         */
+        //bool DeleteSocketDescriptor (int32_t /*fd*/);
+
+        /**
+         * @fn uint16_t CheckSocketStatus (int32_t, int32_t);
+         * @brief Function that check socket status.
+         * @param fd - Socket descriptor.
+         * @param timeout - Timeout for waiting descriptor status. Default: unlimited.
+         * @return Boolean value that indicate the removal status.
+         */
+        //uint16_t CheckSocketStatus (int32_t /*fd*/, int32_t /*timeout*/ = DEFAULT_TIME_SIGWAIT);
+    };
 
 
     class Socket

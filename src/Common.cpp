@@ -1,8 +1,8 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-
 #include "../include/analyzer/Common.hpp"
+
 
 namespace analyzer::common
 {
@@ -28,6 +28,14 @@ namespace analyzer::common
         std::vector<std::string> result;
         split(str, delimiter, std::back_inserter(result));
         return result;
+    }
+
+
+    std::string clockToString (std::chrono::system_clock::time_point time) noexcept
+    {
+        using std::chrono::system_clock;
+        time_t currTime = system_clock::to_time_t(time);
+        return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
     }
 
 }  // namespace common.

@@ -10,7 +10,7 @@
 
 namespace analyzer::task
 {
-    Context::~Context(void) = default;
+    TaskContext::~TaskContext(void) = default;
 
 
     void TaskManager::signal_handler (int32_t sig) noexcept
@@ -21,7 +21,7 @@ namespace analyzer::task
     void* TaskManager::ThreadsManager (void* input) noexcept
     {
         LOG_TRACE("TaskManager.ThreadsManager: Thread 'ThreadsManager' started...");
-        const auto pointer = static_cast<TaskManager::PoolID*>(input);
+        const auto pointer = static_cast<TaskManager::ThreadPool*>(input);
         static sigset_t mask;
         sigemptyset(&mask);
         sigaddset(&mask, SIGINT);
@@ -107,19 +107,25 @@ namespace analyzer::task
         if (sig_cont != 0) { LOG_ERROR("TaskManager.TaskManager: In function 'sigaction' with SIGCONT - ", GET_ERROR(sig_cont)); }
     }
 
-    std::size_t TaskManager::AddTask (Worker* const worker, Context* const context) noexcept
+    std::size_t TaskManager::AddTask (Worker* const worker, TaskContext* const context) noexcept
     {
         pthread_t thread_id;
-        context->SetStatus(TASK_STATE_IN_PROGRESS);
+        context->SetStatus(TASK_STATE_INIT);
         context->SetStartTime(std::chrono::system_clock::now());
 
-        const int32_t result = pthread_create(&thread_id, nullptr, *worker, static_cast<void*>(context));
+        int32_t result = pthread_create(&thread_id, nullptr, *worker, static_cast<void*>(context));
         if (result != 0)
         {
             context->SetExitCode(result);
             context->SetStatus(TASK_STATE_ERROR);
             LOG_ERROR("TaskManager.AddTask: In function 'pthread_create' - ", GET_ERROR(result));
             return 0;
+        }
+        context->SetStatus(TASK_STATE_IN_PROGRESS);
+
+        result = pthread_setname_np(thread_id, context->GetWorkerName().c_str());
+        if (result != 0) {
+            LOG_WARNING("TaskManager.AddTask: In function 'pthread_setname_np' - ", GET_ERROR(result));
         }
 
         LOG_INFO("TaskManager.AddTask: Task '", context->GetWorkerName(), "' started.");
@@ -204,11 +210,11 @@ namespace analyzer::task
 
 
 
-    std::size_t TaskManager::PoolID::AddID (const task_value_t& value) noexcept
+    std::size_t TaskManager::ThreadPool::AddID (const task_value_t& value) noexcept
     {
         try { std::lock_guard<std::mutex> lock(work_mutex); }
         catch (const std::system_error& err) {
-            LOG_ERROR("TaskManager.PoolID.AddID: When lock mutex - '", err.what(), "'.");
+            LOG_ERROR("TaskManager.ThreadPool.AddID: When lock mutex - '", err.what(), "'.");
             return 0;
         }
 
@@ -223,22 +229,22 @@ namespace analyzer::task
         return id;
     }
 
-    bool TaskManager::PoolID::RemoveID (const std::size_t value) noexcept
+    bool TaskManager::ThreadPool::RemoveID (const std::size_t value) noexcept
     {
         try { std::lock_guard<std::mutex> lock(work_mutex); }
         catch (const std::system_error& err) {
-            LOG_ERROR("TaskManager.PoolID.RemoveID: When lock mutex - '", err.what(), "'.");
+            LOG_ERROR("TaskManager.ThreadPool.RemoveID: When lock mutex - '", err.what(), "'.");
             return false;
         }
 
         return (id_set.erase(value) != 0);
     }
 
-    const TaskManager::task_value_t& TaskManager::PoolID::FindID (std::size_t identifier) noexcept
+    const TaskManager::task_value_t& TaskManager::ThreadPool::FindID (std::size_t identifier) noexcept
     {
         try { std::lock_guard<std::mutex> lock(work_mutex); }
         catch (const std::system_error& err) {
-            LOG_ERROR("TaskManager.PoolID.FindID: When lock mutex - '", err.what(), "'.");
+            LOG_ERROR("TaskManager.ThreadPool.FindID: When lock mutex - '", err.what(), "'.");
             return *null_task_value_t;
         }
 

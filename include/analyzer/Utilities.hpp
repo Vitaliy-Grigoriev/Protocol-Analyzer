@@ -26,7 +26,7 @@ namespace analyzer::utility
     std::set<std::string> CheckSupportedTLSProtocols (const std::string & /*host*/);
 
 
-}  // namespace analyzer.
+}  // namespace utility.
 
 
 #endif  // HTTP2_ANALYZER_UTILITIES_HPP

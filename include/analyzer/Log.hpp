@@ -2,11 +2,12 @@
 #ifndef HTTP2_ANALYZER_LOG_HPP
 #define HTTP2_ANALYZER_LOG_HPP
 
-
 #include <mutex>
 #include <cstdint>
 #include <fstream>
 #include <exception>
+
+#include "Common.hpp"
 
 
 /**
@@ -97,6 +98,7 @@ namespace analyzer::log
          * @brief Protect constructor.
          */
         StrSysError(void) noexcept;
+
         /**
          * @fn StrSysError::~StrSysError(void) = default;
          * @brief Protect default destructor.
@@ -110,7 +112,7 @@ namespace analyzer::log
         StrSysError & operator= (const StrSysError &) = delete;
 
         /**
-         * @fn static StrSysError & Instance(void);
+         * @fn static StrSysError & StrSysError::Instance(void);
          * @brief Function that return the instance of the system error singleton class.
          * @return The instance of singleton class.
          */
@@ -126,14 +128,7 @@ namespace analyzer::log
     };
 
     /**
-     * @fn std::string __get_time_string(void) noexcept;
-     * @brief Function that return a current time in string format.
-     * @return The string that contains a current time.
-     */
-    std::string __get_time_string(void) noexcept;
-
-    /**
-     * @fn static inline void __output_values (std::ostream &) noexcept
+     * @fn static inline void __output_values (std::ostream &) noexcept;
      * @brief Common function that outputs the data to log file.
      * @param [in] fd - File descriptor for output newline.
      * @note DO NOT USE THIS FUNCTION!
@@ -145,7 +140,7 @@ namespace analyzer::log
     }
 
     /**
-     * @fn template<typename T> static inline void __output_values (std::ostream &, const T &) noexcept
+     * @fn template<typename T> static inline void __output_values (std::ostream &, const T &) noexcept;
      * @brief Common function that outputs the data to log file.
      * @param [in] fd - File descriptor for output.
      * @param [in] value - The current output parameter.
@@ -159,7 +154,7 @@ namespace analyzer::log
     }
 
     /**
-     * @fn template<typename T, typename... Args> void __output_values (std::ostream &, const T &, Args &&...) noexcept
+     * @fn template<typename T, typename... Args> void __output_values (std::ostream &, const T &, Args &&...) noexcept;
      * @brief Common function that outputs the data to log file.
      * @param [in] fd - File descriptor for output.
      * @param [in] value - The current output parameter.
@@ -197,7 +192,7 @@ namespace analyzer::log
         std::ofstream fd("../log/program.log", std::ios::app);
         if (fd.is_open())
         {
-            fd << '[' << __get_time_string() << "]  ---  ";
+            fd << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             switch (level)
             {
                 case LEVEL::TRACE:
@@ -221,37 +216,14 @@ namespace analyzer::log
         }
     }
 
-    /**
-     * @fn template <typename... Args> void DbgLog (Args &&...);
-     * @brief Function that outputs the data to log file in debug mode.
-     * @param [in] args - Any data for logging.
-     */
-    template <typename... Args>
-    void DbgLog (Args&&... args) noexcept
-    {
-#if (defined(DEBUG) || defined(FULLLOG))
-        __common_log(LEVEL::TRACE, std::forward<Args>(args)...);
-#endif
-    }
 
     /**
-     * @fn template <typename... Args> void SysLog (Args &&...);
-     * @brief Function that outputs the data to log file in release mode.
-     * @param [in] args - Any data for logging.
-     */
-    template <typename... Args>
-    void SysLog (Args&&... args) noexcept
-    {
-        __common_log(LEVEL::INFORMATION, std::forward<Args>(args)...);
-    }
-
-    /**
-     * @fn void DbgHexDump (const char *, void *, std::size_t, std::size_t = 16);
+     * @fn void DbgHexDump (const char *, void *, std::size_t, std::size_t);
      * @brief Function that outputs the data to log file in hex dump format.
      * @param [in] message - The first message in log string.
      * @param [in] data - Data data that must be displayed.
      * @param [in] size - The size of this data.
-     * @param [in] line_length - The length of one hex dump string (default length is 16).
+     * @param [in] line_length - The length of one hex dump string. Default: 16.
      */
     void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*line_length*/ = 16);
 

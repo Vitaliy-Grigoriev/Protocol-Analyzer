@@ -18,12 +18,12 @@
                 "Port": 444
             }
         },
-        "RequestLayers":
+        "RequestRounds":
         {
-            "Layer1":
+            "Round1":
             {
-                "LayerID": 1,
-                "LayerName": "name",
+                "RoundID": 1,
+                "RoundName": "name",
 	            "Description": "string",
                 "Fields":
                 [
@@ -69,12 +69,12 @@
                     }
                 ]
             },
-            "Layer2":
+            "Round2":
             {
 
             }
         },
-        "ResponseLayers":
+        "ResponseRounds":
         {
 
         }

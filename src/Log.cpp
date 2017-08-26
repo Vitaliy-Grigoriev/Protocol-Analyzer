@@ -49,14 +49,6 @@ namespace analyzer::log
         return result.str();
     }
 
-    std::string __get_time_string(void) noexcept
-    {
-        using std::chrono::system_clock;
-        time_t time = system_clock::to_time_t(system_clock::now());
-        std::string curr_time = ctime(&time);
-        return curr_time.erase(19, 6).erase(0, 11);
-    }
-
 
     // Need to add three flag: is_offset, is_data, is_upper...
     // Need to add dependency length of the offset from the length of data ().

@@ -71,4 +71,4 @@ namespace analyzer::utility
             return result;
         }
 
-}  // namespace analyzer.
+}  // namespace utility.

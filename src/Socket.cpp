@@ -393,4 +393,32 @@ namespace analyzer::net
         exHost.clear();
     }
 
+
+
+
+    SocketStatePool::SocketStatePool(void) noexcept
+    {
+        events = common::alloc_memory<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
+        if (events == nullptr) {
+            LOG_FATAL("SocketStatePool.SocketStatePool: In function 'alloc_memory'.");
+            std::terminate();
+        }
+
+        epoll_fd = epoll_create1(0);
+        if (epoll_fd == INVALID_SOCKET) {
+            LOG_ERROR("SocketStatePool.SocketStatePool: In function 'epoll_create1' - ", GET_ERROR(errno));
+        }
+    }
+
+
+    SocketStatePool& SocketStatePool::Instance(void) noexcept
+    {
+        // Since it's a static variable, if the class has already been created, its won't be created again.
+        // It's thread-safe in C++11.
+        static SocketStatePool instance;
+        return instance;
+    }
+
+
+
 }  // namespace net.
