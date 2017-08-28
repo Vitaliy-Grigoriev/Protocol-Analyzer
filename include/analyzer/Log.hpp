@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_LOG_HPP
-#define HTTP2_ANALYZER_LOG_HPP
+#ifndef PROTOCOL_ANALYZER_LOG_HPP
+#define PROTOCOL_ANALYZER_LOG_HPP
 
 #include <mutex>
 #include <cstdint>
@@ -229,4 +229,4 @@ namespace analyzer::log
 
 }  // namespace log.
 
-#endif  // HTTP2_ANALYZER_LOG_HPP
+#endif  // PROTOCOL_ANALYZER_LOG_HPP

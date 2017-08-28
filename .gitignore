@@ -33,8 +33,6 @@
 
 #idea
 *.idea
-*.xml
-*.iml
 
 #Folders
 /bin

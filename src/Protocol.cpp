@@ -3,7 +3,7 @@
 
 #include <regex>
 
-#include "../include/analyzer/Log.hpp"
+#include "../include/analyzer/Log.hpp"  // In this header file also defined "Common.hpp".
 #include "../include/analyzer/Socket.hpp"
 
 

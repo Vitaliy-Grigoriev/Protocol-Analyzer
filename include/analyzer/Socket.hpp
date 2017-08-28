@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_SOCKET_HPP
-#define HTTP2_ANALYZER_SOCKET_HPP
+#ifndef PROTOCOL_ANALYZER_SOCKET_HPP
+#define PROTOCOL_ANALYZER_SOCKET_HPP
 
 #include <list>
 #include <atomic>
@@ -17,9 +17,8 @@
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 
-#include "Log.hpp"
+#include "Log.hpp"   // In this header file also defined "Common.hpp".
 #include "Http.hpp"
-#include "Common.hpp"
 
 
 #define TCPv4 1
@@ -326,4 +325,4 @@ namespace analyzer::net
 
 }  // namespace net.
 
-#endif  // HTTP2_ANALYZER_SOCKET_HPP
+#endif  // PROTOCOL_ANALYZER_SOCKET_HPP

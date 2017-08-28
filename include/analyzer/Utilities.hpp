@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_UTILITIES_HPP
-#define HTTP2_ANALYZER_UTILITIES_HPP
+#ifndef PROTOCOL_ANALYZER_UTILITIES_HPP
+#define PROTOCOL_ANALYZER_UTILITIES_HPP
 
 #include <set>
 
@@ -29,4 +29,4 @@ namespace analyzer::utility
 }  // namespace utility.
 
 
-#endif  // HTTP2_ANALYZER_UTILITIES_HPP
+#endif  // PROTOCOL_ANALYZER_UTILITIES_HPP

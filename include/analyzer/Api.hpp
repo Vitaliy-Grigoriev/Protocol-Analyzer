@@ -1,18 +1,18 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_API_HPP
-#define HTTP2_ANALYZER_API_HPP
+#ifndef PROTOCOL_ANALYZER_API_HPP
+#define PROTOCOL_ANALYZER_API_HPP
 
-#define ANALYZER_VERSION_MAJOR 0
-#define ANALYZER_VERSION_MINOR 0
-#define ANALYZER_VERSION_PATCH 5
+#define PROTOCOL_ANALYZER_VERSION_MAJOR 0
+#define PROTOCOL_ANALYZER_VERSION_MINOR 0
+#define PROTOCOL_ANALYZER_VERSION_PATCH 7
 
-#include "Socket.hpp" // In this header file also defined "Common.hpp".
-#include "Http.hpp"   // In this header file also defined "Protocol.hpp".
+#include "Socket.hpp"
+#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
 #include "Task.hpp"
 #include "Utilities.hpp"
 
 
-///////////////////   STRUCTURE OF ANALYZER   ///////////////////
+///////////////////   STRUCTURE OF PROTOCOL ANALYZER   ///////////////////
 /**
  * @namespace analyzer
  * @brief The main namespace that contain definition of analyzer framework.
@@ -25,7 +25,7 @@ namespace analyzer {
     namespace net {
         /**
          * @namespace protocols
-         * @brief The namespace that contain definitions of network protocols.
+         * @brief The namespace that contain definitions of network transports and protocols.
          */
         namespace protocols {
             /**
@@ -66,7 +66,8 @@ namespace analyzer {
      */
     namespace diagnostic {
     }  // namespace diagnostic.
+    
 }  // namespace analyzer.
-///////////////////   STRUCTURE OF ANALYZER   ///////////////////
+///////////////////   STRUCTURE OF PROTOCOL ANALYZER   ///////////////////
 
-#endif  // HTTP2_ANALYZER_API_HPP
+#endif  // PROTOCOL_ANALYZER_API_HPP

@@ -1,10 +1,10 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/analyzer/Log.hpp"
-
 #include <iomanip>
 #include <unordered_map>
+
+#include "../include/analyzer/Log.hpp"
 
 
 namespace analyzer::log
@@ -41,7 +41,7 @@ namespace analyzer::log
     }
 
 
-    static inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true)
+    static inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true) noexcept
     {
         std::ostringstream result;
         if (is_upper) { result.setf(std::ios_base::uppercase); }

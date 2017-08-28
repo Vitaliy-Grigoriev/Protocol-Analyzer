@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_TIMER_HPP
-#define HTTP2_ANALYZER_TIMER_HPP
+#ifndef PROTOCOL_ANALYZER_TIMER_HPP
+#define PROTOCOL_ANALYZER_TIMER_HPP
 
 #include <ratio>
 #include <chrono>
@@ -205,4 +205,4 @@ namespace analyzer::diagnostic
 
 }  // namespace diagnostic.
 
-#endif  // HTTP2_ANALYZER_TIMER_HPP
+#endif  // PROTOCOL_ANALYZER_TIMER_HPP

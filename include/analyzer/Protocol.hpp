@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_PROTOCOL_HPP
-#define HTTP2_ANALYZER_PROTOCOL_HPP
+#ifndef PROTOCOL_ANALYZER_PROTOCOL_HPP
+#define PROTOCOL_ANALYZER_PROTOCOL_HPP
 
 
 namespace analyzer::net::protocols
@@ -63,17 +63,17 @@ namespace analyzer::net::protocols
 
 
     /**
-     * @interface ProtocolLayer ProtocolLayer.hpp "include/analyzer/ProtocolLayer"
+     * @interface Protocol Protocol.hpp "include/analyzer/Protocol.hpp"
      * @brief Interface of application layer protocol.
      */
-    class Protocol {
-    protected:
+    class Protocol
+    {
+    public:
         Protocol (Protocol &&) = delete;
         Protocol (const Protocol &) = delete;
         Protocol & operator= (Protocol &&) = delete;
         Protocol & operator= (const Protocol &) = delete;
 
-    public:
         Protocol(void) = default;
 
         virtual Protocol & SetSettings (void * /*settings*/) = 0;
@@ -88,4 +88,4 @@ namespace analyzer::net::protocols
 }  // namespace protocols.
 
 
-#endif  // HTTP2_ANALYZER_PROTOCOL_HPP
+#endif  // PROTOCOL_ANALYZER_PROTOCOL_HPP

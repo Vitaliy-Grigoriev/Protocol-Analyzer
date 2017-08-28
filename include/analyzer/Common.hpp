@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_COMMON_HPP
-#define HTTP2_ANALYZER_COMMON_HPP
+#ifndef PROTOCOL_ANALYZER_COMMON_HPP
+#define PROTOCOL_ANALYZER_COMMON_HPP
 
 #include <limits>
 #include <random>
@@ -153,4 +153,4 @@ namespace analyzer::common
 
 }  // namespace common.
 
-#endif  // HTTP2_ANALYZER_COMMON_HPP
+#endif  // PROTOCOL_ANALYZER_COMMON_HPP

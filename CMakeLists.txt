@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(http2_analyzer)
+project(protocol_analyzer)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib/)
@@ -35,10 +35,11 @@ add_library(Socket       ${SOCKET_LIB})
 add_library(Protocol     ${PROTOCOL_LIB})
 add_library(Utilities    ${UTILITIES_LIB})
 
-target_link_libraries(Protocol    Logging Common Diagnostic)
+target_link_libraries(Logging     Common)
+target_link_libraries(Protocol    Logging Common)
 target_link_libraries(Socket      ssl crypto Logging Common)
-target_link_libraries(Task        Socket Protocol Diagnostic pthread)
-target_link_libraries(Utilities   Socket Protocol Diagnostic)
+target_link_libraries(Task        pthread Socket Protocol Logging)
+target_link_libraries(Utilities   Socket Protocol)
 
 
 set(SSL_TEST                 test/test_ssl.cpp)

@@ -1,7 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_HTTP_HPP
-#define HTTP2_ANALYZER_HTTP_HPP
-
+#ifndef PROTOCOL_ANALYZER_HTTP_HPP
+#define PROTOCOL_ANALYZER_HTTP_HPP
 
 #include "Protocol.hpp"
 
@@ -72,4 +71,4 @@ namespace analyzer::net::protocols::http
 }  // namespace http.
 
 
-#endif  // HTTP2_ANALYZER_HTTP_HPP
+#endif  // PROTOCOL_ANALYZER_HTTP_HPP

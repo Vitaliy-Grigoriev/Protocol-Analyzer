@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HTTP2_ANALYZER_TASK_HPP
-#define HTTP2_ANALYZER_TASK_HPP
+#ifndef PROTOCOL_ANALYZER_TASK_HPP
+#define PROTOCOL_ANALYZER_TASK_HPP
 
 #include <mutex>
 #include <atomic>
@@ -8,8 +8,7 @@
 #include <pthread.h>
 #include <unordered_map>
 
-#include "Log.hpp"
-#include "Common.hpp"
+#include "Log.hpp"  // In this header file also defined "Common.hpp".
 
 
 namespace analyzer::task
@@ -162,4 +161,4 @@ namespace analyzer::task
 
 }  // namespace task.
 
-#endif  // HTTP2_ANALYZER_TASK_HPP
+#endif  // PROTOCOL_ANALYZER_TASK_HPP
