@@ -30,11 +30,15 @@ namespace analyzer::common
         return result;
     }
 
-
     std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
     {
         time_t currTime = std::chrono::system_clock::to_time_t(time);
-        return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
+        try {
+            return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
+        }
+        catch (std::out_of_range& /*err*/) {
+            return std::string();
+        }
     }
 
 }  // namespace common.

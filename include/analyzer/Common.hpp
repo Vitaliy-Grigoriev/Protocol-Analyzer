@@ -79,21 +79,21 @@ namespace analyzer::common
     /**
      * @fn void trim_left (std::string &);
      * @brief Trim string value from start in place.
-     * @param str [in, out] - Target string.
+     * @param [in,out] str - Target string.
      */
     void trim_left (std::string & /*str*/) noexcept;
 
     /**
      * @fn void trim_right (std::string &);
      * @brief Trim string value from end in place.
-     * @param str [in, out] - Target string.
+     * @param [in,out] str - Target string.
      */
     void trim_right (std::string & /*str*/) noexcept;
 
     /**
      * @fn void trim (std::string &);
      * @brief Trim string value from both ends in place.
-     * @param str [in, out] - Target string.
+     * @param [in,out] str - Target string.
      */
     void trim (std::string & /*str*/) noexcept;
 
@@ -101,9 +101,9 @@ namespace analyzer::common
     /**
      * @fn template<typename Out> void split (const std::string &, char, std::insert_iterator<Out>) noexcept;
      * @brief Split string into a vector of strings using the delimiter.
-     * @param str [in] - Input string.
-     * @param delimiter [in] - Parsing separator.
-     * @param result [in, out] - Back iterator for adding new values.
+     * @param [in] str - Input string.
+     * @param [in] delimiter - Parsing separator.
+     * @param [in,out] result - Back iterator for adding new values.
      */
     template<typename Out>
     void split (const std::string& str, char delimiter, std::back_insert_iterator<Out> result) noexcept
@@ -118,16 +118,16 @@ namespace analyzer::common
     /**
      * @fn std::vector<std::string> split (const std::string &, char) noexcept;
      * @brief Split string into a vector of strings using the delimiter.
-     * @param str [in] - Input string.
-     * @param delimiter [in] - Parsing separator.
+     * @param [in] str - Input string.
+     * @param [in] delimiter - Parsing separator.
      * @return The vector of string values.
      */
     std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
 
-
     /**
      * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;
      * @brief Function that convert time point to calendar datetime in string format.
+     * @param [in] time - The time point in processes clock ticks.
      * @return Calendar datetime in string format.
      */
     std::string clockToString (const std::chrono::system_clock::time_point & /*time*/) noexcept;

@@ -118,8 +118,8 @@ namespace analyzer::net
         /**
          * @fn bool AddSocketDescriptor (int32_t, uint32_t);
          * @brief Function that adding new socket descriptor to epoll set.
-         * @param fd - Socket descriptor.
-         * @param events - One or more EPOLL_EVENTS values.
+         * @param [in] fd - Socket descriptor.
+         * @param [in] events - One or more EPOLL_EVENTS values.
          * @return Boolean value that indicate the adding status.
          */
         //bool AddSocketDescriptor (int32_t /*fd*/, uint32_t /*events*/);
@@ -127,7 +127,7 @@ namespace analyzer::net
         /**
          * @fn bool DeleteSocketDescriptor (int32_t);
          * @brief Function that remove socket descriptor from epoll set.
-         * @param fd - Socket descriptor.
+         * @param [in] fd - Socket descriptor.
          * @return Boolean value that indicate the removal status.
          */
         //bool DeleteSocketDescriptor (int32_t /*fd*/);
@@ -135,8 +135,8 @@ namespace analyzer::net
         /**
          * @fn uint16_t CheckSocketStatus (int32_t, int32_t);
          * @brief Function that check socket status.
-         * @param fd - Socket descriptor.
-         * @param timeout - Timeout for waiting descriptor status. Default: unlimited.
+         * @param [in] fd - Socket descriptor.
+         * @param [in] timeout - Timeout for waiting descriptor status. Default: unlimited.
          * @return Boolean value that indicate the removal status.
          */
         //uint16_t CheckSocketStatus (int32_t /*fd*/, int32_t /*timeout*/ = DEFAULT_TIME_SIGWAIT);
