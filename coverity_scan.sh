@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 1 ]
+if [ "$#" -lt 1 ]
 then
- echo "Error in input parameters!!!"
- exit 0
+ echo "Error in input parameters!"
+ exit "0"
 fi
 
 mkdir check && cd check && cmake -j 4 ..

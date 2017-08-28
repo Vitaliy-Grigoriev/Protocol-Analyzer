@@ -43,7 +43,7 @@ namespace analyzer::net::protocols
 
 
     public:
-        ParseURI (const char * /*link*/, const std::size_t /*size*/);
+        ParseURI (const char * /*link*/, std::size_t /*size*/);
         explicit ParseURI (const std::string & /*link*/);
 
         inline bool IsError(void)  const { return isErrorOccur; }
@@ -78,9 +78,9 @@ namespace analyzer::net::protocols
 
         virtual Protocol & SetSettings (void * /*settings*/) = 0;
 
-        virtual bool IsVerification(void) = 0;
+        virtual bool Verification(void) = 0;
 
-        virtual void ParseHeader(void) = 0;
+        virtual bool ParseHeader(void) = 0;
 
         virtual ~Protocol(void);
     };

@@ -10,10 +10,11 @@ int main(void)
 {
     const std::string host = "www.google.com";
 
-    const auto protos = analyzer::utility::CheckALPNSupportedProtocols(host);
-    if (protos.size() > 0) {
-        std::cout << "Find next protocols on the host (" << host << "): " << std::endl;
-        for (auto &&p : protos) {
+    const auto protocols = analyzer::utility::CheckALPNSupportedProtocols(host);
+    if (protocols.empty() == false)
+    {
+        std::cout << "Find next protocols on the '" << host << "': " << std::endl;
+        for (auto&& p : protocols) {
             std::cout << p << std::endl;
         }
         std::cout << std::endl;

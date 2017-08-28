@@ -31,10 +31,9 @@ namespace analyzer::common
     }
 
 
-    std::string clockToString (std::chrono::system_clock::time_point time) noexcept
+    std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
     {
-        using std::chrono::system_clock;
-        time_t currTime = system_clock::to_time_t(time);
+        time_t currTime = std::chrono::system_clock::to_time_t(time);
         return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
     }
 

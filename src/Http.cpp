@@ -19,8 +19,10 @@ namespace analyzer::net::protocols::http
             : http(static_cast<const void*>(data.data()), data.size(), version)
     { }
 
-    void http::ParseHeader(void)
-    { }
+    bool http::ParseHeader(void)
+    {
+        return true;
+    }
 
     http::~http(void) = default;
 

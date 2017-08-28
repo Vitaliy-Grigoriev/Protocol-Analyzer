@@ -38,6 +38,11 @@ namespace analyzer::net::protocols::http
 
 
     public:
+        http (http &&) = delete;
+        http (const http &) = delete;
+        http & operator= (http &&) = delete;
+        http & operator= (const http &) = delete;
+
         /**
          * @fn http (void *, const std::size_t, HTTP_VERSION = HTTP1_1);
          * @brief Constructor of HTTP protocol class.
@@ -45,21 +50,21 @@ namespace analyzer::net::protocols::http
          * @param [in] length - The size of the raw data in bytes.
          * @param [in] HTTP_VERSION - The version of the considered protocol.
          */
-        http (const void * /*data*/, const std::size_t /*length*/, HTTP_VERSION /*version*/ = HTTP1_1);
+        http (const void * /*data*/, std::size_t /*length*/, HTTP_VERSION /*version*/ = HTTP1_1);
 
         /**
-         * @fn http (const std::string &, HTTP_VERSION);
+         * @fn explicit http (const std::string &, HTTP_VERSION);
          * @brief Constructor of HTTP protocol class.
          * @param [in] data - The raw data from the socket.
          * @param [in] HTTP_VERSION - The version of the considered protocol.
          */
-        http (const std::string & /*data*/, HTTP_VERSION /*version*/ = HTTP1_1);
+        explicit http (const std::string & /*data*/, HTTP_VERSION /*version*/ = HTTP1_1);
 
         /**
-         * @fn void ParseHeader(void) override final;
+         * @fn bool ParseHeader(void) final;
          * @brief Parsing the HTTP/1.1 and HTTP/2.0 header.
          */
-        void ParseHeader(void) override final;
+        bool ParseHeader(void) final;
 
         /**
          * @fn ~http(void);

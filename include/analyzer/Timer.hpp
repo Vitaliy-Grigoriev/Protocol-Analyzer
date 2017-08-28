@@ -141,12 +141,13 @@ namespace analyzer::diagnostic
 
     private:
         /**
-         * @var Count count;
-         * @brief The object of the Count class.
+         * @var TimeCount count;
+         * @brief The object of the TimeCount class.
          */
         TimeCount count = { };
+
         /**
-         * @fn static inline std::chrono::time_point GetCurrentTime(void) const noexcept;
+         * @fn static inline std::chrono::time_point GetCurrentTime(void) noexcept;
          * @brief Function that returns current time in ticks.
          * @return The current time in process ticks.
          */
@@ -155,6 +156,11 @@ namespace analyzer::diagnostic
         }
 
     public:
+        Timer (Timer &&) = delete;
+        Timer (const Timer &) = default;
+        Timer & operator= (Timer &&) = delete;
+        Timer & operator= (const Timer &) = delete;
+
         /**
          * @fn explicit Timer (bool) noexcept;
          * @brief Constructor of Timer diagnostic class.

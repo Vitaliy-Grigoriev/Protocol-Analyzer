@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <type_traits>
 
+// In Common library must not use any another library because it is a core library.
 
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
 
@@ -125,11 +126,11 @@ namespace analyzer::common
 
 
     /**
-     * @fn std::string clockToString (std::chrono::system_clock::time_point) noexcept;
+     * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;
      * @brief Function that convert time point to calendar datetime in string format.
      * @return Calendar datetime in string format.
      */
-    std::string clockToString (std::chrono::system_clock::time_point /*time*/) noexcept;
+    std::string clockToString (const std::chrono::system_clock::time_point & /*time*/) noexcept;
 
 
     template <typename T = char>
