@@ -134,17 +134,34 @@ namespace analyzer::common
 
 
     template <typename T = char>
-    struct data_container
+    class Data
     {
+    private:
         std::unique_ptr<T[]> data = nullptr;
         std::size_t length = 0;
 
-        data_container (T* in, const std::size_t size) noexcept
+    public:
+        Data (T* in, const std::size_t size) noexcept
                 : data(in), length(size)
         { }
-        data_container (std::unique_ptr<T[]>& in, const std::size_t size) noexcept
+        Data (std::unique_ptr<T[]>& in, const std::size_t size) noexcept
                 : data(std::move(in)), length(size)
         { }
+
+        inline std::size_t Size(void) const noexcept
+        {
+            return length;
+        }
+
+        inline T* Get(void) const noexcept
+        {
+            return data.get();
+        }
+
+        inline T* GetAt (std::size_t index) const noexcept
+        {
+            return index < length ? &data[index] : nullptr;
+        }
     };
 
     //const std::regex FindAllHrefs("href\\s*=\\s*[\"']([^\"']+)[\"']", std::regex::icase);
