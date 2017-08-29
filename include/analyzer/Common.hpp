@@ -133,6 +133,10 @@ namespace analyzer::common
     std::string clockToString (const std::chrono::system_clock::time_point & /*time*/) noexcept;
 
 
+    /**
+     * @class Data Common.hpp "include/analyzer/Common.hpp"
+     * @brief Class container that defined the interface to manage anything data.
+     */
     template <typename T = char>
     class Data
     {
@@ -148,17 +152,32 @@ namespace analyzer::common
                 : data(std::move(in)), length(size)
         { }
 
+        /**
+         * @fn inline std::size_t Data::Size(void) const noexcept;
+         * @brief Method that return size of the internal data.
+         * @return Size of the internal data.
+         */
         inline std::size_t Size(void) const noexcept
         {
             return length;
         }
 
+        /**
+         * @fn inline T * Data::Get(void) const noexcept;
+         * @brief Method that return pointer to the internal data.
+         * @return Pointer to the internal data.
+         */
         inline T* Get(void) const noexcept
         {
             return data.get();
         }
 
-        inline T* GetAt (std::size_t index) const noexcept
+        /**
+         * @fn inline T * Data::GetAt (const std::size_t) const noexcept;
+         * @brief Method that return pointer to any shift of the internal data.
+         * @return Pointer to any shift of the internal data.
+         */
+        inline T* GetAt (const std::size_t index) const noexcept
         {
             return index < length ? &data[index] : nullptr;
         }
