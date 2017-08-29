@@ -6,7 +6,7 @@
        src="https://scan.coverity.com/projects/10369/badge.svg"/>
 </a>
 
-<h3><b>The framework in the deep development.</b> Version 0.0.7.</h3>
+<h3><b>The framework under the deep development.</b> Version 0.0.7.</h3>
 --------------
 
 <h3><b>Requirements</b></h3>
