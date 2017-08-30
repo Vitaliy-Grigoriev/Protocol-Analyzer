@@ -30,31 +30,31 @@
 /**
  * @def LOG_TRACE (args...)
  * @brief Marco that output message to the log file with TRACE level attribute.
- * @param [in] args - The sequence of parameters for output to the log file.
+ * @tparam [in] args - The sequence of parameters for output to the log file.
  */
 #define LOG_TRACE(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::TRACE, args))
 /**
  * @def LOG_INFO (args...)
  * @brief Marco that output message to the log file with INFO level attribute.
- * @param [in] args - The sequence of parameters for output to the log file.
+ * @tparam [in] args - The sequence of parameters for output to the log file.
  */
 #define LOG_INFO(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::INFORMATION, args))
 /**
  * @def LOG_WARNING (args...)
  * @brief Marco that output message to the log file with WARNING level attribute.
- * @param [in] args - The sequence of parameters for output to the log file.
+ * @tparam [in] args - The sequence of parameters for output to the log file.
  */
 #define LOG_WARNING(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::WARNING, args))
 /**
  * @def LOG_ERROR (args...)
  * @brief Marco that output message to the log file with ERROR level attribute.
- * @param [in] args - The sequence of parameters for output to the log file.
+ * @tparam [in] args - The sequence of parameters for output to the log file.
  */
 #define LOG_ERROR(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::ERROR, args))
 /**
  * @def LOG_FATAL (args...)
  * @brief Marco that output message to the log file with FATAL level attribute.
- * @param [in] args - The sequence of parameters for output to the log file.
+ * @tparam [in] args - The sequence of parameters for output to the log file.
  */
 #define LOG_FATAL(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::FATAL, args))
 
@@ -143,7 +143,7 @@ namespace analyzer::log
      * @fn template<typename T> static inline void __output_values (std::ostream &, const T &) noexcept;
      * @brief Common function that outputs the data to log file.
      * @param [in] fd - File descriptor for output.
-     * @param [in] value - The current output parameter.
+     * @tparam [in] value - The current output parameter.
      * @note DO NOT USE THIS FUNCTION!
      */
     template<typename T>
@@ -157,8 +157,8 @@ namespace analyzer::log
      * @fn template<typename T, typename... Args> void __output_values (std::ostream &, const T &, Args &&...) noexcept;
      * @brief Common function that outputs the data to log file.
      * @param [in] fd - File descriptor for output.
-     * @param [in] value - The current output parameter.
-     * @param [in] params - Any data for logging.
+     * @tparam [in] value - The current output parameter.
+     * @tparam [in] params - Any data for logging.
      * @note DO NOT USE THIS FUNCTION!
      */
     template<typename T, typename... Args>
@@ -171,7 +171,7 @@ namespace analyzer::log
     /**
      * @fn template <typename... Args> void __common_log (const char *, Args &&...);
      * @brief Common function that outputs the data to log file.
-     * @param [in] params - Any data for logging.
+     * @tparam [in] params - Any data for logging.
      * @note DO NOT USE THIS FUNCTION!
      */
     template <typename... Args>
@@ -220,12 +220,12 @@ namespace analyzer::log
     /**
      * @fn void DbgHexDump (const char *, void *, std::size_t, std::size_t);
      * @brief Function that outputs the data to log file in hex dump format.
-     * @param [in] message - The first message in log string.
-     * @param [in] data - Data data that must be displayed.
-     * @param [in] size - The size of this data.
-     * @param [in] line_length - The length of one hex dump string. Default: 16.
+     * @param [in] message - Message in log string.
+     * @param [in] data - Data that must be displayed in hex format.
+     * @param [in] size - The size of input data.
+     * @param [in] hexLineLength - The length of one hex dump string. Default: 16.
      */
-    void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*line_length*/ = 16);
+    void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*hexLineLength*/ = 16);
 
 }  // namespace log.
 

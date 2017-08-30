@@ -50,29 +50,29 @@ namespace analyzer::log
     }
 
 
-    // Need to add three flag: is_offset, is_data, is_upper...
-    // Need to add dependency length of the offset from the length of data ().
-    void DbgHexDump (const char* message, void* data, std::size_t size, std::size_t line_length)
+    // TODO: Add three flag: is_offset, is_data, is_upper...
+    // TODO: Add dependency length of the offset from the length of data.
+    void DbgHexDump (const char* message, void* data, std::size_t size, std::size_t hexLineLength)
     {
-        if (line_length % 2 == 1) { line_length++; }
-        if (line_length < 8) { line_length = 8; }
-        const std::size_t full_chunks = size / line_length;
-        const std::size_t last_chunk = size % line_length;
-        const std::size_t mean_length = line_length / 2;
+        if (hexLineLength % 2 == 1) { hexLineLength++; }
+        if (hexLineLength < 8) { hexLineLength = 8; }
+        const std::size_t full_chunks = size / hexLineLength;
+        const std::size_t last_chunk = size % hexLineLength;
+        const std::size_t mean_length = hexLineLength / 2;
 
         auto pSource = static_cast<char*>(data);
         const std::size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
-        const std::size_t hex_dump_line_length = 11 + 4 * line_length + 8;
+        const std::size_t hex_dump_line_length = 11 + 4 * hexLineLength + 8;
         const std::size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;
 
         // Make hex dump header (2 lines).
         std::string hex_dump(hex_dump_size, ' ');
         hex_dump.replace(1, 8, "shift  |");
-        for (std::size_t i = 0; i < line_length; ++i) {
+        for (std::size_t i = 0; i < hexLineLength; ++i) {
             if (i < mean_length) { hex_dump.replace(12 + i * 3, 2, get_hex(i, 2)); }
             else { hex_dump.replace(13 + i * 3, 2, get_hex(i, 2)); }
         }
-        hex_dump.replace(line_length * 3 + 17, 4, "data");
+        hex_dump.replace(hexLineLength * 3 + 17, 4, "data");
         hex_dump[hex_dump_line_length - 1] = '\n';
         hex_dump.replace(hex_dump_line_length, hex_dump_line_length - 1, hex_dump_line_length - 1, '-');
         hex_dump[hex_dump_line_length + 8] = '|';
@@ -82,8 +82,8 @@ namespace analyzer::log
         for (std::size_t idx = 0; idx < hex_lines - 2; ++idx)
         {
             const std::size_t line = hex_dump_line_length * (idx + 2);
-            hex_dump.replace(line, 11, get_hex(idx * line_length, 8) + '|');
-            for (std::size_t i = 0; i < line_length && size != 0; ++i)
+            hex_dump.replace(line, 11, get_hex(idx * hexLineLength, 8) + '|');
+            for (std::size_t i = 0; i < hexLineLength && size != 0; ++i)
             {
                 if (i < mean_length) {
                     hex_dump.replace(line + 12 + i * 3, 2, get_hex(static_cast<std::size_t>(*pSource), 2));
@@ -93,18 +93,20 @@ namespace analyzer::log
                 size--;
             }
 
-            const std::size_t hex_data = line_length * 3;
-            pSource -= line_length;
-            size += line_length;
-            for (std::size_t i = 0; i < line_length && size != 0; ++i)
+            const std::size_t hex_data = hexLineLength * 3;
+            pSource -= hexLineLength;
+            size += hexLineLength;
+            for (std::size_t i = 0; i < hexLineLength && size != 0; ++i)
             { // bug with cyrillic symbols...
-                if (i < mean_length) {
+                if (i < mean_length)
+                {
                     if (isprint(static_cast<int32_t>(*pSource)) != 0) {
                         hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
                     } else {
                         hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
                     }
-                } else {
+                } else
+                {
                     if (isprint(static_cast<int32_t>(*pSource)) != 0) {
                         hex_dump.replace(line + hex_data + 18 + i, 1, pSource, 1);
                     } else {
@@ -119,6 +121,7 @@ namespace analyzer::log
 
         __common_log(LEVEL::TRACE, message, '\n', hex_dump, '\n');
     }
+
 
     // For Linux only.
     static void SetErrorStrings(void) noexcept

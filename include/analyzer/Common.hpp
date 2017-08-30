@@ -145,9 +145,22 @@ namespace analyzer::common
         std::size_t length = 0;
 
     public:
+        /**
+         * @fn Data (T *, const std::size_t) noexcept;
+         * @brief Constructor of Data class.
+         * @tparam [in] in - Any data for sharing.
+         * @param [in] size - Size of this data.
+         */
         Data (T* in, const std::size_t size) noexcept
                 : data(in), length(size)
         { }
+
+        /**
+         * @fn Data (std::unique_ptr<T[]> &, const std::size_t) noexcept;
+         * @brief Constructor of Data class.
+         * @tparam [in] in - Any data for sharing.
+         * @param [in] size - Size of this data.
+         */
         Data (std::unique_ptr<T[]>& in, const std::size_t size) noexcept
                 : data(std::move(in)), length(size)
         { }

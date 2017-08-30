@@ -1,15 +1,18 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <iostream>
 
 #include "../include/analyzer/Api.hpp"
 
 
-static const auto CRLF_functor = [] (const char* data, std::size_t length) -> bool
+static const auto CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
-static const auto double_CRLF_functor = [] (const char* data, std::size_t length) -> bool
+static const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A, 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
@@ -49,7 +52,7 @@ int main(void)
         std::cout << "[error] Recv fail..." << std::endl;
         return EXIT_FAILURE;
     }
-    std::cout << "Receiving data length: " << len << std::endl << std::endl << buff_receive << std::endl;
+    std::cout << "Received data length: " << len << std::endl << std::endl << buff_receive << std::endl;
 
     sock.Close();
     return EXIT_SUCCESS;
