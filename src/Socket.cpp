@@ -13,8 +13,8 @@ namespace analyzer::net
         LOG_TRACE("Socket.Socket: Creating socket...");
         fd = socket(socketFamily, socketType, ipProtocol);
         if (fd == INVALID_SOCKET) {
-            LOG_ERROR("Socket.Socket: Create socket error - ", GET_ERROR(errno));
-            isErrorOccurred = true; return;
+            LOG_ERROR("Socket.Socket: In function 'socket' - ", GET_ERROR(errno));
+            return;
         }
 
         if (SetSocketToNonBlock() == false) {
@@ -36,12 +36,12 @@ namespace analyzer::net
     }
 
 
-    // Associates a local address with a socket.
-    void Socket::Bind (const uint16_t port)
+    // Associates local address with the socket.
+    bool Socket::Bind (const uint16_t port)
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Bind: Socket is invalid.");
-            isErrorOccurred = true; return;
+            return false;
         }
 
         if (socketFamily == AF_INET)
@@ -55,7 +55,7 @@ namespace analyzer::net
             if (result == SOCKET_SUCCESS)
             {
                 LOG_INFO("Socket.Bind [", fd, "]: Binding to local port '", port, "' is success.");
-                return;
+                return true;
             }
             LOG_ERROR("Socket.Bind [", fd, "]: Binding to local port '", port, "' failed - ", GET_ERROR(errno));
         }
@@ -70,22 +70,23 @@ namespace analyzer::net
             if (result == SOCKET_SUCCESS)
             {
                 LOG_INFO("Socket.Bind [", fd, "]: Binding to local port '", port, "' is success.");
-                return;
+                return true;
             }
             LOG_ERROR("Socket.Bind [", fd, "]: Binding to local port '", port, "' failed - ", GET_ERROR(errno));
         }
         else { LOG_ERROR("Socket.Bind [", fd, "]: Unsupported socket family type - '", socketFamily, "'."); }
 
         CloseAfterError();
+        return false;
     }
 
 
     // Connecting to external host.
-    void Socket::Connect (const char* host, const uint16_t port)
+    bool Socket::Connect (const char* host, const uint16_t port)
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Connect: Socket is invalid.");
-            isErrorOccurred = true; return;
+            return false;
         }
 
         LOG_INFO("Socket.Connect [", fd, "]: Connecting to '", host, "'...");
@@ -99,7 +100,8 @@ namespace analyzer::net
         const int32_t status = getaddrinfo(host, std::to_string(port).c_str(), &hints, &server);
         if (status != SOCKET_SUCCESS) {
             LOG_ERROR("Socket.Connect [", fd, "]: In function 'getaddrinfo' - ", gai_strerror(status));
-            CloseAfterError(); return;
+            CloseAfterError();
+            return false;
         }
 
         for (auto&& curr = server; curr != nullptr; curr = curr->ai_next)
@@ -108,9 +110,8 @@ namespace analyzer::net
             if (result != SOCKET_ERROR || errno == EINPROGRESS)
             {
                 LOG_INFO("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port,"' is success.");
-                isConnectionAlive = true;
                 freeaddrinfo(server);
-                return;
+                return true;
             }
             LOG_ERROR("Socket.Connect [", fd, "]: In function 'connect' - ", GET_ERROR(errno));
         }
@@ -118,22 +119,23 @@ namespace analyzer::net
         LOG_ERROR("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port,"' failed.");
         freeaddrinfo(server);
         CloseAfterError();
+        return false;
     }
 
 
     // Sending the message to external host.
-    int32_t Socket::Send (char* data, std::size_t length)
+    int32_t Socket::Send (const char* data, std::size_t length)
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Send: Socket is invalid.");
-            isErrorOccurred = true; return -1;
+            return -1;
         }
         LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "'...");
 
         std::size_t idx = 0;
         while (length > 0)
         {
-            intmax_t result = send(fd, &data[idx], length, 0);
+            const intmax_t result = send(fd, &data[idx], length, 0);
             if (result == SOCKET_ERROR)
             {
                 if (errno == EWOULDBLOCK) {
@@ -158,7 +160,7 @@ namespace analyzer::net
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Recv: Socket is invalid.");
-            isErrorOccurred = true; return -1;
+            return -1;
         }
         LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "'...");
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
@@ -195,7 +197,7 @@ namespace analyzer::net
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Recv: Socket is invalid.");
-            isErrorOccurred = true; return -1;
+            return -1;
         }
 
         if (chunkLength == 0) { chunkLength = DEFAULT_RECEIVE_CHUNK; }
@@ -228,7 +230,7 @@ namespace analyzer::net
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.RecvToEnd: Socket is invalid.");
-            isErrorOccurred = true; return -1;
+            return -1;
         }
         LOG_TRACE("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "'...");
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
@@ -253,16 +255,17 @@ namespace analyzer::net
 
 
     // Checks availability socket on read/write.
-    uint16_t Socket::CheckSocketState (const int32_t time)
+    uint16_t Socket::CheckSocketState (const int32_t time) const
     {
-        event.events = EPOLLIN | EPOLLOUT;
-        if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
+        struct epoll_event ev = { };
+        ev.events = EPOLLIN | EPOLLOUT;
+        if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) == SOCKET_ERROR) {
             LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_ctl' - ", GET_ERROR(errno));
             return 0;
         }
 
         struct epoll_event events = { };
-        int32_t wfd = epoll_wait(epfd, &events, 1, time);
+        const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
@@ -353,17 +356,16 @@ namespace analyzer::net
 
 
     // Shutdown the connection.
-    void Socket::Shutdown (int32_t how)
+    void Socket::Shutdown (const int32_t how) const
     {
-        if (fd != INVALID_SOCKET && socketType == SOCK_STREAM && isConnectionAlive == true)
+        if (fd != INVALID_SOCKET && socketType == SOCK_STREAM && IsAlive() == true)
         {
             if (shutdown(fd, how) == SOCKET_ERROR) {
                 LOG_ERROR("Socket.Shutdown [", fd, "]: In function 'shutdown' - ", GET_ERROR(errno));
-                CloseAfterError(); return;
+                return;
             }
             LOG_INFO("Socket.Shutdown [", fd, "]: Connection close.");
         }
-        isConnectionAlive = false;
     }
 
 
@@ -380,7 +382,7 @@ namespace analyzer::net
     void Socket::CloseAfterError(void)
     {
         Close();
-        isErrorOccurred = true;
+        exHost.clear();
     }
 
 
@@ -389,7 +391,6 @@ namespace analyzer::net
     {
         if (fd != INVALID_SOCKET) { close(fd); fd = INVALID_SOCKET; }
         if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
-        isConnectionAlive = false;
         exHost.clear();
     }
 

@@ -10,12 +10,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
-set(WARNINGS "-Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-padded -Wunused-macros")
+set(USEFUL_WARNINGS "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded")
+set(WARNINGS "-Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
 set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
 
-set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG -DFULLLOG  ${ADDITIONAL_FLAGS} ${WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG -DFULLLOG  ${ADDITIONAL_FLAGS} ${WARNINGS} ${USEFUL_WARNINGS}")
 set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE -DFULLLOG   ${WARNINGS}")
 
 

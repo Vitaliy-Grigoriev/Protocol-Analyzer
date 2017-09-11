@@ -27,7 +27,6 @@
 #define UDPv6 4
 
 #define DEFAULT_PORT     80
-#define DEFAULT_PORT_SSH 22
 #define DEFAULT_PORT_TLS 443
 
 #define NUMBER_OF_CTX    3
@@ -46,17 +45,17 @@
 #define DEFAULT_TIME_SIGWAIT (-1) // milli sec.
 #define MAXIMUM_SOCKET_DESCRIPTORS 1024 // Maximum descriptors for epoll_wait().
 
-#define DEFAULT_RECEIVE_CHUNK 100 // Chunk part for receive massage.
+#define DEFAULT_RECEIVE_CHUNK 250 // Chunk part for receive massage.
 
 
 namespace analyzer::net
 {
     using std::chrono::system_clock;
     /**
-      * @typedef bool (*CompleteFunctor) (const char *, std::size_t);
+      * @typedef bool (*CompleteFunctor) (const char *, std::size_t) noexcept;
       * @brief The type of the complete functor in Socket.Recv method.
       */
-    using CompleteFunctor = bool (*) (const char *, std::size_t);
+    using CompleteFunctor = bool (*) (const char *, std::size_t) noexcept;
 
 
     /**
@@ -146,12 +145,6 @@ namespace analyzer::net
     class Socket
     {
     private:
-        // Is the Socket in open state.
-        bool isConnectionAlive = false;
-        // Is an error occurred in the socket.
-        bool isErrorOccurred = false;
-        // Dummy 1.
-        uint16_t NonUsed = 0;
         // The Socket family.
         int32_t socketFamily;
         // The Socket type (TCP/UDP).
@@ -180,7 +173,7 @@ namespace analyzer::net
         // Checks availability socket on read.
         bool IsReadyForRecv (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
         // Checks availability socket on read/write.
-        uint16_t CheckSocketState (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
+        uint16_t CheckSocketState (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) const;
         // Close after error. Must not use virtual methods in constructors so it is not a virtual method.
         void CloseAfterError(void);
 
@@ -202,19 +195,17 @@ namespace analyzer::net
         // Return Socket descriptor.
         inline int32_t GetFd(void) const { return fd; }
         // Return Timeout of connection.
-        inline std::chrono::seconds GetTimeout() const { return std::chrono::seconds(timeout); }
-        // Return Socket error state.
-        inline bool IsError(void) const { return isErrorOccurred; }
+        inline std::chrono::seconds GetTimeout(void) const { return std::chrono::seconds(timeout); }
         // Return Socket connection state.
-        inline bool IsAlive(void) const { return isConnectionAlive; }
+        inline bool IsAlive(void) const { return (CheckSocketState(3000) != 0); }
 
 
         // Associates a local address with a socket.
-        void Bind (uint16_t /*port*/);
+        bool Bind (uint16_t /*port*/);
         // Connecting to external host.
-        virtual void Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT);
+        virtual bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT);
         // Sending the message to external host over TCP.
-        virtual int32_t Send (char * /*data*/, std::size_t /*length*/);
+        virtual int32_t Send (const char * /*data*/, std::size_t /*length*/);
         // Receiving the message from external host over TCP.
         virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false);
         // Receiving the message from external host over TCP until the functor returns false value.
@@ -227,7 +218,7 @@ namespace analyzer::net
         virtual int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/);
 
         // Shutdown the connection (SHUT_RD, SHUT_WR, SHUT_RDWR).
-        virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR);
+        virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR) const;
         // Close the connection.
         virtual void Close(void);
         // Destructor.
@@ -263,6 +254,7 @@ namespace analyzer::net
         // I/O object.
         BIO * bio = nullptr;
 
+        static SSLContext context;
 
         // Returns true when the handshake is complete.
         bool IsHandshakeReady(void) const;
@@ -278,17 +270,15 @@ namespace analyzer::net
         SocketSSL & operator= (const SocketSSL &) = delete;
 
 
-        static SSLContext context;
-
         // Constructor.
-        explicit SocketSSL (uint16_t /*method*/  = SSL_METHOD_TLS12,
-                            const char *   /*ciphers*/ = nullptr,
-                            uint32_t /*timeout*/ = DEFAULT_TIMEOUT_SSL);
+        explicit SocketSSL (uint16_t     /*method*/  = SSL_METHOD_TLS12,
+                            const char * /*ciphers*/ = nullptr,
+                            uint32_t     /*timeout*/ = DEFAULT_TIMEOUT_SSL);
 
         // Connecting to external host.
-        void Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT_TLS) final;
+        bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT_TLS) final;
         // Sending the message to external host.
-        int32_t Send (char * /*data*/, std::size_t /*length*/) final;
+        int32_t Send (const char * /*data*/, std::size_t /*length*/) final;
         // Receiving the message from external host.
         int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false) final;
         // Receiving the message from external host until reach the end.
@@ -316,7 +306,7 @@ namespace analyzer::net
         // Get selected cipher name in ssl connection.
         std::string GetSelectedCipherName(void) const;
         // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
-        void Shutdown (int32_t /*how*/ = SHUT_RDWR) final;
+        void Shutdown (int32_t /*how*/ = SHUT_RDWR) const final;
         // Close the connection.
         void Close(void) final;
         // Destructor.

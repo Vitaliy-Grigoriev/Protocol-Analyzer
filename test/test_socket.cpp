@@ -6,13 +6,13 @@
 #include "../include/analyzer/Api.hpp"
 
 
-static const auto CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
+const auto CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
-static const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
+const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A, 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
@@ -21,40 +21,39 @@ static const auto double_CRLF_functor = [] (const char* data, std::size_t length
 
 int main(void)
 {
-    analyzer::net::Socket sock;
-    if (sock.IsError()) {
-        std::cout << "[error] Socket fail..." << std::endl;
-        return EXIT_FAILURE;
-    }
+    analyzer::net::Socket* sock = new analyzer::net::Socket;
 
-    sock.Bind(12345);
-    if (sock.IsError()) {
+    if (sock->Bind(12345) == false) {
         std::cout << "[error] Bind fail..." << std::endl;
+        delete sock;
         return EXIT_FAILURE;
     }
 
-    sock.Connect("rucinema.net");
-    if (sock.IsError()) {
+    if (sock->Connect("rucinema.net") == false) {
         std::cout << "[error] Connection fail..." << std::endl;
+        delete sock;
         return EXIT_FAILURE;
     }
 
-    char buff[] = "GET / HTTP/1.1\r\nHost: rucinema.net\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
-    sock.Send(buff, sizeof(buff));
-    if (sock.IsError()) {
+    const char buff[] = "GET / HTTP/1.1\r\nHost: rucinema.net\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
+    const int32_t ret = sock->Send(buff, sizeof(buff));
+    if (ret == -1) {
         std::cout << "[error] Send fail..." << std::endl;
+        delete sock;
         return EXIT_FAILURE;
     }
 
-    char buff_receive[1000] = { };
-    const int32_t len = sock.Recv(buff_receive, sizeof(buff_receive) - 1, double_CRLF_functor);
-    if (sock.IsError()) {
+    char buff_receive[1024] = { };
+    const int32_t len = sock->Recv(buff_receive, sizeof(buff_receive) - 1, double_CRLF_functor, 250);
+    if (len == -1) {
         std::cout << "[error] Recv fail..." << std::endl;
+        delete sock;
         return EXIT_FAILURE;
     }
     std::cout << "Received data length: " << len << std::endl << std::endl << buff_receive << std::endl;
 
-    sock.Close();
+    sock->Close();
+    delete sock;
     return EXIT_SUCCESS;
 }
 

@@ -18,6 +18,7 @@ namespace analyzer::task
 
     }
 
+    [[ noreturn ]]
     void* TaskManager::ThreadsManager (void* input) noexcept
     {
         LOG_TRACE("TaskManager.ThreadsManager: Thread 'ThreadsManager' started...");

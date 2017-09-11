@@ -6,8 +6,8 @@
 #include <random>
 #include <memory>
 #include <chrono>
+#include <string>
 #include <sstream>
-#include <cstring>
 #include <cstdint>
 #include <iterator>
 #include <exception>

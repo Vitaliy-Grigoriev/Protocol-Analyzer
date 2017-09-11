@@ -22,7 +22,6 @@ namespace analyzer::net
     SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout)
             : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
     {
-        if (Socket::IsError()) { return; }
         if (method >= NUMBER_OF_CTX) {
             LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: SSL input protocol type is invalid.");
             Socket::CloseAfterError(); return;
@@ -62,26 +61,24 @@ namespace analyzer::net
 
 
     // Connecting to external host.
-    void SocketSSL::Connect (const char* host, uint16_t port)
+    bool SocketSSL::Connect (const char* host, uint16_t port)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL: Socket is invalid.");
-            SSLCloseAfterError(); return;
+            SSLCloseAfterError();
+            return false;
         }
 
-        Socket::Connect(host, port);
-        if (IsError() == true) {
+        if (Socket::Connect(host, port) == false || DoHandshakeSSL() == false)
+        {
             SSLCloseAfterError();
-            return;
+            return false;
         }
-
-        if (DoHandshakeSSL() == false) {
-            SSLCloseAfterError();
-        }
+        return true;
     }
 
 
-    int32_t SocketSSL::Send (char* data, size_t length)
+    int32_t SocketSSL::Send (const char* data, size_t length)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.Send: Socket is invalid.");
@@ -323,7 +320,7 @@ namespace analyzer::net
     }
 
 
-    void SocketSSL::Shutdown (int32_t how)
+    void SocketSSL::Shutdown (const int32_t how) const
     { // Encryption alert (21).
         if (ssl != nullptr)
         {

@@ -38,6 +38,8 @@
 /bin
 /lib
 /tmp
+/build
+/check
 /coverity
 /cmake-build-debug
 /cmake-build-release

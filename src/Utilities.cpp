@@ -19,23 +19,21 @@ namespace analyzer::utility
             protocols["SPDY/1.0"]    =  { 6, 's', 'p', 'd', 'y', '/', '1' };
             protocols["SPDY/2.0"]    =  { 6, 's', 'p', 'd', 'y', '/', '2' };
             protocols["SPDY/3.0"]    =  { 6, 's', 'p', 'd', 'y', '/', '3' };
-            protocols["SPDY/3.1"]    =  { 8, 's', 'p', 'd', 'y', '/', '3', '.', '1' };
             protocols["SPDY/4.0"]    =  { 6, 's', 'p', 'd', 'y', '/', '4' };
+            protocols["SPDY/3.1"]    =  { 8, 's', 'p', 'd', 'y', '/', '3', '.', '1' };
             protocols["HTTP/1.1"]    =  { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
 
             std::set<std::string> result;
             for (auto&& it : protocols)
             {
                 net::SocketSSL sock;
-                if (!sock.SetInternalProtocol(it.second.data(), it.second.size())) {
+                if (sock.SetInternalProtocol(it.second.data(), it.second.size()) == false) {
                     return std::set<std::string>();
                 }
-
-                sock.Connect(host.c_str());
-                if (sock.IsError()) { return std::set<std::string>(); }
+                if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
 
                 const std::string proto = sock.GetRawSelectedProtocol();
-                if (!proto.empty()) {
+                if (proto.empty() == false) {
                     result.emplace(it.first);
                     LOG_INFO("Next protocol: ", proto, '.');
                 }
@@ -59,9 +57,7 @@ namespace analyzer::utility
             for (auto&& it : protocols)
             {
                 net::SocketSSL sock(it.second);
-
-                sock.Connect(host.c_str());
-                if (sock.IsError()) { return std::set<std::string>(); }
+                if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
 
                 result.emplace(it.first);
                 LOG_INFO("Next protocol: ", it.first, '.');

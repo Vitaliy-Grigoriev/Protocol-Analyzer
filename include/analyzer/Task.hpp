@@ -128,6 +128,8 @@ namespace analyzer::task
         };
 
         static void signal_handler (int32_t /*sig*/) noexcept;
+
+        [[ noreturn ]]
         static void * ThreadsManager (void * /*input*/) noexcept;
 
     private:

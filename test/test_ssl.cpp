@@ -21,10 +21,6 @@ int main(void)
     }
 
     analyzer::net::SocketSSL sock(SSL_METHOD_TLS12, nullptr, DEFAULT_TIMEOUT_SSL);
-    if (sock.IsError()) {
-        std::cout << "Socket fail..." << std::endl;
-        return EXIT_FAILURE;
-    }
 
     if (!sock.SetHttp_1_1_OnlyProtocol()) {
         std::cout << "Set HTTP/1.1 only failed..." << std::endl;
@@ -35,8 +31,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    sock.Connect(host.c_str());
-    if (sock.IsError()) {
+    if (sock.Connect(host.c_str()) == false) {
         std::cout << "Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
@@ -44,15 +39,15 @@ int main(void)
     std::cout << "Cipher name: " << sock.GetSelectedCipherName().c_str() << std::endl;
 
     char buff[] = "GET / HTTP/1.1\r\nHost: habrahabr.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
-    sock.Send(buff, sizeof(buff));
-    if (sock.IsError()) {
+    const int32_t ret = sock.Send(buff, sizeof(buff));
+    if (ret == -1) {
         std::cout << "Send fail..." << std::endl;
         return EXIT_FAILURE;
     }
 
     char buff_recv[DEFAULT_BUFFER_SIZE];
-    int32_t len = sock.RecvToEnd(buff_recv, DEFAULT_BUFFER_SIZE);
-    if (sock.IsError()) {
+    const int32_t len = sock.RecvToEnd(buff_recv, DEFAULT_BUFFER_SIZE);
+    if (len == -1) {
         std::cout << "Recv fail..." << std::endl;
         return EXIT_FAILURE;
     }

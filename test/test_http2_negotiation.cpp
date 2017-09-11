@@ -22,10 +22,6 @@ int main(void)
 
 
     analyzer::net::SocketSSL sock;
-    if (sock.IsError()) {
-        std::cout << "Socket fail..." << std::endl;
-        return EXIT_FAILURE;
-    }
 
     if (!sock.SetHttpProtocols()) {
         std::cout << "Set all HTTP protocols failed..." << std::endl;
@@ -36,8 +32,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    sock.Connect(host.c_str());
-    if (sock.IsError()) {
+    if (sock.Connect(host.c_str()) == false) {
         std::cout << "Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
