@@ -301,6 +301,8 @@ namespace analyzer::net
         bool SetHttp_2_0_OnlyProtocol(void);
         // Get selected ALPN protocol by server in string type.
         std::string GetRawSelectedProtocol(void) const;
+        // Get current timeout of the SSL session.
+        std::size_t GetSessionTimeout(void) const;
         // Get selected ALPN protocol by server.
         protocols::http::HTTP_VERSION GetSelectedProtocol(void) const;
         // Get selected cipher name in ssl connection.

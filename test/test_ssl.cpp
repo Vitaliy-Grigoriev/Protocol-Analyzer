@@ -36,6 +36,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
+    std::cout << "Session timeout: " << sock.GetSessionTimeout() << std::endl;
     std::cout << "Cipher name: " << sock.GetSelectedCipherName().c_str() << std::endl;
 
     char buff[] = "GET / HTTP/1.1\r\nHost: habrahabr.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";

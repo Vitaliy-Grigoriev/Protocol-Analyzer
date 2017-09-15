@@ -7,15 +7,15 @@
 namespace analyzer::net
 {
     /**
-     * @fn inline static std::string CheckSSLErrors(void);
+     * @fn inline static std::string CheckSSLErrors(void) noexcept;
      * @brief Check SSL library error.
      * @return The SSL library error in string form.
      */
-    inline static std::string CheckSSLErrors(void)
+    inline static std::string CheckSSLErrors(void) noexcept
     {
         const std::size_t err = ERR_get_error();
         if (err != 0) { return ERR_error_string(err, nullptr); }
-        return std::string("NO ANY OCCUR ERROR!!!");
+        return std::string("NO ANY ERROR.");
     }
 
 
@@ -357,6 +357,12 @@ namespace analyzer::net
             return std::string(reinterpret_cast<const char*>(proto), length);
         }
         return std::string();
+    }
+
+    // Get current timeout of the SSL session.
+    std::size_t SocketSSL::GetSessionTimeout(void) const
+    {
+        return static_cast<std::size_t>(SSL_get_timeout(SSL_get_session(ssl)));
     }
 
     // Get selected ALPN protocol by server.
