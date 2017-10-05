@@ -1,6 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "../include/analyzer/Socket.hpp"
 
 
@@ -268,16 +271,16 @@ namespace analyzer::net
         const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
-            if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - ", GET_ERROR(errno));
-            }
-            else if ((events.events & EPOLLIN) != 0u && (events.events & EPOLLOUT) != 0u) {
+            if ((events.events & EPOLLIN) != 0u && (events.events & EPOLLOUT) != 0u) {
                 return 3;
             }
-            else if ((events.events & EPOLLIN) != 0u) { return 1; }
-            else if ((events.events & EPOLLOUT) != 0u) { return 2; }
+            if ((events.events & EPOLLIN) != 0u) { return 1; }
+            if ((events.events & EPOLLOUT) != 0u) { return 2; }
+            if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
+                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return error event: ", events.events, '.');
+            }
             else {
-                LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - ", GET_ERROR(errno));
+                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return unknown event: ", events.events, '.');
             }
         }
         else if (wfd == 0) { LOG_INFO("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - Timeout expired."); }
@@ -296,15 +299,15 @@ namespace analyzer::net
         }
 
         struct epoll_event events = { };
-        int32_t wfd = epoll_wait(epfd, &events, 1, time);
+        const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
+            if ((events.events & EPOLLOUT) != 0u) { return true; }
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - ", GET_ERROR(errno));
+                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return error event: ", events.events, '.');
             }
-            else if ((events.events & EPOLLOUT) != 0u) { return true; }
             else {
-                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - ", GET_ERROR(errno));
+                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return unknown event: ", events.events, '.');
             }
         }
         else if (wfd == 0) { LOG_INFO("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - Timeout expired."); }
@@ -323,14 +326,15 @@ namespace analyzer::net
         }
 
         struct epoll_event events = { };
-        int32_t wfd = epoll_wait(epfd, &events, 1, time);
-        if (wfd == 1) {
+        const int32_t wfd = epoll_wait(epfd, &events, 1, time);
+        if (wfd == 1)
+        {
+            if ((events.events & EPOLLIN) != 0u) { return true; }
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - ", GET_ERROR(errno));
+                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return error event: ", events.events, '.');
             }
-            else if ((events.events & EPOLLIN) != 0u) { return true; }
             else {
-                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - ", GET_ERROR(errno));
+                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return unknown event: ", events.events, '.');
             }
         }
         else if (wfd == 0) { LOG_INFO("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - Timeout expired."); }
@@ -364,7 +368,7 @@ namespace analyzer::net
                 LOG_ERROR("Socket.Shutdown [", fd, "]: In function 'shutdown' - ", GET_ERROR(errno));
                 return;
             }
-            LOG_INFO("Socket.Shutdown [", fd, "]: Connection close.");
+            LOG_INFO("Socket.Shutdown [", fd, "]: Connection shutdown by mode: ", how, '.');
         }
     }
 
@@ -372,8 +376,11 @@ namespace analyzer::net
     // Close the connection.
     void Socket::Close(void)
     {
-        Shutdown();
-        if (fd != INVALID_SOCKET) { close(fd); fd = INVALID_SOCKET; }
+        if (fd != INVALID_SOCKET) {
+            close(fd);
+            LOG_INFO("Socket.Shutdown [", fd, "]: Connection close.");
+            fd = INVALID_SOCKET;
+        }
         if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
     }
 

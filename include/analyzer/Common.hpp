@@ -7,6 +7,8 @@
 #include <memory>
 #include <chrono>
 #include <string>
+#include <iomanip>
+#include <cstring>
 #include <sstream>
 #include <cstdint>
 #include <iterator>
@@ -123,6 +125,45 @@ namespace analyzer::common
      * @return The vector of string values.
      */
     std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
+
+    /**
+     * @fn template<typename Type> std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
+     * @brief Function that convert any data to hex format.
+     * @param [in] data - Input data.
+     * @param [in] width - Width of hex value. Default: 2.
+     * @param [in] upper - In what case the data will present in hex format. Default: true.
+     * @return String in hex format of width length.
+     */
+    template<typename Type,
+            typename std::enable_if<std::is_integral<Type>::value>::type* = nullptr,
+            typename std::enable_if<std::is_unsigned<Type>::value>::type* = nullptr>
+    std::string getHexValue (const Type& data, const uint16_t width = 2, bool upper = true) noexcept
+    {
+        std::ostringstream result;
+        if (upper == true) { result.setf(std::ios_base::uppercase); }
+        result << std::hex << std::setfill('0') << std::setw(width) << static_cast<std::size_t>(data);
+        return result.str();
+    }
+
+    /**
+     * @fn template<typename Type> std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
+     * @brief Function that convert string data to hex format.
+     * @param [in] data - Input data.
+     * @param [in] length - Length of the data.
+     * @param [in] width - Width of hex value for each type. Default: 2.
+     * @param [in] upper - In what case the data will present in hex format. Default: true.
+     * @return String in hex format.
+     */
+    template<typename Type>
+    std::string getHexString (const Type* data, const std::size_t length, const uint16_t width = 2, bool upper = true) noexcept
+    {
+        std::string result;
+        result.reserve(length * width);
+        for (std::size_t idx = 0; idx < length; ++idx) {
+            result += getHexValue(data[idx], width * sizeof(Type), upper);
+        }
+        return result;
+    }
 
     /**
      * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;

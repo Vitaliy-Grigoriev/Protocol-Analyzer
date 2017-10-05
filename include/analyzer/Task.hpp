@@ -4,7 +4,6 @@
 
 #include <mutex>
 #include <atomic>
-#include <vector>
 #include <pthread.h>
 #include <unordered_map>
 

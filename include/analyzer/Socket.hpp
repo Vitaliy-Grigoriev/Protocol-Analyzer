@@ -4,14 +4,9 @@
 
 #include <list>
 #include <atomic>
-#include <cerrno>
 #include <string>
-#include <cstring>
 #include <netdb.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <sys/epoll.h>
-#include <sys/socket.h>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -290,6 +285,8 @@ namespace analyzer::net
 
         // Return the SSL object.
         inline SSL * GetSSL(void) const { return ssl; }
+        // Return the SSL object.
+        inline SSL_SESSION * GetSessionSSL(void) const { return SSL_get_session(ssl); }
         // Get all available clients ciphers.
         std::list<std::string> GetCiphersList(void) const;
         // Use only security ciphers in connection.

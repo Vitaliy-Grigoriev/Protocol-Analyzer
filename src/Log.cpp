@@ -1,7 +1,6 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <iomanip>
 #include <unordered_map>
 
 #include "../include/analyzer/Log.hpp"
@@ -9,12 +8,19 @@
 
 namespace analyzer::log
 {
+    /**
+      * @typedef typedef std::unordered_map<int32_t, std::string> error_description;
+      * @brief The type of the errors description.
+      */
+    using error_description = std::unordered_map<int32_t, std::string>;
+
+
     std::mutex log_mutex = { };
     /**
-      * @var static std::unordered_map<int32_t, std::string> errors;
+      * @var static error_description errors;
       * @brief Container that consist of the string definitions of system errors.
       */
-    static std::unordered_map<int32_t, std::string> errors;
+    static error_description errors;
 
     /**
       * @fn static void SetErrorStrings(void) noexcept;
@@ -33,26 +39,26 @@ namespace analyzer::log
     }
 
 
-    std::string StrSysError::operator() (const int32_t error) noexcept
+    std::string StrSysError::operator() (const int32_t error) const noexcept
     {
-        const auto it = errors.find(error);
+        auto it = errors.find(error);
         if (it != errors.end()) { return (*it).second; }
         return std::string("Occurred unknown error (" + std::to_string(error) + ").");
     }
 
-
-    static inline std::string get_hex (const std::size_t value, const int32_t width = 16, bool is_upper = true) noexcept
+    static inline unsigned char charToUChar (char input)
     {
-        std::ostringstream result;
-        if (is_upper) { result.setf(std::ios_base::uppercase); }
-        result << std::hex << std::setfill('0') << std::setw(width) << value;
-        return result.str();
+        union {
+            char in;
+            unsigned char out;
+        } u { input };
+        return u.out;
     }
 
 
     // TODO: Add three flag: is_offset, is_data, is_upper...
     // TODO: Add dependency length of the offset from the length of data.
-    void DbgHexDump (const char* message, void* data, std::size_t size, std::size_t hexLineLength)
+    void DbgHexDump (const char* message, const void* data, std::size_t size, std::size_t hexLineLength)
     {
         if (hexLineLength % 2 == 1) { hexLineLength++; }
         if (hexLineLength < 8) { hexLineLength = 8; }
@@ -60,7 +66,7 @@ namespace analyzer::log
         const std::size_t last_chunk = size % hexLineLength;
         const std::size_t mean_length = hexLineLength / 2;
 
-        auto pSource = static_cast<char*>(data);
+        auto pSource = static_cast<const char*>(data);
         const std::size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
         const std::size_t hex_dump_line_length = 11 + 4 * hexLineLength + 8;
         const std::size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;
@@ -68,9 +74,9 @@ namespace analyzer::log
         // Make hex dump header (2 lines).
         std::string hex_dump(hex_dump_size, ' ');
         hex_dump.replace(1, 8, "shift  |");
-        for (std::size_t i = 0; i < hexLineLength; ++i) {
-            if (i < mean_length) { hex_dump.replace(12 + i * 3, 2, get_hex(i, 2)); }
-            else { hex_dump.replace(13 + i * 3, 2, get_hex(i, 2)); }
+        for (std::size_t idx = 0; idx < hexLineLength; ++idx) {
+            if (idx < mean_length) { hex_dump.replace(12 + idx * 3, 2, common::getHexValue(idx)); }
+            else { hex_dump.replace(13 + idx * 3, 2, common::getHexValue(idx)); }
         }
         hex_dump.replace(hexLineLength * 3 + 17, 4, "data");
         hex_dump[hex_dump_line_length - 1] = '\n';
@@ -82,13 +88,13 @@ namespace analyzer::log
         for (std::size_t idx = 0; idx < hex_lines - 2; ++idx)
         {
             const std::size_t line = hex_dump_line_length * (idx + 2);
-            hex_dump.replace(line, 11, get_hex(idx * hexLineLength, 8) + '|');
+            hex_dump.replace(line, 11, common::getHexValue(idx * hexLineLength, 8) + '|');
             for (std::size_t i = 0; i < hexLineLength && size != 0; ++i)
             {
                 if (i < mean_length) {
-                    hex_dump.replace(line + 12 + i * 3, 2, get_hex(static_cast<std::size_t>(*pSource), 2));
+                    hex_dump.replace(line + 12 + i * 3, 2, common::getHexValue(charToUChar(*pSource)));
                 }
-                else { hex_dump.replace(line + 13 + i * 3, 2, get_hex(static_cast<std::size_t>(*pSource), 2)); }
+                else { hex_dump.replace(line + 13 + i * 3, 2, common::getHexValue(charToUChar(*pSource))); }
                 pSource++;
                 size--;
             }

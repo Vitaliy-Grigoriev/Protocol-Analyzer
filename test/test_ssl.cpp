@@ -10,7 +10,7 @@
 int main(void)
 {
     const std::string host = "habrahabr.ru";
-    const auto protos = analyzer::utility::CheckSupportedTLSProtocols(host);
+    /*const auto protos = analyzer::utility::CheckSupportedTLSProtocols(host);
     if (protos.empty() == false)
     {
         std::cout << "Find next protocols on the host (" << host << "): " << std::endl;
@@ -18,15 +18,15 @@ int main(void)
             std::cout << p << std::endl;
         }
         std::cout << std::endl;
-    }
+    }*/
 
     analyzer::net::SocketSSL sock(SSL_METHOD_TLS12, nullptr, DEFAULT_TIMEOUT_SSL);
 
-    if (!sock.SetHttp_1_1_OnlyProtocol()) {
+    if (sock.SetHttp_1_1_OnlyProtocol() == false) {
         std::cout << "Set HTTP/1.1 only failed..." << std::endl;
         return EXIT_FAILURE;
     }
-    if (!sock.SetOnlySecureCiphers()) {
+    if (sock.SetOnlySecureCiphers() == false) {
         std::cout << "Secure ciphers failed..." << std::endl;
         return EXIT_FAILURE;
     }
@@ -52,8 +52,9 @@ int main(void)
         std::cout << "Recv fail..." << std::endl;
         return EXIT_FAILURE;
     }
-    std::cout << "Receiving data length: " << len << std::endl;
+    std::cout << "Received data length: " << len << std::endl;
 
+    //sock.Shutdown();
     sock.Close();
     return EXIT_SUCCESS;
 }

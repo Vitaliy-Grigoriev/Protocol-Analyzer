@@ -4,7 +4,7 @@
 
 #include <ratio>
 #include <chrono>
-#include <fstream>
+#include <ostream>
 #include <cstdint>
 
 
@@ -39,11 +39,11 @@ namespace analyzer::diagnostic
 
     public:
         /**
-         * @class TimeCount Timer.hpp "include/analyzer/Timer.hpp"
+         * @class TimerCount Timer.hpp "include/analyzer/Timer.hpp"
          * @brief Class that contain the internal values of Timer class.
          * @note It is the internal class of Timer class.
          */
-        class TimeCount
+        class TimerCount
         {
             friend class Timer;
 
@@ -127,10 +127,10 @@ namespace analyzer::diagnostic
              * @fn friend std::ostream & operator<< (std::ostream &, const Count &) noexcept;
              * @brief An overloaded operator in the output stream.
              * @param [in,out] out - The object of the 'std::ostream &' type.
-             * @param [in] in - The object of the 'const TimeCount &' type.
+             * @param [in] in - The object of the 'const TimerCount &' type.
              * @return Return time interval in seconds.
              */
-            friend std::ostream & operator<< (std::ostream& out, const TimeCount& in) noexcept
+            friend std::ostream & operator<< (std::ostream& out, const TimerCount& in) noexcept
             {
                 out << in.Seconds();
                 return out;
@@ -141,10 +141,10 @@ namespace analyzer::diagnostic
 
     private:
         /**
-         * @var TimeCount count;
-         * @brief The object of the TimeCount class.
+         * @var TimerCount count;
+         * @brief The object of the TimerCount class.
          */
-        TimeCount count = { };
+        TimerCount count = { };
 
         /**
          * @fn static inline std::chrono::time_point GetCurrentTime(void) noexcept;
@@ -182,11 +182,11 @@ namespace analyzer::diagnostic
         Timer & Pause(void) noexcept;
 
         /**
-         * @fn Timer::TimeCount & PauseGetCount(void) noexcept;
+         * @fn Timer::TimerCount & PauseGetCount(void) noexcept;
          * @brief Function that pauses the timer and return a process ticks.
-         * @return Timer::TimeCount - A reference of the TimeCount class.
+         * @return Timer::TimerCount - A reference of the TimerCount class.
          */
-        Timer::TimeCount & PauseGetCount(void) noexcept;
+        Timer::TimerCount & PauseGetCount(void) noexcept;
 
         /**
          * @fn void Reset (bool) noexcept;
@@ -196,11 +196,11 @@ namespace analyzer::diagnostic
         void Reset (bool /*start*/ = false) noexcept;
 
         /**
-         * @fn const Timer::TimeCount & GetCount(void) const noexcept;
+         * @fn const Timer::TimerCount & GetCount(void) const noexcept;
          * @brief Function that returns the reference of the Count class.
-         * @return Timer::TimeCount - A reference of the TimeCount class.
+         * @return Timer::TimerCount - A reference of the TimerCount class.
          */
-        const Timer::TimeCount & GetCount(void) const noexcept;
+        const Timer::TimerCount & GetCount(void) const noexcept;
 
         /**
          * @fn ~Timer(void) = default;

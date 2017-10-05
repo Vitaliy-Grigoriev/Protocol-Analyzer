@@ -19,16 +19,18 @@ namespace analyzer::diagnostic
 
     Timer& Timer::Pause(void) noexcept
     {
-        if (count.state == true) {
+        if (count.state == true)
+        {
             count.totalTime += GetCurrentTime() - count.lastStartTime;
             count.state = false;
         }
         return *this;
     }
 
-    Timer::TimeCount& Timer::PauseGetCount(void) noexcept
+    Timer::TimerCount& Timer::PauseGetCount(void) noexcept
     {
-        if (count.state == true) {
+        if (count.state == true)
+        {
             count.totalTime += GetCurrentTime() - count.lastStartTime;
             count.state = false;
         }
@@ -42,41 +44,41 @@ namespace analyzer::diagnostic
         if (start == true) { Start(); }
     }
 
-    const Timer::TimeCount& Timer::GetCount(void) const noexcept {
+    const Timer::TimerCount& Timer::GetCount(void) const noexcept {
         return count;
     }
 
 
 
-    std::size_t Timer::TimeCount::NanoSeconds(void) const noexcept {
+    std::size_t Timer::TimerCount::NanoSeconds(void) const noexcept {
         return GetTime<nano_t>();
     }
 
-    std::size_t Timer::TimeCount::MicroSeconds(void) const noexcept {
+    std::size_t Timer::TimerCount::MicroSeconds(void) const noexcept {
         return GetTime<micro_t>();
     }
 
-    std::size_t Timer::TimeCount::MilliSeconds(void) const noexcept {
+    std::size_t Timer::TimerCount::MilliSeconds(void) const noexcept {
         return GetTime<milli_t>();
     }
 
-    double Timer::TimeCount::Seconds(void) const noexcept {
+    double Timer::TimerCount::Seconds(void) const noexcept {
         return GetTime<second_t>();
     }
 
-    double Timer::TimeCount::Minutes(void) const noexcept {
+    double Timer::TimerCount::Minutes(void) const noexcept {
         return GetTime<minute_t>();
     }
 
-    double Timer::TimeCount::Hours(void) const noexcept {
+    double Timer::TimerCount::Hours(void) const noexcept {
         return GetTime<hour_t>();
     }
 
-    Timer::TimeCount:: operator double(void) const noexcept {
+    Timer::TimerCount:: operator double(void) const noexcept {
         return Seconds();
     }
 
-    Timer::TimeCount::operator size_t(void) const noexcept {
+    Timer::TimerCount::operator size_t(void) const noexcept {
         return MicroSeconds();
     }
 

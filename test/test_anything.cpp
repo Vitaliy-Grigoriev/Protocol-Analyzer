@@ -4,12 +4,21 @@
 #include <iostream>
 
 #include "../include/analyzer/Api.hpp"
+#include "../include/analyzer/Common.hpp"
+
+using namespace analyzer::common;
 
 
-int main(void)
+int32_t main (int32_t size, char** data)
 {
-    std::allocator<std::size_t> alloc;
-    std::cout << alloc.max_size() << std::endl;
+    const std::size_t value_1 = 10;
+    std::cout << getHexValue(value_1) << std::endl;
+
+    const std::size_t value_2 = 923876706450976023;
+    std::cout << getHexValue(value_2, sizeof(std::size_t)) << std::endl;
+
+    const unsigned char value_3[3] = { 0, 4, 15 };
+    std::cout << getHexString(value_3, sizeof(value_3)) << std::endl;
 
     return EXIT_SUCCESS;
 }

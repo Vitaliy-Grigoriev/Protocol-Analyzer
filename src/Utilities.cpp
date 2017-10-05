@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "../include/analyzer/Socket.hpp"
 #include "../include/analyzer/Utilities.hpp"
 
 
@@ -12,7 +13,7 @@ namespace analyzer::utility
         std::set<std::string> CheckALPNSupportedProtocols (const std::string& host)
         {
             LOG_TRACE("CheckALPNSupportedProtocols:   Start check...");
-            std::unordered_map<std::string, std::vector<unsigned char>> protocols;
+            std::unordered_map<std::string, std::vector<uint8_t>> protocols;
             protocols["HTTP/2.0"]    =  { 2, 'h', '2' };
             protocols["HTTP/2.0-14"] =  { 5, 'h', '2', '-', '1', '4' };
             protocols["HTTP/2.0-16"] =  { 5, 'h', '2', '-', '1', '6' };

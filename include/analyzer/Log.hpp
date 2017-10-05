@@ -119,12 +119,12 @@ namespace analyzer::log
         static StrSysError & Instance(void) noexcept;
 
         /**
-         * @fn std::string StrSysError::operator() (int32_t) noexcept;
+         * @fn std::string StrSysError::operator() (int32_t) const noexcept;
          * @brief Operator that return a system error in string format.
          * @param [in] error - The error code number.
          * @return The string that contains a description of the error.
          */
-        std::string operator() (int32_t /*error*/) noexcept;
+        std::string operator() (int32_t /*error*/) const noexcept;
     };
 
     /**
@@ -136,7 +136,6 @@ namespace analyzer::log
     static inline void __output_values (std::ostream& fd) noexcept
     {
         fd << std::endl;
-        fd.flush();
     }
 
     /**
@@ -218,14 +217,14 @@ namespace analyzer::log
 
 
     /**
-     * @fn void DbgHexDump (const char *, void *, std::size_t, std::size_t);
+     * @fn void DbgHexDump (const char *, const void *, std::size_t, std::size_t);
      * @brief Function that outputs the data to log file in hex dump format.
      * @param [in] message - Message in log string.
      * @param [in] data - Data that must be displayed in hex format.
      * @param [in] size - The size of input data.
      * @param [in] hexLineLength - The length of one hex dump string. Default: 16.
      */
-    void DbgHexDump (const char * /*message*/, void * /*data*/, std::size_t /*size*/, std::size_t /*hexLineLength*/ = 16);
+    void DbgHexDump (const char * /*message*/, const void * /*data*/, std::size_t /*size*/, std::size_t /*hexLineLength*/ = 16);
 
 }  // namespace log.
 

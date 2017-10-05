@@ -51,10 +51,10 @@ namespace analyzer::net
             SSLCloseAfterError(); return;
         }
 
-        // Assign bio to ssl object.
-        SSL_set_bio(ssl, bio, bio);
         // Set non-blocking mode for bio.
         BIO_set_nbio(bio, 1);
+        // Assign bio to ssl object.
+        SSL_set_bio(ssl, bio, bio);
         // Set client mode for ssl object.
         SSL_set_connect_state(ssl);
     }
@@ -74,6 +74,15 @@ namespace analyzer::net
             SSLCloseAfterError();
             return false;
         }
+
+#if ( defined(DEBUG) )
+        uint32_t length = 0;
+        const unsigned char* sessionID = SSL_SESSION_get_id(GetSessionSSL(), &length);
+        if (sessionID != nullptr && length > 0)
+        {
+            LOG_TRACE("SocketSSL.Connect [", fd,"]: SSL session established. Session ID - ", common::getHexString(sessionID, length), '.');
+        }
+#endif
         return true;
     }
 
@@ -234,9 +243,9 @@ namespace analyzer::net
     {
         std::list<std::string> result;
         STACK_OF(SSL_CIPHER)* ciphers_list = SSL_get_ciphers(ssl);
-        for (int32_t i = 0; i < sk_SSL_CIPHER_num(ciphers_list); ++i)
+        for (int32_t idx = 0; idx < sk_SSL_CIPHER_num(ciphers_list); ++idx)
         {
-            const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers_list, i);
+            const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers_list, idx);
             result.emplace_back(SSL_CIPHER_get_name(cipher));
         }
         return result;
@@ -320,13 +329,26 @@ namespace analyzer::net
     }
 
 
-    void SocketSSL::Shutdown (const int32_t how) const
+    void SocketSSL::Shutdown (int32_t how) const
     { // Encryption alert (21).
         if (ssl != nullptr)
         {
+            switch (how)
+            {
+                case SHUT_RDWR: SSL_set_shutdown(ssl, SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
+                    break;
+                case SHUT_RD: SSL_set_shutdown(ssl, SSL_RECEIVED_SHUTDOWN);
+                    break;
+                case SHUT_WR: SSL_set_shutdown(ssl, SSL_SENT_SHUTDOWN);
+                    break;
+                default:
+                    LOG_ERROR("SocketSSL.Shutdown [", fd,"]: Unknown mode for shutdown the SSL connection.");
+                    SSL_set_shutdown(ssl, SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
+                    how = SHUT_RDWR;
+            }
             const int32_t res = SSL_shutdown(ssl);
             if (res == 0) { SSL_shutdown(ssl); }
-            else { LOG_ERROR("SocketSSL.Shutdown [", fd,"]: In function 'SSL_shutdown' - ", CheckSSLErrors()); }
+            else if (res < 0) { LOG_ERROR("SocketSSL.Shutdown [", fd,"]: In function 'SSL_shutdown' - ", CheckSSLErrors()); }
         }
         Socket::Shutdown(how);
     }
@@ -335,7 +357,7 @@ namespace analyzer::net
     // Close connection.
     void SocketSSL::Close(void)
     {
-        if (ssl != nullptr) { Shutdown(); SSL_free(ssl); ssl = nullptr; }
+        if (ssl != nullptr) { SSL_free(ssl); ssl = nullptr; }
         Socket::Close();
     }
 
@@ -437,7 +459,7 @@ namespace analyzer::net
         LOG_INFO("SSLContext: Initialize SSL library is success.");
     }
 
-    SSL_CTX* SSLContext::Get (std::size_t method) const noexcept
+    SSL_CTX* SSLContext::Get (const std::size_t method) const noexcept
     {
         if (method < NUMBER_OF_CTX) { return ctx[method]; }
         return nullptr;
@@ -448,6 +470,7 @@ namespace analyzer::net
         SSL_CTX_free( ctx[SSL_METHOD_TLS1] );
         SSL_CTX_free( ctx[SSL_METHOD_TLS11] );
         SSL_CTX_free( ctx[SSL_METHOD_TLS12] );
+        //SSL_CTX_free( ctx[SSL_METHOD_TLS13] );
     }
 
     // Initialized context.

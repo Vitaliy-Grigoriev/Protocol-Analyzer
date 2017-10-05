@@ -3,8 +3,7 @@
 #define PROTOCOL_ANALYZER_UTILITIES_HPP
 
 #include <set>
-
-#include "Socket.hpp"
+#include <string>
 
 
 namespace analyzer::utility
