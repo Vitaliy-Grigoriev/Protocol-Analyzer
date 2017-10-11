@@ -92,14 +92,13 @@ namespace analyzer::net
             return false;
         }
 
-        LOG_INFO("Socket.Connect [", fd, "]: Connecting to '", host, "'...");
         exHost = host;
         struct addrinfo hints = { };
         struct addrinfo *server = nullptr;
-
         hints.ai_family = socketFamily;
         hints.ai_socktype = socketType;
 
+        LOG_TRACE("Socket.Connect [", fd, "]: Connecting to '", host, "'...");
         const int32_t status = getaddrinfo(host, std::to_string(port).c_str(), &hints, &server);
         if (status != SOCKET_SUCCESS) {
             LOG_ERROR("Socket.Connect [", fd, "]: In function 'getaddrinfo' - ", gai_strerror(status));
@@ -153,7 +152,7 @@ namespace analyzer::net
             length -= static_cast<std::size_t>(result);
         }
 
-        LOG_INFO("Socket.Send [", fd, "]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -191,7 +190,7 @@ namespace analyzer::net
             if (noWait == true) { break; }
         }
 
-        LOG_INFO("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -224,7 +223,7 @@ namespace analyzer::net
             }
         } while (length > 0 && functor(data, static_cast<std::size_t>(idx)) == false);
 
-        LOG_INFO("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -252,7 +251,7 @@ namespace analyzer::net
             length -= static_cast<std::size_t>(result);
         }
 
-        LOG_INFO("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -283,7 +282,7 @@ namespace analyzer::net
                 LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return unknown event: ", events.events, '.');
             }
         }
-        else if (wfd == 0) { LOG_INFO("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - Timeout expired."); }
+        else if (wfd == 0) { LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - Timeout expired."); }
         else { LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - ", GET_ERROR(errno)); }
         return 0;
     }
@@ -310,7 +309,7 @@ namespace analyzer::net
                 LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return unknown event: ", events.events, '.');
             }
         }
-        else if (wfd == 0) { LOG_INFO("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - Timeout expired."); }
+        else if (wfd == 0) { LOG_ERROR("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - Timeout expired."); }
         else { LOG_ERROR("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - ", GET_ERROR(errno)); }
         return false;
     }
@@ -337,7 +336,7 @@ namespace analyzer::net
                 LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return unknown event: ", events.events, '.');
             }
         }
-        else if (wfd == 0) { LOG_INFO("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - Timeout expired."); }
+        else if (wfd == 0) { LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - Timeout expired."); }
         else { LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - ", GET_ERROR(errno)); }
         return false;
     }
@@ -378,7 +377,7 @@ namespace analyzer::net
     {
         if (fd != INVALID_SOCKET) {
             close(fd);
-            LOG_INFO("Socket.Shutdown [", fd, "]: Connection close.");
+            LOG_INFO("Socket.Close [", fd, "]: Connection closed with host: '", exHost, "'.");
             fd = INVALID_SOCKET;
         }
         if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }

@@ -69,6 +69,7 @@ namespace analyzer::net
             return false;
         }
 
+        SetServerNameIndication(host);
         if (Socket::Connect(host, port) == false || DoHandshakeSSL() == false)
         {
             SSLCloseAfterError();
@@ -119,7 +120,7 @@ namespace analyzer::net
             idx += static_cast<size_t>(result);
         }
 
-        LOG_INFO("SocketSSL.Send [", fd,"]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("SocketSSL.Send [", fd,"]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -163,7 +164,7 @@ namespace analyzer::net
             if (noWait == true) { break; }
         }
 
-        LOG_INFO("SocketSSL.Recv [", fd,"]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("SocketSSL.Recv [", fd,"]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -198,7 +199,7 @@ namespace analyzer::net
             idx += static_cast<size_t>(result);
         }
 
-        LOG_INFO("SocketSSL.RecvToEnd [", fd,"]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("SocketSSL.RecvToEnd [", fd,"]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
@@ -222,7 +223,7 @@ namespace analyzer::net
             }
 
             if (result == 1) {
-                LOG_INFO("SocketSSL.DoHandshakeSSL [", fd,"]: Handshake to '", exHost, "' is success.");
+                LOG_TRACE("SocketSSL.DoHandshakeSSL [", fd,"]: Handshake to '", exHost, "' is success.");
                 return true;
             }
             if (result <= 0)
@@ -239,7 +240,19 @@ namespace analyzer::net
     }
 
 
-    std::list<std::string> SocketSSL::GetCiphersList(void) const
+    // Set Server Name Indication to TLS extension.
+    bool SocketSSL::SetServerNameIndication (const std::string& serverName) const noexcept
+    {
+        if (SSL_set_tlsext_host_name(ssl, serverName.c_str()) == 0) {
+            LOG_ERROR("SocketSSL.SetServerNameIndication [", fd,"]: In function 'SSL_set_tlsext_host_name' - ", CheckSSLErrors());
+            return false;
+        }
+        LOG_TRACE("SocketSSL.SetServerNameIndication [", fd,"]: Setting SNI extension is success.");
+        return true;
+    }
+
+
+    std::list<std::string> SocketSSL::GetCiphersList(void) const noexcept
     {
         std::list<std::string> result;
         STACK_OF(SSL_CIPHER)* ciphers_list = SSL_get_ciphers(ssl);
@@ -252,7 +265,7 @@ namespace analyzer::net
     }
 
 
-    bool SocketSSL::SetOnlySecureCiphers(void)
+    bool SocketSSL::SetOnlySecureCiphers(void) noexcept
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.SetOnlySecureCiphers: Socket is invalid.");
@@ -277,7 +290,7 @@ namespace analyzer::net
             LOG_ERROR("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers failed.");
             return false;
         }
-        LOG_INFO("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers is success.");
+        LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers is success.");
 #if ( defined(DEBUG) )
         std::ostringstream buff;
         const auto result = common::split(secure, ';');
@@ -297,7 +310,7 @@ namespace analyzer::net
         }
 
         if (SSL_set_alpn_protos(ssl, &proto[0], static_cast<uint32_t>(length)) == 0) {
-            LOG_INFO("SocketSSL.SetInternalProtocol [", fd,"]: Set ALPN protocol is success.");
+            LOG_TRACE("SocketSSL.SetInternalProtocol [", fd,"]: Setting ALPN protocol extension is success.");
             return true;
         }
         LOG_ERROR("SocketSSL.SetInternalProtocol [", fd,"]: In function 'SetInternalProtocol' - ", CheckSSLErrors());
@@ -368,7 +381,7 @@ namespace analyzer::net
     }
 
     // Get selected ALPN protocol by server in string type.
-    std::string SocketSSL::GetRawSelectedProtocol(void) const
+    std::string SocketSSL::GetRawSelectedProtocol(void) const noexcept
     {
         if (IsHandshakeReady() == false) { return std::string(); }
         uint32_t length = 0;
@@ -382,13 +395,13 @@ namespace analyzer::net
     }
 
     // Get current timeout of the SSL session.
-    std::size_t SocketSSL::GetSessionTimeout(void) const
+    std::size_t SocketSSL::GetSessionTimeout(void) const noexcept
     {
         return static_cast<std::size_t>(SSL_get_timeout(SSL_get_session(ssl)));
     }
 
     // Get selected ALPN protocol by server.
-    protocols::http::HTTP_VERSION SocketSSL::GetSelectedProtocol(void) const
+    protocols::http::HTTP_VERSION SocketSSL::GetSelectedProtocol(void) const noexcept
     {
         using protocols::http::HTTP_VERSION;
         if (IsHandshakeReady() == false) { return HTTP_VERSION::UNKNOWN; }
@@ -403,7 +416,7 @@ namespace analyzer::net
     }
 
     // Get selected cipher name in ssl connection.
-    std::string SocketSSL::GetSelectedCipherName(void) const
+    std::string SocketSSL::GetSelectedCipherName(void) const noexcept
     {
         if (IsHandshakeReady() == false) { return std::string(); }
 

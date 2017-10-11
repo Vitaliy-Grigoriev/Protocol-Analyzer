@@ -284,26 +284,28 @@ namespace analyzer::net
         int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) final;
 
         // Return the SSL object.
-        inline SSL * GetSSL(void) const { return ssl; }
+        inline SSL * GetSSL(void) const noexcept { return ssl; }
         // Return the SSL object.
-        inline SSL_SESSION * GetSessionSSL(void) const { return SSL_get_session(ssl); }
+        inline SSL_SESSION * GetSessionSSL(void) const noexcept { return SSL_get_session(ssl); }
+        // Set Server Name Indication to TLS extension.
+        bool SetServerNameIndication (const std::string & /*serverName*/) const noexcept;
         // Get all available clients ciphers.
-        std::list<std::string> GetCiphersList(void) const;
+        std::list<std::string> GetCiphersList(void) const noexcept;
         // Use only security ciphers in connection.
-        bool SetOnlySecureCiphers(void);
+        bool SetOnlySecureCiphers(void) noexcept;
         // Use ALPN protocol to change the set of application protocols.
         bool SetInternalProtocol (const unsigned char * /*proto*/, std::size_t /*length*/);
         bool SetHttpProtocols(void);
         bool SetHttp_1_1_OnlyProtocol(void);
         bool SetHttp_2_0_OnlyProtocol(void);
         // Get selected ALPN protocol by server in string type.
-        std::string GetRawSelectedProtocol(void) const;
+        std::string GetRawSelectedProtocol(void) const noexcept;
         // Get current timeout of the SSL session.
-        std::size_t GetSessionTimeout(void) const;
+        std::size_t GetSessionTimeout(void) const noexcept;
         // Get selected ALPN protocol by server.
-        protocols::http::HTTP_VERSION GetSelectedProtocol(void) const;
+        protocols::http::HTTP_VERSION GetSelectedProtocol(void) const noexcept;
         // Get selected cipher name in ssl connection.
-        std::string GetSelectedCipherName(void) const;
+        std::string GetSelectedCipherName(void) const noexcept;
         // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).
         void Shutdown (int32_t /*how*/ = SHUT_RDWR) const final;
         // Close the connection.
