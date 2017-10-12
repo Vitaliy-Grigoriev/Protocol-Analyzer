@@ -104,14 +104,14 @@ namespace analyzer::net
 
         /**
          * @fn static SocketsStatePool & Instance(void);
-         * @brief Function that return the instance of the singleton class.
+         * @brief Method that returns the instance of the singleton class.
          * @return The instance of singleton class.
          */
         static SocketStatePool & Instance(void) noexcept;
 
         /**
          * @fn bool AddSocketDescriptor (int32_t, uint32_t);
-         * @brief Function that adding new socket descriptor to epoll set.
+         * @brief Method that adds new socket descriptor to epoll set.
          * @param [in] fd - Socket descriptor.
          * @param [in] events - One or more EPOLL_EVENTS values.
          * @return Boolean value that indicate the adding status.
@@ -120,7 +120,7 @@ namespace analyzer::net
 
         /**
          * @fn bool DeleteSocketDescriptor (int32_t);
-         * @brief Function that remove socket descriptor from epoll set.
+         * @brief Method that removes socket descriptor from epoll set.
          * @param [in] fd - Socket descriptor.
          * @return Boolean value that indicate the removal status.
          */
@@ -128,7 +128,7 @@ namespace analyzer::net
 
         /**
          * @fn uint16_t CheckSocketStatus (int32_t, int32_t);
-         * @brief Function that check socket status.
+         * @brief Method that checks socket status.
          * @param [in] fd - Socket descriptor.
          * @param [in] timeout - Timeout for waiting descriptor status. Default: unlimited.
          * @return Boolean value that indicate the removal status.

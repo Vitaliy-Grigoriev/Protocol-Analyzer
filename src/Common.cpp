@@ -43,4 +43,25 @@ namespace analyzer::common
     }
 
 
+    unsigned char charToUChar (const char symbol) noexcept
+    {
+        union {
+            char in;
+            unsigned char out;
+        } u { symbol };
+        return u.out;
+    }
+
+    void replaceNonPrintableToSymbol (void* data, const std::size_t size, const char symbol) noexcept
+    {
+        auto current = reinterpret_cast<unsigned char*>(data);
+        auto end = reinterpret_cast<unsigned char*>(data) + size;
+        while (current != end) {
+            if (isPrintable(symbol) == true) {
+                *current = charToUChar(symbol);
+            }
+            current++;
+        }
+    }
+
 }  // namespace common.

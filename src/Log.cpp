@@ -9,18 +9,10 @@
 namespace analyzer::log
 {
     /**
-      * @typedef typedef std::unordered_map<int32_t, std::string> error_description;
-      * @brief The type of the errors description.
-      */
-    using error_description = std::unordered_map<int32_t, std::string>;
-
-
-    std::mutex log_mutex = { };
-    /**
-      * @var static error_description errors;
+      * @var static std::unordered_map<int32_t, std::string> errors;
       * @brief Container that consist of the string definitions of system errors.
       */
-    static error_description errors;
+    static std::unordered_map<int32_t, std::string> errors;
 
     /**
       * @fn static void SetErrorStrings(void) noexcept;
@@ -38,22 +30,123 @@ namespace analyzer::log
         return instance;
     }
 
-
     std::string StrSysError::operator() (const int32_t error) const noexcept
     {
-        auto it = errors.find(error);
-        if (it != errors.end()) { return (*it).second; }
-        return std::string("Occurred unknown error (" + std::to_string(error) + ").");
+        const auto it = errors.find(error);
+        if (it != errors.end()) { return it->second; }
+        return std::string("Unknown error (" + std::to_string(error) + ").");
     }
 
-    static inline unsigned char charToUChar (char input)
+
+    Logging::Logging(void) noexcept
     {
-        union {
-            char in;
-            unsigned char out;
-        } u { input };
-        return u.out;
+        try
+        {
+            fd.open(logFileName.c_str(), std::ios_base::ate);
+            if (fd.is_open() == false || fd.fail() == true) {
+                std::cerr << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                std::cerr << "[error] Logging.Logging: In constructor - Could not open log file - '" << logFileName << "'.";
+                std::terminate();
+            }
+        }
+        catch (const std::ios_base::failure& err) {
+            std::cerr << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            std::cerr << "[error] Logging.Logging: In constructor - " << err.what() << '.' << std::endl;
+            std::terminate();
+        }
+        out.rdbuf(fd.rdbuf());
     }
+
+    Logging::~Logging(void) noexcept
+    {
+        out.flush();
+        if (fd.is_open() == true) {
+            fd.close();
+        }
+    }
+
+    Logging& Logging::Instance(void) noexcept
+    {
+        // Since it's a static variable, if the class has already been created, its won't be created again.
+        // It's thread-safe in C++11.
+        static Logging instance;
+        return instance;
+    }
+
+    bool Logging::ChangeLogFileName (const std::string& path, const std::ios_base::openmode mode) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock(log_mutex); }
+        catch (const std::system_error& err) {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logging.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
+            return false;
+        }
+
+        try
+        {
+            if (fd.is_open() == true)
+            {
+                fd.close();
+                fd.open(path.c_str(), mode);
+                if (fd.is_open() == false || fd.fail() == true)
+                {
+                    out.rdbuf(std::clog.rdbuf());
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[error] Logging.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
+                    return false;
+                }
+                out.rdbuf(fd.rdbuf());
+            }
+            logFileName = path;
+        }
+        catch (const std::ios_base::failure& err)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logging.ChangeLogFileName: When change log engine - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
+    bool Logging::SwitchLoggingEngine(void) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock(log_mutex); }
+        catch (const std::system_error& err) {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logging.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');
+            return false;
+        }
+
+        try
+        {
+            out.flush();
+            if (fd.is_open() == true)
+            {
+                fd.close();
+                out.rdbuf(std::clog.rdbuf());
+            }
+            else
+            {
+                fd.open(logFileName.c_str(), std::ios_base::ate);
+                if (fd.is_open() == false || fd.fail() == true)
+                {
+                    out.rdbuf(std::clog.rdbuf());
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[error] Logging.SwitchLoggingEngine: Could not open log file - '", logFileName, "'.");
+                    return false;
+                }
+                out.rdbuf(fd.rdbuf());
+            }
+        }
+        catch (const std::ios_base::failure& err)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logging.SwitchLoggingEngine: When change log engine - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
 
 
     // TODO: Add three flag: is_offset, is_data, is_upper...
@@ -92,9 +185,9 @@ namespace analyzer::log
             for (std::size_t i = 0; i < hexLineLength && size != 0; ++i)
             {
                 if (i < mean_length) {
-                    hex_dump.replace(line + 12 + i * 3, 2, common::getHexValue(charToUChar(*pSource)));
+                    hex_dump.replace(line + 12 + i * 3, 2, common::getHexValue(common::charToUChar(*pSource)));
                 }
-                else { hex_dump.replace(line + 13 + i * 3, 2, common::getHexValue(charToUChar(*pSource))); }
+                else { hex_dump.replace(line + 13 + i * 3, 2, common::getHexValue(common::charToUChar(*pSource))); }
                 pSource++;
                 size--;
             }
@@ -106,14 +199,14 @@ namespace analyzer::log
             { // bug with cyrillic symbols...
                 if (i < mean_length)
                 {
-                    if (isprint(static_cast<int32_t>(*pSource)) != 0) {
+                    if (common::isPrintable(*pSource) == true) {
                         hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
                     } else {
                         hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
                     }
                 } else
                 {
-                    if (isprint(static_cast<int32_t>(*pSource)) != 0) {
+                    if (common::isPrintable(*pSource) == true) {
                         hex_dump.replace(line + hex_data + 18 + i, 1, pSource, 1);
                     } else {
                         hex_dump.replace(line + hex_data + 18 + i, 1, 1, '.');
@@ -124,12 +217,10 @@ namespace analyzer::log
             }
             hex_dump[line + hex_dump_line_length - 1] = '\n';
         }
-
-        __common_log(LEVEL::TRACE, message, '\n', hex_dump, '\n');
+        LOG_TRACE(message, '\n', hex_dump, '\n');
     }
 
 
-    // For Linux only.
     static void SetErrorStrings(void) noexcept
     {
         errors.emplace( std::make_pair(EPERM,           "'Operation not permitted'."));

@@ -27,7 +27,7 @@ namespace analyzer::common
 {
     /**
       * @fn template <typename T> std::unique_ptr<T> alloc_memory(void) noexcept;
-      * @brief Function, which allocate dynamic memory.
+      * @brief Function, which allocates dynamic memory.
       * @return The smart pointer to allocated memory.
       */
     template <typename T>
@@ -41,9 +41,10 @@ namespace analyzer::common
         }
     }
 
+
     /**
       * @fn template <typename T = char[]> std::unique_ptr<T[]> alloc_memory (const std::size_t, const T * = nullptr) noexcept;
-      * @brief Function that allocate dynamic memory and if needed fills it.
+      * @brief Function that allocates dynamic memory and if needed fills it.
       * @param [in] size - The size of memory.
       * @param [in] data - The pointer to data for copy.
       * @return The smart pointer to allocated memory.
@@ -62,9 +63,10 @@ namespace analyzer::common
         }
     }
 
+
     /**
      * @fn template <typename T = uint32_t> std::enable_if_t<std::is_integral<T>::value, T> GetRandomValue(void) noexcept;
-     * @brief Function that return the sequence of pseudo-random integral numbers.
+     * @brief Function that returns the sequence of pseudo-random integral numbers.
      * @return The pseudo-random number of the type T.
      */
     template <typename T = uint32_t>
@@ -78,6 +80,7 @@ namespace analyzer::common
         return dist(gen, param_t(std::numeric_limits<T>::min() + 1, std::numeric_limits<T>::max() - 1));
     }
 
+
     /**
      * @fn void trim_left (std::string &);
      * @brief Trim string value from start in place.
@@ -85,12 +88,14 @@ namespace analyzer::common
      */
     void trim_left (std::string & /*str*/) noexcept;
 
+
     /**
      * @fn void trim_right (std::string &);
      * @brief Trim string value from end in place.
      * @param [in,out] str - Target string.
      */
     void trim_right (std::string & /*str*/) noexcept;
+
 
     /**
      * @fn void trim (std::string &);
@@ -117,6 +122,7 @@ namespace analyzer::common
         }
     }
 
+
     /**
      * @fn std::vector<std::string> split (const std::string &, char) noexcept;
      * @brief Split string into a vector of strings using the delimiter.
@@ -126,9 +132,10 @@ namespace analyzer::common
      */
     std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
 
+
     /**
      * @fn template<typename Type> std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
-     * @brief Function that convert any data to hex format.
+     * @brief Function that converts any data to hex format.
      * @param [in] data - Input data.
      * @param [in] width - Width of hex value. Default: 2.
      * @param [in] upper - In what case the data will present in hex format. Default: true.
@@ -145,9 +152,10 @@ namespace analyzer::common
         return result.str();
     }
 
+
     /**
      * @fn template<typename Type> std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
-     * @brief Function that convert string data to hex format.
+     * @brief Function that convertss string data to hex format.
      * @param [in] data - Input data.
      * @param [in] length - Length of the data.
      * @param [in] width - Width of hex value for each type. Default: 2.
@@ -165,13 +173,45 @@ namespace analyzer::common
         return result;
     }
 
+
     /**
      * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;
-     * @brief Function that convert time point to calendar datetime in string format.
+     * @brief Function that converts time point to calendar datetime in string format.
      * @param [in] time - The time point in processes clock ticks.
      * @return Calendar datetime in string format.
      */
     std::string clockToString (const std::chrono::system_clock::time_point & /*time*/) noexcept;
+
+
+    /**
+     * @fn unsigned char charToUChar (char) noexcept;
+     * @brief Function that converts one value of char type to unsigned char type.
+     * @param [in] symbol - One value in char type.
+     * @return One value in unsigned char type.
+     */
+    unsigned char charToUChar (char /*symbol*/) noexcept;
+
+
+    /**
+     * @fn static inline bool isPrintable (const char) noexcept;
+     * @brief Function that checks the char value on printable.
+     * @param [in] symbol - One value in char type.
+     * @return True - if character is printable, otherwise - false.
+     */
+    static inline bool isPrintable (const char symbol) noexcept
+    {
+        return (symbol >= 0x20 && symbol < 0x7f);
+    }
+
+
+    /**
+     * @fn void replaceNonPrintableToSymbol (void *, std::size_t, char) noexcept;
+     * @brief Function that replaces all nonprintable values to symbol.
+     * @param [in,out] data - Pointer to input data.
+     * @param [in] size - Size of input data.
+     * @param [in] symbol - One value in char type for insert. Default: '.' (0x2E).
+     */
+    void replaceNonPrintableToSymbol (void* data, std::size_t size, char symbol = '.') noexcept;
 
 
     /**
@@ -208,7 +248,7 @@ namespace analyzer::common
 
         /**
          * @fn inline std::size_t Data::Size(void) const noexcept;
-         * @brief Method that return size of the internal data.
+         * @brief Method that returns size of the internal data.
          * @return Size of the internal data.
          */
         inline std::size_t Size(void) const noexcept
@@ -218,7 +258,7 @@ namespace analyzer::common
 
         /**
          * @fn inline T * Data::Get(void) const noexcept;
-         * @brief Method that return pointer to the internal data.
+         * @brief Method that returns pointer to the internal data.
          * @return Pointer to the internal data.
          */
         inline T* Get(void) const noexcept
@@ -228,7 +268,7 @@ namespace analyzer::common
 
         /**
          * @fn inline T * Data::GetAt (const std::size_t) const noexcept;
-         * @brief Method that return pointer to any shift of the internal data.
+         * @brief Method that returns pointer to any shift of the internal data.
          * @return Pointer to any shift of the internal data.
          */
         inline T* GetAt (const std::size_t index) const noexcept

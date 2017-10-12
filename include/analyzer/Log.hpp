@@ -5,6 +5,7 @@
 #include <mutex>
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <exception>
 
 #include "Common.hpp"
@@ -22,6 +23,7 @@
 /**
  * @defgroup LOG_FUNCTIONS Global logging defines.
  * @brief This defines present all interfaces for output log with several attributes.
+ *
  * @note In this code is used GNU extension "Named Variadic Macros".
  *
  * @{
@@ -32,31 +34,31 @@
  * @brief Marco that output message to the log file with TRACE level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_TRACE(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::TRACE, args))
+#define LOG_TRACE(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::TRACE, args))
 /**
  * @def LOG_INFO (args...)
  * @brief Marco that output message to the log file with INFO level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_INFO(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::INFORMATION, args))
+#define LOG_INFO(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
 /**
  * @def LOG_WARNING (args...)
  * @brief Marco that output message to the log file with WARNING level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_WARNING(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::WARNING, args))
+#define LOG_WARNING(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::WARNING, args))
 /**
  * @def LOG_ERROR (args...)
  * @brief Marco that output message to the log file with ERROR level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_ERROR(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::ERROR, args))
+#define LOG_ERROR(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::ERROR, args))
 /**
  * @def LOG_FATAL (args...)
  * @brief Marco that output message to the log file with FATAL level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_FATAL(args...) (analyzer::log::__common_log(analyzer::log::LEVEL::FATAL, args))
+#define LOG_FATAL(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::FATAL, args))
 
 /**@}*/
 
@@ -66,6 +68,7 @@ namespace analyzer::log
     /**
      * @enum LEVEL
      * @brief The level of logging.
+     *
      * @note The level TRACE work only in debug mode.
      */
     enum LEVEL : uint16_t
@@ -77,11 +80,6 @@ namespace analyzer::log
         FATAL = 4
     };
 
-    /**
-     * @var extern std::mutex log_mutex;
-     * @brief A global mutex value for logging.
-     */
-    extern std::mutex log_mutex;
 
     /**
      * @class StrSysError Log.hpp "include/analyzer/Log.hpp"
@@ -113,107 +111,180 @@ namespace analyzer::log
 
         /**
          * @fn static StrSysError & StrSysError::Instance(void);
-         * @brief Function that return the instance of the system error singleton class.
+         * @brief Method that returns the instance of the system error singleton class.
          * @return The instance of singleton class.
          */
         static StrSysError & Instance(void) noexcept;
 
         /**
          * @fn std::string StrSysError::operator() (int32_t) const noexcept;
-         * @brief Operator that return a system error in string format.
+         * @brief Operator that returns a system error in string format.
          * @param [in] error - The error code number.
          * @return The string that contains a description of the error.
          */
         std::string operator() (int32_t /*error*/) const noexcept;
     };
 
-    /**
-     * @fn static inline void __output_values (std::ostream &) noexcept;
-     * @brief Common function that outputs the data to log file.
-     * @param [in] fd - File descriptor for output newline.
-     * @note DO NOT USE THIS FUNCTION!
-     */
-    static inline void __output_values (std::ostream& fd) noexcept
-    {
-        fd << std::endl;
-    }
 
     /**
-     * @fn template<typename T> static inline void __output_values (std::ostream &, const T &) noexcept;
-     * @brief Common function that outputs the data to log file.
-     * @param [in] fd - File descriptor for output.
-     * @tparam [in] value - The current output parameter.
-     * @note DO NOT USE THIS FUNCTION!
+     * @class Logging Log.hpp "include/analyzer/Log.hpp"
+     * @brief This singleton class defined the interface for program logging.
+     *
+     * This singleton class is thread-safe.
+     * To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
      */
-    template<typename T>
-    void __output_values (std::ostream& fd, const T& value) noexcept
+    class Logging
     {
-        fd << value;
-        __output_values(fd);
-    }
+    private:
+        /**
+         * @var std::mutex log_mutex;
+         * @brief A mutex value for thread-safe program logging.
+         */
+        std::mutex log_mutex;
+        /**
+         * @var std::ofstream fd;
+         * @brief Descriptor of the log file.
+         */
+        std::ofstream fd;
+        /**
+         * @var std::ostream & out;
+         * @brief Current descriptor of the output engine.
+         */
+        std::ostream& out = std::cerr;
+        /**
+         * @var std::string logFileName;
+         * @brief Current name and path of the log file.
+         *
+         * @note Default: "../log/program.log".
+         */
+        std::string logFileName = "../log/program.log";
 
-    /**
-     * @fn template<typename T, typename... Args> void __output_values (std::ostream &, const T &, Args &&...) noexcept;
-     * @brief Common function that outputs the data to log file.
-     * @param [in] fd - File descriptor for output.
-     * @tparam [in] value - The current output parameter.
-     * @tparam [in] params - Any data for logging.
-     * @note DO NOT USE THIS FUNCTION!
-     */
-    template<typename T, typename... Args>
-    void __output_values (std::ostream& fd, const T& value, Args&&... args) noexcept
-    {
-        fd << value;
-        __output_values(fd, std::forward<Args>(args)...);
-    }
+    protected:
+        /**
+         * @fn Logging::Logging (std::ostream &);
+         * @brief Protect constructor.
+         */
+        Logging(void) noexcept;
 
-    /**
-     * @fn template <typename... Args> void __common_log (const char *, Args &&...);
-     * @brief Common function that outputs the data to log file.
-     * @tparam [in] params - Any data for logging.
-     * @note DO NOT USE THIS FUNCTION!
-     */
-    template <typename... Args>
-    void __common_log (LEVEL level, Args&&... args) noexcept
-    {
-#if ( !defined(DEBUG) && !defined(FULLLOG) )
-        if (level == LEVEL::TRACE) { return; }
-#endif
-#if ( !defined(FULLLOG) )
-        if (level == LEVEL::INFORMATION) { return; }
-#endif
+        /**
+         * @fn Logging::~Logging(void);
+         * @brief Protect destructor.
+         */
+        ~Logging(void) noexcept;
 
-        try { std::lock_guard<std::mutex> lock(log_mutex); }
-        catch (const std::system_error& /*err*/) {
-            return;
+        /**
+         * @fn static inline void __output_values (std::ostream &) noexcept;
+         * @brief Common method that outputs the data to log file.
+         */
+        inline void __output_values(void) const noexcept
+        {
+            out << std::endl;
         }
 
-        std::ofstream fd("../log/program.log", std::ios::app);
-        if (fd.is_open())
+        /**
+         * @fn template<typename T> static inline void __output_values (const T &) noexcept;
+         * @brief Common method that outputs the data to log file.
+         * @tparam [in] value - The current output parameter.
+         */
+        template<typename T>
+        void __output_values (const T& value) const noexcept
         {
-            fd << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            out << value << std::endl;
+        }
+
+        /**
+         * @fn template<typename T, typename... Args> void __output_values (const T &, Args &&...) noexcept;
+         * @brief Common method that outputs the data to log file.
+         * @tparam [in] value - The current output parameter.
+         * @tparam [in] params - Any data for logging.
+         */
+        template<typename T, typename... Args>
+        void __output_values (const T& value, Args&&... args) const noexcept
+        {
+            out << value;
+            __output_values(std::forward<Args>(args)...);
+        }
+
+    public:
+        Logging (Logging &&) = delete;
+        Logging (const Logging &) = delete;
+        Logging & operator= (Logging &&) = delete;
+        Logging & operator= (const Logging &) = delete;
+
+        /**
+         * @fn static Logging & Logging::Instance(void);
+         * @brief Method that returns the instance of the program logging singleton class.
+         * @return The instance of singleton class.
+         */
+        static Logging & Instance(void) noexcept;
+
+        /**
+         * @fn template <typename... Args> void Logging::Push (LEVEL level, Args&&... args) noexcept;
+         * @brief Method that pushes any logging data to log file.
+         * @param [in] level - The level of the message.
+         * @tparam [in] args - Any logging data.
+         */
+        template <typename... Args>
+        void Push (LEVEL level, Args&&... args) noexcept
+        {
+#if ( !defined(DEBUG) )
+            if (level == LEVEL::TRACE) { return; }
+#endif
+#if ( !defined(FULLLOG) )
+            if (level == LEVEL::INFORMATION) { return; }
+#endif
+            try { std::lock_guard<std::mutex> lock(log_mutex); }
+            catch (const std::system_error& /*err*/) {
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[error] Logging.Push: In function 'lock_guard' - could not lock a mutex.");
+                return;
+            }
+
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             switch (level)
             {
                 case LEVEL::TRACE:
-                    fd << "[trace] ";
+                    out << "[trace] ";
                     break;
                 case LEVEL::INFORMATION:
-                    fd << "[info] ";
+                    out << "[info] ";
                     break;
                 case LEVEL::WARNING:
-                    fd << "[warning] ";
+                    out << "[warning] ";
                     break;
                 case LEVEL::ERROR:
-                    fd << "[error] ";
+                    out << "[error] ";
                     break;
                 case LEVEL::FATAL:
-                    fd << "[fatal] ";
+                    out << "[fatal] ";
                     break;
             }
-            __output_values(fd, std::forward<Args>(args)...);
-            fd.close();
+            __output_values(std::forward<Args>(args)...);
         }
-    }
+
+        /**
+         *
+         */
+        //void SetLogFileSizeLimit (uint32_t /*size*/) noexcept;
+
+        /**
+         * @fn bool ChangeLogFileName (const std::string &, std::ios_base::openmode) noexcept;
+         * @brief Method that switches the output log file.
+         * @param [in] path - Full path to new log file.
+         * @param [in] mode - Mode for open the log file. Default: Append (std::ios_base::ate).
+         * @return True - if log file change is successful, otherwise - false.
+         *
+         * @note If the current engine on console mode then only the file name will be changed but the engine stay on the console mode.
+         */
+        bool ChangeLogFileName (const std::string & /*path*/, std::ios_base::openmode /*mode*/ = std::ios_base::ate) noexcept;
+
+        /**
+         * @fn bool SwitchLoggingEngine(void) noexcept;
+         * @brief Method that switches the output engine.
+         * @return True - if engine change is successful, otherwise - false.
+         */
+        bool SwitchLoggingEngine(void) noexcept;
+    };
 
 
     /**

@@ -1,49 +1,54 @@
 {
     "Protocol":
     {
-        "ProtocolName": "name",
+        "Name": "string",
         "NetworkSettings":
         {
             "Global":
             {
-                "Transport": "tcp/udp"
+                "Transport": "tcp/udp/tcp_ssl"
             },
             "Local":
             {
-                "Port": 333
+                "Port": 111
             },
-            "Destination":
+            "Target":
             {
-                "Host": "172.35.29.104",
-                "Port": 444
+                "Host": "172.35.29.104/www.example.com",
+                "Port": 222
             }
         },
-        "RequestRounds":
+        "RequestSet":
         {
-            "Round1":
+            "RoundName1":
             {
-                "RoundID": 1,
-                "RoundName": "name",
+                "ID": 1,
+                "Name": "string",
 	            "Description": "string",
                 "Fields":
                 [
                     {
+                        "ID": 1,
                         "Name": "simple",
                         "Condition": "optional/required",
                         "Permission": "const/volatile",
 	                    "Amount": "single/multiple",
-                        "Type": "bool/char/int16/int32/int64/float/double/string",
+                        "Type": "bool/i8/i16/i32/i64/float/double/string",
                         "Size": 5,
 	                    "Value": "",
                         "ValidValues":
                         {
-	                        "Range": "1-65535",
+	                        "Range": "1-65535/",
 	                        "Values": [ 52, 37, 307 ],
-	                        "Characters": "a-z, A-S, 1-9"
+	                        "Characters": "a-z, A-Z, 1-9"
 	                    },
-                        "Dependence": { "ID": "1", "Type": "size/require" }
+                        "Dependencies": [
+                            { "ID": "1", "Type": "size/require" },
+                            {  }
+                        ]
                     },
                     {
+                        "ID": 2,
 	                    "Name": "complex",
 	                    "Condition": "optional/required",
 	                    "Amount": "single/multiple",
@@ -65,16 +70,17 @@
 	                    ],
 	                    "Size": 6,
 	                    "ValidValues": [ "value1", "value2" ],
-	                    "Dependence": { "ID": "1", "Type": "size/require" }
+	                    "Dependencies": { "ID": "1", "Type": "size/require" }
                     }
                 ]
             },
-            "Round2":
+            "RoundName2":
             {
-
+                "ID": 2,
+                "Name": "string"
             }
         },
-        "ResponseRounds":
+        "ResponseSet":
         {
 
         }
