@@ -41,6 +41,7 @@ namespace analyzer::diagnostic
         /**
          * @class TimerCount Timer.hpp "include/analyzer/Timer.hpp"
          * @brief Class that contain the internal values of Timer class.
+         *
          * @note It is the internal class of Timer class.
          */
         class TimerCount

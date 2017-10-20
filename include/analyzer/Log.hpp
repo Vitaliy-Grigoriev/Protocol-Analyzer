@@ -34,31 +34,31 @@
  * @brief Marco that output message to the log file with TRACE level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_TRACE(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::TRACE, args))
+#define LOG_TRACE(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::TRACE, args))
 /**
  * @def LOG_INFO (args...)
  * @brief Marco that output message to the log file with INFO level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_INFO(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
+#define LOG_INFO(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
 /**
  * @def LOG_WARNING (args...)
  * @brief Marco that output message to the log file with WARNING level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_WARNING(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::WARNING, args))
+#define LOG_WARNING(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::WARNING, args))
 /**
  * @def LOG_ERROR (args...)
  * @brief Marco that output message to the log file with ERROR level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_ERROR(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::ERROR, args))
+#define LOG_ERROR(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::ERROR, args))
 /**
  * @def LOG_FATAL (args...)
  * @brief Marco that output message to the log file with FATAL level attribute.
  * @tparam [in] args - The sequence of parameters for output to the log file.
  */
-#define LOG_FATAL(args...) (analyzer::log::Logging::Instance().Push(analyzer::log::LEVEL::FATAL, args))
+#define LOG_FATAL(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::FATAL, args))
 
 /**@}*/
 
@@ -69,7 +69,8 @@ namespace analyzer::log
      * @enum LEVEL
      * @brief The level of logging.
      *
-     * @note The level TRACE work only in debug mode.
+     * @note The level TRACE work only in DEBUG mode.
+     * The level INFORMATION work only in FULLLOG mode.
      */
     enum LEVEL : uint16_t
     {
@@ -85,7 +86,7 @@ namespace analyzer::log
      * @class StrSysError Log.hpp "include/analyzer/Log.hpp"
      * @brief This singleton class defined the interface of receipt an system error.
      *
-     * This singleton class is thread-safe.
+     * @note This singleton class is thread-safe.
      * To use this class, use the macro GET_ERROR(const int32_t ErrorCode).
      */
     class StrSysError
@@ -127,13 +128,15 @@ namespace analyzer::log
 
 
     /**
-     * @class Logging Log.hpp "include/analyzer/Log.hpp"
+     * @class Logger Log.hpp "include/analyzer/Log.hpp"
      * @brief This singleton class defined the interface for program logging.
      *
-     * This singleton class is thread-safe.
+     * @note This singleton class is thread-safe.
      * To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
+     *
+     * @todo Change std::ofstream to std::filesystem.
      */
-    class Logging
+    class Logger
     {
     private:
         /**
@@ -149,6 +152,8 @@ namespace analyzer::log
         /**
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
+         *
+         * @note Default: std::cerr.
          */
         std::ostream& out = std::cerr;
         /**
@@ -157,23 +162,59 @@ namespace analyzer::log
          *
          * @note Default: "../log/program.log".
          */
-        std::string logFileName = "../log/program.log";
+        std::string logFileName = "../log/program_volume1.log";
+        /**
+         * @var std::size_t recordsLimit;
+         * @brief Number of entries in log file.
+         *
+         * @note Default: 50000.
+         */
+        std::size_t recordsLimit = 50000;
+        /**
+         * @var std::size_t recordsLimit;
+         * @brief Number of entries in log file in current time.
+         */
+        std::size_t currentRecords = 0;
 
     protected:
         /**
-         * @fn Logging::Logging (std::ostream &);
+         * @fn Logger::Logger (std::ostream &);
          * @brief Protect constructor.
          */
-        Logging(void) noexcept;
+        Logger(void) noexcept;
 
         /**
-         * @fn Logging::~Logging(void);
+         * @fn Logger::~Logger(void);
          * @brief Protect destructor.
          */
-        ~Logging(void) noexcept;
+        ~Logger(void) noexcept;
 
         /**
-         * @fn static inline void __output_values (std::ostream &) noexcept;
+         * @fn bool Logger::CheckVolume (std::string &) noexcept;
+         * @brief Check and add volume to the log file name.
+         * @param [in,out] name - File name.
+         * @param [in] onlyCheck - Flag indicating whether to add a volume. Default: false.
+         * @return True - if log file name already has volume name or if volume is added, otherwise - false.
+         */
+        bool CheckVolume (std::string & /*name*/, bool /*onlyCheck*/ = false) noexcept;
+
+        /**
+         * @fn bool Logger::GetNameWithNextVolume (std::string &) noexcept;
+         * @brief Change volume for the log file name.
+         * @param [in,out] name - File name.
+         * @return True - if log file volume is changed successfully, otherwise - false.
+         */
+        bool GetNameWithNextVolume (std::string & /*name*/) noexcept;
+
+        /**
+         * @fn bool Logger::ChangeVolume(void) noexcept;
+         * @brief Change volume the log file.
+         * @return True - if log file name is changed successfully, otherwise - false.
+         */
+        bool ChangeVolume(void) noexcept;
+
+        /**
+         * @fn static inline void Logger::__output_values (std::ostream &) noexcept;
          * @brief Common method that outputs the data to log file.
          */
         inline void __output_values(void) const noexcept
@@ -182,7 +223,7 @@ namespace analyzer::log
         }
 
         /**
-         * @fn template<typename T> static inline void __output_values (const T &) noexcept;
+         * @fn template<typename T> static inline void Logger::__output_values (const T &) noexcept;
          * @brief Common method that outputs the data to log file.
          * @tparam [in] value - The current output parameter.
          */
@@ -193,7 +234,7 @@ namespace analyzer::log
         }
 
         /**
-         * @fn template<typename T, typename... Args> void __output_values (const T &, Args &&...) noexcept;
+         * @fn template<typename T, typename... Args> void Logger::__output_values (const T &, Args &&...) noexcept;
          * @brief Common method that outputs the data to log file.
          * @tparam [in] value - The current output parameter.
          * @tparam [in] params - Any data for logging.
@@ -206,20 +247,20 @@ namespace analyzer::log
         }
 
     public:
-        Logging (Logging &&) = delete;
-        Logging (const Logging &) = delete;
-        Logging & operator= (Logging &&) = delete;
-        Logging & operator= (const Logging &) = delete;
+        Logger (Logger &&) = delete;
+        Logger (const Logger &) = delete;
+        Logger & operator= (Logger &&) = delete;
+        Logger & operator= (const Logger &) = delete;
 
         /**
-         * @fn static Logging & Logging::Instance(void);
+         * @fn static Logging & Logger::Instance(void);
          * @brief Method that returns the instance of the program logging singleton class.
          * @return The instance of singleton class.
          */
-        static Logging & Instance(void) noexcept;
+        static Logger & Instance(void) noexcept;
 
         /**
-         * @fn template <typename... Args> void Logging::Push (LEVEL level, Args&&... args) noexcept;
+         * @fn template <typename... Args> void Logger::Push (LEVEL level, Args&&... args) noexcept;
          * @brief Method that pushes any logging data to log file.
          * @param [in] level - The level of the message.
          * @tparam [in] args - Any logging data.
@@ -236,7 +277,7 @@ namespace analyzer::log
             try { std::lock_guard<std::mutex> lock(log_mutex); }
             catch (const std::system_error& /*err*/) {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                __output_values("[error] Logging.Push: In function 'lock_guard' - could not lock a mutex.");
+                __output_values("[error] Logger.Push: In function 'lock_guard' - could not lock a mutex.");
                 return;
             }
 
@@ -260,30 +301,45 @@ namespace analyzer::log
                     break;
             }
             __output_values(std::forward<Args>(args)...);
+            if (fd.is_open() == true && ++currentRecords >= recordsLimit) {
+                ChangeVolume();
+            }
         }
 
         /**
+         * @fn bool Logger::SetLogFileRecordsLimit (std::size_t) noexcept;
+         * @brief Method that controls number of entries in log file.
+         * @param size - Number of entries.
+         * @return True - if log file records limit is changed successfully, otherwise - false.
          *
+         * @note If number of records in log file more then limit then logging engine switch log file to the next volume.
          */
-        //void SetLogFileSizeLimit (uint32_t /*size*/) noexcept;
+        bool SetLogFileRecordsLimit (std::size_t /*size*/) noexcept;
 
         /**
-         * @fn bool ChangeLogFileName (const std::string &, std::ios_base::openmode) noexcept;
+         * @fn bool Logger::ChangeLogFileName (std::string, std::ios_base::openmode) noexcept;
          * @brief Method that switches the output log file.
          * @param [in] path - Full path to new log file.
-         * @param [in] mode - Mode for open the log file. Default: Append (std::ios_base::ate).
-         * @return True - if log file change is successful, otherwise - false.
+         * @param [in] mode - Mode for open the log file. Default: Append (std::ios_base::app).
+         * @return True - if log file name is changed successfully, otherwise - false.
          *
          * @note If the current engine on console mode then only the file name will be changed but the engine stay on the console mode.
          */
-        bool ChangeLogFileName (const std::string & /*path*/, std::ios_base::openmode /*mode*/ = std::ios_base::ate) noexcept;
+        bool ChangeLogFileName (std::string /*path*/, std::ios_base::openmode /*mode*/ = std::ios_base::app) noexcept;
 
         /**
-         * @fn bool SwitchLoggingEngine(void) noexcept;
+         * @fn bool Logger::SwitchLoggingEngine(void) noexcept;
          * @brief Method that switches the output engine.
-         * @return True - if engine change is successful, otherwise - false.
+         * @return True - if engine is switched successfully, otherwise - false.
          */
         bool SwitchLoggingEngine(void) noexcept;
+
+        /**
+         * @fn inline std::string GetLogFileName(void) const noexcept;
+         * @brief Method that returns current log file name.
+         * @return File name.
+         */
+        inline std::string GetLogFileName(void) const noexcept { return logFileName; }
     };
 
 
@@ -294,8 +350,12 @@ namespace analyzer::log
      * @param [in] data - Data that must be displayed in hex format.
      * @param [in] size - The size of input data.
      * @param [in] hexLineLength - The length of one hex dump string. Default: 16.
+     *
+     * @todo Add three flag: is_offset, is_data, is_upper...
+     * @todo Add dependency length of the offset from the length of data.
      */
     void DbgHexDump (const char * /*message*/, const void * /*data*/, std::size_t /*size*/, std::size_t /*hexLineLength*/ = 16);
+
 
 }  // namespace log.
 

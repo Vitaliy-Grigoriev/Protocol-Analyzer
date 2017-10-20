@@ -66,6 +66,7 @@ namespace analyzer::net
         /**
          * @var int32_t epoll_fd;
          * @brief The Epoll descriptor.
+         *
          * @note Epoll is thread-safe.
          */
         int32_t epoll_fd = INVALID_SOCKET;
@@ -73,6 +74,7 @@ namespace analyzer::net
         /**
          * @var struct epoll_event * events;
          * @brief The Epoll event structures.
+         *
          * @note The size of this structures defined as MAXIMUM_SOCKET_DESCRIPTORS.
          */
         std::unique_ptr<struct epoll_event[]> events = nullptr;

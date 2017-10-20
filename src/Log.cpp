@@ -38,26 +38,31 @@ namespace analyzer::log
     }
 
 
-    Logging::Logging(void) noexcept
+    Logger::Logger(void) noexcept
     {
         try
         {
-            fd.open(logFileName.c_str(), std::ios_base::ate);
+            if (common::file::checkFileExistence(logFileName) == true) {
+                currentRecords = common::file::getFileLines(logFileName);
+            }
+
+            fd.open(logFileName.c_str(), std::ios_base::app);
             if (fd.is_open() == false || fd.fail() == true) {
-                std::cerr << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                std::cerr << "[error] Logging.Logging: In constructor - Could not open log file - '" << logFileName << "'.";
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[error] Logger.Logger: In constructor - Could not open log file - '", logFileName, "'.");
                 std::terminate();
             }
+
+            out.rdbuf(fd.rdbuf());
         }
         catch (const std::ios_base::failure& err) {
-            std::cerr << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            std::cerr << "[error] Logging.Logging: In constructor - " << err.what() << '.' << std::endl;
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.Logger: In constructor - ", err.what(), '.');
             std::terminate();
         }
-        out.rdbuf(fd.rdbuf());
     }
 
-    Logging::~Logging(void) noexcept
+    Logger::~Logger(void) noexcept
     {
         out.flush();
         if (fd.is_open() == true) {
@@ -65,55 +70,226 @@ namespace analyzer::log
         }
     }
 
-    Logging& Logging::Instance(void) noexcept
+    bool Logger::CheckVolume (std::string& name, bool onlyCheck) noexcept
     {
-        // Since it's a static variable, if the class has already been created, its won't be created again.
-        // It's thread-safe in C++11.
-        static Logging instance;
-        return instance;
-    }
-
-    bool Logging::ChangeLogFileName (const std::string& path, const std::ios_base::openmode mode) noexcept
-    {
-        try { std::lock_guard<std::mutex> lock(log_mutex); }
-        catch (const std::system_error& err) {
-            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logging.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
-            return false;
-        }
-
         try
         {
-            if (fd.is_open() == true)
+            const std::size_t volumeSign = name.find("_volume");
+            if (volumeSign == std::string::npos)
             {
-                fd.close();
-                fd.open(path.c_str(), mode);
-                if (fd.is_open() == false || fd.fail() == true)
-                {
-                    out.rdbuf(std::clog.rdbuf());
-                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    __output_values("[error] Logging.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
-                    return false;
+                if (onlyCheck == true) { return false; }
+                const std::size_t dot = name.find_last_of('.');
+                const std::size_t pathDelimiter = name.find_last_of('/');
+                if (dot == std::string::npos) {
+                    name.append("_volume1.log");
                 }
-                out.rdbuf(fd.rdbuf());
+                else if (pathDelimiter != std::string::npos && dot > pathDelimiter) {
+                    name.insert(dot, "_volume1");
+                }
+                else {
+                    name.append("_volume1.log");
+                }
             }
-            logFileName = path;
         }
-        catch (const std::ios_base::failure& err)
-        {
+        catch (const std::exception& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logging.ChangeLogFileName: When change log engine - ", err.what(), '.');
+            __output_values("[error] Logger.CheckVolume: Incorrect file name '", name, "' - ", err.what(), '.');
             return false;
         }
         return true;
     }
 
-    bool Logging::SwitchLoggingEngine(void) noexcept
+    bool Logger::GetNameWithNextVolume (std::string& name) noexcept
+    {
+        try
+        {
+            std::size_t volumeSign = name.find("_volume");
+            if (volumeSign != std::string::npos)
+            {
+                volumeSign += 7;
+                if (volumeSign == name.size()) {
+                    name.append("1.log");
+                }
+                else if (common::text::isNumber(name.at(volumeSign)) == false) {
+                    name.insert(volumeSign, 1, '1');
+                }
+                else {
+                    std::size_t endPlace = 0;
+                    std::size_t volumeNumber = std::stoul(name.substr(volumeSign), &endPlace, 10);
+                    name.replace(volumeSign, endPlace, std::to_string(++volumeNumber));
+                }
+            }
+            else {
+                CheckVolume(name);
+            }
+        }
+        catch (const std::exception& err) {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.GetNameWithNextVolume: Incorrect file name '", name, "' - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
+    bool Logger::ChangeVolume(void) noexcept
+    {
+        const std::string lastFileName = logFileName;
+        std::size_t fileEntries = 0;
+        do
+        {
+            if (GetNameWithNextVolume(logFileName) == false)
+            {
+                logFileName = lastFileName;
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[warning] Logger.ChangeVolume: Volume of log file is not changed - '", logFileName, "'.");
+                return false;
+            }
+
+            if (common::file::checkFileExistence(logFileName) == false) {
+                break;
+            }
+            fileEntries = common::file::getFileLines(logFileName);
+        } while (fileEntries == common::file::ErrorState || fileEntries >= recordsLimit);
+
+        try
+        {
+            if (fd.is_open() == true)
+            {
+                std::ofstream out_temp(logFileName.c_str(), std::ios_base::app);
+                if (out_temp.is_open() == false || out_temp.fail() == true)
+                {
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[error] Logger.ChangeVolume: Could not open log file - '", logFileName, "'.");
+                    return false;
+                }
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[info] Logger.ChangeVolume: Volume of log file is changed to '", logFileName, "'.");
+
+                out.flush();
+                fd.close();
+                fd = std::move(out_temp);
+                out.rdbuf(fd.rdbuf());
+                currentRecords = fileEntries;
+            }
+        }
+        catch (const std::ios_base::failure& err)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.ChangeVolume: When change log file volume - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
+    Logger& Logger::Instance(void) noexcept
+    {
+        // Since it's a static variable, if the class has already been created, its won't be created again.
+        // It's thread-safe in C++11.
+        static Logger instance;
+        return instance;
+    }
+
+    bool Logger::SetLogFileRecordsLimit (const std::size_t size) noexcept
     {
         try { std::lock_guard<std::mutex> lock(log_mutex); }
         catch (const std::system_error& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logging.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');
+            __output_values("[error] Logger.SetLogFileRecordsLimit: In function 'lock_guard' - ", err.what(), '.');
+            return false;
+        }
+
+        try
+        {
+            recordsLimit = size;
+            if (fd.is_open() == true) {
+                if (currentRecords >= recordsLimit) {
+                    ChangeVolume();
+                }
+            }
+        }
+        catch (const std::ios_base::failure& err)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.SetLogFileRecordsLimit: When change volume size - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
+    bool Logger::ChangeLogFileName (std::string path, const std::ios_base::openmode mode) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock(log_mutex); }
+        catch (const std::system_error& err) {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
+            return false;
+        }
+
+        try
+        {
+            if (fd.is_open() == false)
+            {
+                fd.open(logFileName.c_str(), std::ios_base::app);
+                if (fd.is_open() == false || fd.fail() == true)
+                {
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
+                    return false;
+                }
+                out.flush();
+                out.rdbuf(fd.rdbuf());
+            }
+
+            if (CheckVolume(path) == false)
+            {
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[warning] Logger.ChangeLogFileName: Name of log file is not changed - '", logFileName, "'.");
+                return false;
+            }
+
+            logFileName = path;
+            if (common::file::checkFileExistence(logFileName) == true)
+            {
+                const std::size_t fileEntries = common::file::getFileLines(logFileName);
+                if (fileEntries != common::file::ErrorState || fileEntries >= recordsLimit) {
+                    ChangeVolume();
+                }
+                else { currentRecords = fileEntries; }
+            }
+            else
+            {
+                std::ofstream out_temp(path.c_str(), mode);
+                if (out_temp.is_open() == false || out_temp.fail() == true)
+                {
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
+                    return false;
+                }
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                __output_values("[info] Logger.ChangeLogFileName: Name of log file is changed to '", logFileName, "'.");
+
+                out.flush();
+                fd.close();
+                fd = std::move(out_temp);
+                out.rdbuf(fd.rdbuf());
+                currentRecords = 0;
+            }
+        }
+        catch (const std::ios_base::failure& err)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.ChangeLogFileName: When change log engine - ", err.what(), '.');
+            return false;
+        }
+        return true;
+    }
+
+    bool Logger::SwitchLoggingEngine(void) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock(log_mutex); }
+        catch (const std::system_error& err) {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[error] Logger.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');
             return false;
         }
 
@@ -127,12 +303,12 @@ namespace analyzer::log
             }
             else
             {
-                fd.open(logFileName.c_str(), std::ios_base::ate);
+                fd.open(logFileName.c_str(), std::ios_base::app);
                 if (fd.is_open() == false || fd.fail() == true)
                 {
                     out.rdbuf(std::clog.rdbuf());
                     out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    __output_values("[error] Logging.SwitchLoggingEngine: Could not open log file - '", logFileName, "'.");
+                    __output_values("[error] Logger.SwitchLoggingEngine: Could not open log file - '", logFileName, "'.");
                     return false;
                 }
                 out.rdbuf(fd.rdbuf());
@@ -141,7 +317,7 @@ namespace analyzer::log
         catch (const std::ios_base::failure& err)
         {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logging.SwitchLoggingEngine: When change log engine - ", err.what(), '.');
+            __output_values("[error] Logger.SwitchLoggingEngine: When change log engine - ", err.what(), '.');
             return false;
         }
         return true;
@@ -149,8 +325,6 @@ namespace analyzer::log
 
 
 
-    // TODO: Add three flag: is_offset, is_data, is_upper...
-    // TODO: Add dependency length of the offset from the length of data.
     void DbgHexDump (const char* message, const void* data, std::size_t size, std::size_t hexLineLength)
     {
         if (hexLineLength % 2 == 1) { hexLineLength++; }
@@ -168,8 +342,8 @@ namespace analyzer::log
         std::string hex_dump(hex_dump_size, ' ');
         hex_dump.replace(1, 8, "shift  |");
         for (std::size_t idx = 0; idx < hexLineLength; ++idx) {
-            if (idx < mean_length) { hex_dump.replace(12 + idx * 3, 2, common::getHexValue(idx)); }
-            else { hex_dump.replace(13 + idx * 3, 2, common::getHexValue(idx)); }
+            if (idx < mean_length) { hex_dump.replace(12 + idx * 3, 2, common::text::getHexValue(idx)); }
+            else { hex_dump.replace(13 + idx * 3, 2, common::text::getHexValue(idx)); }
         }
         hex_dump.replace(hexLineLength * 3 + 17, 4, "data");
         hex_dump[hex_dump_line_length - 1] = '\n';
@@ -181,13 +355,13 @@ namespace analyzer::log
         for (std::size_t idx = 0; idx < hex_lines - 2; ++idx)
         {
             const std::size_t line = hex_dump_line_length * (idx + 2);
-            hex_dump.replace(line, 11, common::getHexValue(idx * hexLineLength, 8) + '|');
+            hex_dump.replace(line, 11, common::text::getHexValue(idx * hexLineLength, 8) + '|');
             for (std::size_t i = 0; i < hexLineLength && size != 0; ++i)
             {
                 if (i < mean_length) {
-                    hex_dump.replace(line + 12 + i * 3, 2, common::getHexValue(common::charToUChar(*pSource)));
+                    hex_dump.replace(line + 12 + i * 3, 2, common::text::getHexValue(common::text::charToUChar(*pSource)));
                 }
-                else { hex_dump.replace(line + 13 + i * 3, 2, common::getHexValue(common::charToUChar(*pSource))); }
+                else { hex_dump.replace(line + 13 + i * 3, 2, common::text::getHexValue(common::text::charToUChar(*pSource))); }
                 pSource++;
                 size--;
             }
@@ -199,14 +373,14 @@ namespace analyzer::log
             { // bug with cyrillic symbols...
                 if (i < mean_length)
                 {
-                    if (common::isPrintable(*pSource) == true) {
+                    if (common::text::isPrintable(*pSource) == true) {
                         hex_dump.replace(line + hex_data + 17 + i, 1, pSource, 1);
                     } else {
                         hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
                     }
                 } else
                 {
-                    if (common::isPrintable(*pSource) == true) {
+                    if (common::text::isPrintable(*pSource) == true) {
                         hex_dump.replace(line + hex_data + 18 + i, 1, pSource, 1);
                     } else {
                         hex_dump.replace(line + hex_data + 18 + i, 1, 1, '.');

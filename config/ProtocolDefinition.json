@@ -22,67 +22,102 @@
         {
             "RoundName1":
             {
-                "ID": 1,
                 "Name": "string",
 	            "Description": "string",
                 "Fields":
                 [
                     {
                         "ID": 1,
-                        "Name": "simple",
-                        "Condition": "optional/required",
-                        "Permission": "const/volatile",
-	                    "Amount": "single/multiple",
-                        "Type": "bool/i8/i16/i32/i64/float/double/string",
-                        "Size": 5,
-	                    "Value": "",
+                        "Name": "name1",
+                        "Description": "string",
+                        "Condition": "required",
+                        "Permission": "volatile",
+	                    "Amount": "single",
+                        "Type": "i16",
+	                    "InitValue": 0,
                         "ValidValues":
                         {
-	                        "Range": "1-65535/",
-	                        "Values": [ 52, 37, 307 ],
-	                        "Characters": "a-z, A-Z, 1-9"
+	                        "Range": "1-65535",
+	                        "Values": [ 52, 37, 307 ]
 	                    },
                         "Dependencies": [
-                            { "ID": "1", "Type": "size/require" },
-                            {  }
+                            { "RoundName1.ID": 2, "Field": "Size", "Type": "size" },
+                            { "RoundName1.ID": 3, "Field": "Size", "Type": "size" }
                         ]
                     },
                     {
                         "ID": 2,
-	                    "Name": "complex",
-	                    "Condition": "optional/required",
-	                    "Amount": "single/multiple",
-	                    "Type": "multiple",
+	                    "Name": "name2",
+                        "Description": "string",
+	                    "Condition": "optional",
+	                    "Amount": "multiple",
+	                    "Type": "string",
 	                    "Definition":
 	                    [
 		                    {
 			                    "Index": 1,
 			                    "Permission": "const",
-			                    "Type": "bool/char/int16/int32/int64/float/double/string",
+			                    "Type": "bool/char/int16/int32/int64/float",
 			                    "Size": 2
 		                    },
 		                    {
 			                    "Index": 2,
 			                    "Permission": "volatile",
-			                    "Type": "bool/char/int16/int32/int64/float/double/string",
+			                    "Type": "bool/char/int16/int32/int64/float",
 			                    "Size": 4
 		                    }
 	                    ],
 	                    "Size": 6,
 	                    "ValidValues": [ "value1", "value2" ],
-	                    "Dependencies": { "ID": "1", "Type": "size/require" }
+	                    "Dependencies": [
+                            { "RoundName1.ID": 1, "Type": "require" }
+                        ]
+                    },
+                    {
+                        "ID": 3,
+                        "Name": "name3",
+                        "Description": "string"
                     }
-                ]
+                ],
+                "Dependencies": [ null ]
             },
             "RoundName2":
             {
-                "ID": 2,
-                "Name": "string"
+                "Name": "name4",
+                "Description": "string",
+                "Dependencies": [
+                    { "RoundName4.ID": 1, "Type": "require" }
+                ]
             }
         },
         "ResponseSet":
         {
-
+            "RoundName4":
+            {
+                "Name": "name5",
+                "Description": "string",
+                "Fields":
+                [
+                    {
+                        "ID": 1,
+                        "Name": "string",
+                        "Description": "string",
+                        "Condition": "required",
+                        "Permission": "volatile",
+                        "Amount": "single",
+                        "Type": "i16",
+                        "ValidValues":
+                        {
+                            "Range": "1-65535"
+                        },
+                        "Dependencies": [
+                            { "ID": "1", "Type": "size/require" }
+                        ],
+                        "RequiredPosition": 1,
+                        "MatchConditions": { "Value": ">5" }
+                    }
+                ]
+            }
         }
     }
 }

@@ -81,7 +81,7 @@ namespace analyzer::net
         const unsigned char* sessionID = SSL_SESSION_get_id(GetSessionSSL(), &length);
         if (sessionID != nullptr && length > 0)
         {
-            LOG_TRACE("SocketSSL.Connect [", fd,"]: SSL session established. Session ID - ", common::getHexString(sessionID, length), '.');
+            LOG_TRACE("SocketSSL.Connect [", fd,"]: SSL session established. Session ID - ", common::text::getHexString(sessionID, length), '.');
         }
 #endif
         return true;
@@ -293,7 +293,7 @@ namespace analyzer::net
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers is success.");
 #if ( defined(DEBUG) )
         std::ostringstream buff;
-        const auto result = common::split(secure, ';');
+        const auto result = common::text::split(secure, ';');
         std::copy(result.begin(), result.end(), std::ostream_iterator<std::string>(buff, "\n|-----------------\n|"));
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting following ciphers:\n|-----------------\n|", buff.str());
 #endif

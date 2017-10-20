@@ -28,7 +28,7 @@
 *.out
 *.app
 
-# Logging
+# Logger
 *.log
 
 #idea

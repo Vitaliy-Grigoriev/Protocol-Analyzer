@@ -82,6 +82,7 @@ namespace analyzer::task
     /**
       * @typedef typedef void * (*Worker)(void *);
       * @brief The type of the internal thread worker in TaskManager.
+      *
       * @note The Worker function starts in new thread.
       */
     using Worker = void * (*) (void *);
@@ -90,6 +91,7 @@ namespace analyzer::task
     /**
      * @class TaskManager Task.hpp "include/analyzer/Task.hpp"
      * @brief This class defined the work with pool of tasks.
+     *
      * @note This class is not thread safe.
      */
     class TaskManager
@@ -100,6 +102,7 @@ namespace analyzer::task
         /**
          * @class ThreadPool Task.hpp "include/analyzer/Task.hpp"
          * @brief This class defined the work with pool of thread IDs.
+         *
          * @note It is the internal class of TaskManager class.
          */
         class ThreadPool
