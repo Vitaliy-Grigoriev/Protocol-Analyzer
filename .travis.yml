@@ -58,8 +58,8 @@ install:
     mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
     export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - sudo apt-get install -qq libssl-dev
-  - if [ "$COMPILER" == "clang++4.0" ]; then sudo apt-get install -qq g++-6; fi
-  - if [ "$COMPILER" == "clang++5.0" ]; then sudo apt-get install -qq g++-7; fi
+  - if [ ${COMPILER} == "clang++4.0" ]; then sudo apt-get install -qq g++-6; fi
+  - if [ ${COMPILER} == "clang++5.0" ]; then sudo apt-get install -qq g++-7; fi
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
