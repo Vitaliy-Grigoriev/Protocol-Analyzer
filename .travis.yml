@@ -1,26 +1,25 @@
 dist: trusty
 language: cpp
+compiler: clang
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -qq cmake
-  - sudo apt-get install -qq libssl-dev
 
 branches:
   only:
     - master
 
+
 matrix:
   include:
   
     #- os: linux
-    #  env: TOOLSET=g++ COMPILER=g++-5 CXXSTD=c++17
     #  addons:
     #    apt:
     #      packages:
     #        - g++-5
     #      sources:
     #        - ubuntu-toolchain-r-test
+    #  env:
+    #    - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
 
     #- os: linux
     #  addons:
@@ -29,43 +28,60 @@ matrix:
     #        - g++-6
     #      sources:
     #        - ubuntu-toolchain-r-test
+    #  env:
+    #    - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    
+    #- os: linux
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+    #      packages:
+    #        - g++-7
+    #  env:
+    #    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
     - os: linux
       addons:
         apt:
-          packages:
-            - clang-3.8
           sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-
-    - os: linux
-      addons:
-        apt:
+            - llvm-toolchain-trusty-3.9
           packages:
             - clang-3.9
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
 
+    # works on Trusty
     - os: linux
       addons:
         apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
 
+    # works on Trusty
     - os: linux
       addons:
         apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
+
+before_install:
+  - sudo add-apt-repository ppa:george-edison55/cmake-3.x --yes
+  - sudo apt-get -qq update
+  - eval "${MATRIX_EVAL}"
+
+install:
+  - sudo apt-get install -qq cmake
+  - sudo apt-get install -qq libssl-dev
 
 script:
   - pwd
