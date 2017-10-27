@@ -62,13 +62,13 @@ install:
     mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
     export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - sudo apt-get install -qq libssl-dev
+  - sudo apt-get install -qq g++-6
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
   - pwd
   - uname -a
   - cmake --version
-  - clang -- version
   - bash build.sh
   
   
