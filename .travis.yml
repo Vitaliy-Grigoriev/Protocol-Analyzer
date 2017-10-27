@@ -9,6 +9,8 @@ branches:
   only:
     - master
 
+env:
+  - BUILD_TYPE=Release
 
 matrix:
   include:  
