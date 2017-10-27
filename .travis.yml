@@ -1,16 +1,11 @@
 dist: trusty
 language: cpp
-compiler:
-  - gcc
-  - clang
 
 
 branches:
   only:
     - master
 
-env:
-  - BUILD_TYPE=Release
 
 matrix:
   include:
@@ -21,7 +16,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
-      env: COMPILER=g++-6
+      env: COMPILER=g++-6 BUILD_TYPE=Release
     
     - os: linux
       addons:
@@ -30,7 +25,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
-      env: COMPILER=g++-7
+      env: COMPILER=g++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -39,7 +34,7 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
-      env: COMPILER=clang++-4.0
+      env: COMPILER=clang++-4.0 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -48,7 +43,7 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
-      env: COMPILER=clang++-5.0
+      env: COMPILER=clang++-5.0 BUILD_TYPE=Release
 
 
 before_install:
