@@ -50,6 +50,7 @@ before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get -qq update
 
+
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/DEPS"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
@@ -58,8 +59,8 @@ install:
     mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
     export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - sudo apt-get install -qq libssl-dev
-  - if [ ${COMPILER} == "clang++4.0" ]; then sudo apt-get install -qq g++-6; fi
-  - if [ ${COMPILER} == "clang++5.0" ]; then sudo apt-get install -qq g++-7; fi
+  - sudo apt-get install -qq g++-6
+
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
