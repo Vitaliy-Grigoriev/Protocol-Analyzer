@@ -1,33 +1,27 @@
-sudo: required
 dist: trusty
-
 language: cpp
 
-install:
-  # Update docker-engine using Ubuntu 'trusty' apt repo
-  - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
-  - echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update -q
-  - sudo apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
-  - docker --version
-  
-  - curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-  - docker-compose --version
-  
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install cmake
   - sudo apt-get install libssl-dev
 
 branches:
   only:
     - master
 
-before_script:
-  - docker-compose up --build -d
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-5.0
+    packages:
+      #- libboost-all-dev
+      - clang-5.0
+      - g++-6
 
 script:
   - pwd
   - uname -a
-
-after_script:
-  - docker-compose down
+  - build.sh
+  
