@@ -1,6 +1,8 @@
 dist: trusty
 language: cpp
-compiler: clang
+compiler:
+  - gcc
+  - clang
 
 
 branches:
@@ -9,37 +11,33 @@ branches:
 
 
 matrix:
-  include:
-  
-    #- os: linux
-    #  addons:
-    #    apt:
-    #      packages:
-    #        - g++-5
-    #      sources:
-    #        - ubuntu-toolchain-r-test
-    #  env:
-    #    - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+  include:  
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
 
-    #- os: linux
-    #  addons:
-    #    apt:
-    #      packages:
-    #        - g++-6
-    #      sources:
-    #        - ubuntu-toolchain-r-test
-    #  env:
-    #    - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env: COMPILER=g++-6
     
-    #- os: linux
-    #  addons:
-    #    apt:
-    #      sources:
-    #        - ubuntu-toolchain-r-test
-    #      packages:
-    #        - g++-7
-    #  env:
-    #    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env: COMPILER=g++-7
 
     - os: linux
       addons:
@@ -48,10 +46,8 @@ matrix:
             - llvm-toolchain-trusty-3.9
           packages:
             - clang-3.9
-      env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+      env: COMPILER=clang++-3.9
 
-    # works on Trusty
     - os: linux
       addons:
         apt:
@@ -59,10 +55,8 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
-      env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      env: COMPILER=clang++-4.0
 
-    # works on Trusty
     - os: linux
       addons:
         apt:
@@ -70,16 +64,14 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
-      env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      env: COMPILER=clang++-5.0
 
 
 before_install:
   - sudo apt-get -qq update
-  - eval "${MATRIX_EVAL}"
 
 install:
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/DEPS"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - |
     CMAKE_URL="https://cmake.org/files/v3.8/cmake-3.8.0-Linux-x86_64.tar.gz"
@@ -98,4 +90,3 @@ script:
 notifications:
   email:
     on_success: always
-    
