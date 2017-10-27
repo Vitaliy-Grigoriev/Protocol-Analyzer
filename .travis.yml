@@ -3,25 +3,78 @@ language: cpp
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install cmake
-  - sudo apt-get install libssl-dev
+  - sudo apt-get install -qq cmake
+  - sudo apt-get install -qq libssl-dev
 
 branches:
   only:
     - master
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-5.0
-    packages:
-      #- libboost-all-dev
-      - clang-5.0
-      - g++-6
+matrix:
+  include:
+  
+    #- os: linux
+    #  env: TOOLSET=g++ COMPILER=g++-5 CXXSTD=c++17
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - g++-5
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+
+    #- os: linux
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - g++-6
+    #      sources:
+    #        - ubuntu-toolchain-r-test
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-3.8
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-3.9
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.9
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-4.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-4.0
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-5.0
+
 
 script:
   - pwd
   - uname -a
-  - build.sh
+  - cmake --version
+  - bash build.sh
   
+  
+notifications:
+  email:
+    on_success: always
+    
