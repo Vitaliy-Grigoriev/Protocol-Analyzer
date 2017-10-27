@@ -67,18 +67,15 @@ namespace analyzer::log
 {
     /**
      * @enum LEVEL
-     * @brief The level of logging.
-     *
-     * @note The level TRACE work only in DEBUG mode.
-     * The level INFORMATION work only in FULLLOG mode.
+     * @brief The level of logging type.
      */
     enum LEVEL : uint16_t
     {
-        TRACE = 0,
-        INFORMATION = 1,
-        WARNING = 2,
-        ERROR = 3,
-        FATAL = 4
+        FATAL = 1,
+        ERROR = 2,
+        WARNING = 3,
+        INFORMATION = 4,
+        TRACE = 5
     };
 
 
@@ -137,7 +134,6 @@ namespace analyzer::log
      *
      * @todo Support setting directory for log files.
      * @todo Support setting extension for log files.
-     * @todo Implement function SetLogLevel(const uint16_t) for change log level in runtime.
      * @todo Change std::ofstream to std::filesystem.
      * @todo Implement user prefix for volume.
      * @todo Implement output error and fatal messages to another files (std::cerr, error logfile).
@@ -170,17 +166,25 @@ namespace analyzer::log
          */
         std::string logFileName = "../log/program_volume1.log";
         /**
-         * @var std::size_t recordsLimit;
+         * @var volatile std::size_t recordsLimit;
          * @brief Number of entries in logfile.
          *
          * @note Default: 50000.
          */
-        std::size_t recordsLimit = 50000;
+        volatile std::size_t recordsLimit = 50000;
         /**
-         * @var std::size_t recordsLimit;
+         * @var volatile std::size_t recordsLimit;
          * @brief Number of entries in logfile in current time.
          */
-        std::size_t currentRecords = 0;
+        volatile std::size_t currentRecords = 0;
+        /**
+         * @var volatile uint16_t levelType;
+         * @brief The logging level type.
+         *
+         * @note If message has level that less then current level, then this message will be blocked.
+         * Default: TRACE.
+         */
+        volatile LEVEL levelType = LEVEL::TRACE;
 
     protected:
         /**
@@ -266,17 +270,12 @@ namespace analyzer::log
          * @tparam [in] args - Any logging data.
          */
         template <typename... Args>
-        void Push (LEVEL level, Args&&... args) noexcept
+        void Push (volatile LEVEL level, Args&&... args) noexcept
         {
-            if (sizeof...(args) == 0) {
+            if (level > levelType || sizeof...(args) == 0) {
                 return;
             }
-#if ( !defined(DEBUG) )
-            if (level == LEVEL::TRACE) { return; }
-#endif
-#if ( !defined(FULLLOG) )
-            if (level == LEVEL::INFORMATION) { return; }
-#endif
+
             try { std::lock_guard<std::mutex> lock(logMutex); }
             catch (const std::system_error& err) {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
@@ -338,18 +337,17 @@ namespace analyzer::log
         bool SwitchLoggingEngine(void) noexcept;
 
         /**
+         * @fn void Logger::SetLogLevel (const volatile LEVEL) noexcept;
+         * @brief Method that change log level type.
+         */
+        void SetLogLevel (const volatile LEVEL newLevel) noexcept { levelType = newLevel; }
+
+        /**
          * @fn inline std::size_t Logger::GetLogFileRecordsSize(void) const noexcept;
          * @brief Method that returns current logfile records.
          * @return Current logfile records.
          */
         inline std::size_t GetLogFileRecordsSize(void) const noexcept { return currentRecords; }
-
-        /**
-         * @fn inline std::string Logger::GetLogFileName(void) const noexcept;
-         * @brief Method that returns current logfile name.
-         * @return Current logfile name.
-         */
-        inline std::string GetLogFileName(void) const noexcept { return logFileName; }
     };
 
 
