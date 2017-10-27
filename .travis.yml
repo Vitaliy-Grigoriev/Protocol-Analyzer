@@ -13,16 +13,7 @@ env:
   - BUILD_TYPE=Release
 
 matrix:
-  include:  
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env: COMPILER=g++-5
-
+  include:
     - os: linux
       addons:
         apt:
@@ -40,15 +31,6 @@ matrix:
           packages:
             - g++-7
       env: COMPILER=g++-7
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-3.9
-          packages:
-            - clang-3.9
-      env: COMPILER=clang++-3.9
 
     - os: linux
       addons:
@@ -86,6 +68,7 @@ script:
   - pwd
   - uname -a
   - cmake --version
+  - clang -- version
   - bash build.sh
   
   
