@@ -7,8 +7,8 @@ set(CMAKE_INCLUDE_PATH   /usr/include/)
 set(CMAKE_LIBRARY_PATH   /usr/lib/)
 
 set(CMAKE_CXX_STANDARD   17)
-set(CMAKE_BUILD_TYPE   Debug)
-set(CMAKE_CXX_COMPILER   "/usr/bin/clang++")
+set(CMAKE_BUILD_TYPE   $ENV{BUILD_TYPE})
+set(CMAKE_CXX_COMPILER   $ENV{COMPILER})
 
 set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
 set(WARNINGS   "-Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
