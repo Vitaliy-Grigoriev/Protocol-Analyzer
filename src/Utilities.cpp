@@ -25,17 +25,17 @@ namespace analyzer::utility
             protocols["HTTP/1.1"]    =  { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
 
             std::set<std::string> result;
-            for (auto&& it : protocols)
+            for (const auto& [ protocol, bytes ] : protocols)
             {
                 net::SocketSSL sock;
-                if (sock.SetInternalProtocol(it.second.data(), it.second.size()) == false) {
+                if (sock.SetInternalProtocol(bytes.data(), bytes.size()) == false) {
                     return std::set<std::string>();
                 }
                 if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
 
                 const std::string proto = sock.GetRawSelectedProtocol();
                 if (proto.empty() == false) {
-                    result.emplace(it.first);
+                    result.emplace(protocol);
                     LOG_INFO("Next protocol: ", proto, '.');
                 }
                 sock.Close();
@@ -49,19 +49,19 @@ namespace analyzer::utility
         {
             LOG_TRACE("CheckSupportedTLSProtocols:   Start check...");
             std::unordered_map<std::string, uint16_t> protocols;
-            protocols.emplace(std::make_pair("TLS 1.0", SSL_METHOD_TLS1));
-            protocols.emplace(std::make_pair("TLS 1.1", SSL_METHOD_TLS11));
-            protocols.emplace(std::make_pair("TLS 1.2", SSL_METHOD_TLS12));
-            //protocols.emplace(std::make_pair("TLS 1.3", SSL_METHOD_TLS13));
+            protocols["TLS 1.0"] = SSL_METHOD_TLS1;
+            protocols["TLS 1.1"] = SSL_METHOD_TLS11;
+            protocols["TLS 1.2"] = SSL_METHOD_TLS12;
+            //protocols["TLS 1.3"] == SSL_METHOD_TLS13;
 
             std::set<std::string> result;
-            for (auto&& it : protocols)
+            for (const auto& [ protocol, method ] : protocols)
             {
-                net::SocketSSL sock(it.second);
+                net::SocketSSL sock(method);
                 if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
 
-                result.emplace(it.first);
-                LOG_INFO("Next protocol: ", it.first, '.');
+                result.emplace(protocol);
+                LOG_INFO("Next protocol: ", protocol, '.');
                 sock.Close();
             }
             LOG_TRACE("CheckSupportedTLSProtocols:   End check...");

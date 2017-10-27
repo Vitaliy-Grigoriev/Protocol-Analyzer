@@ -7,13 +7,13 @@
     "Logger":
     {
         "DirectoryPath": "full_path_to_directory",
-        "LogFile": "file_name/console",
+        "Logfile": "file_name/console",
         "ErrorFile": "file_name/console",
         "ReportFile": "file_name/console",
         "LogLevel": 5,
         "VolumeSize": 50000,
         "VolumePrefix": "prefix",
-        "LogFileExtension": ".log"
+        "LogfileExtension": ".log"
     },
     "Actions":
     {
