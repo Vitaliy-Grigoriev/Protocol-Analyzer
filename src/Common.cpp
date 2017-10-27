@@ -88,6 +88,26 @@ namespace analyzer::common
             return ErrorState;
         }
 
+        bool readFileToEnd (const std::string& path, std::string& data) noexcept
+        {
+            try {
+                const std::size_t size = getFileSize(path);
+                if (size == ErrorState) {
+                    return false;
+                }
+                data.reserve(size);
+
+                std::ifstream file(path.c_str(), std::ios_base::in);
+                if (file.is_open() == true && file.fail() == false)
+                {
+                    data.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                    return true;
+                }
+            }
+            catch (const std::exception& /*err*/) { }
+            return false;
+        }
+
         std::size_t getFileLines (const std::string& path) noexcept
         {
             try {

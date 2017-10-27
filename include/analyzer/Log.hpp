@@ -131,10 +131,15 @@ namespace analyzer::log
      * @class Logger Log.hpp "include/analyzer/Log.hpp"
      * @brief This singleton class defined the interface for program logging.
      *
-     * @note This singleton class is thread-safe.
+     * @note This singleton class is thread-safe and fault-tolerant.
      * To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
      *
+     * @todo Support setting directory for log files.
+     * @todo Support setting extension for log files.
+     * @todo Implement function SetLogLevel(const uint16_t) for change log level in runtime.
      * @todo Change std::ofstream to std::filesystem.
+     * @todo Implement user prefix for volume.
+     * @todo Implement output error and fatal messages to another files (std::cerr, error log file).
      */
     class Logger
     {
@@ -153,9 +158,9 @@ namespace analyzer::log
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
          *
-         * @note Default: std::cerr.
+         * @note Default: Standard output (std::cout).
          */
-        std::ostream& out = std::cerr;
+        std::ostream& out = std::cout;
         /**
          * @var std::string logFileName;
          * @brief Current name and path of the log file.
@@ -275,9 +280,9 @@ namespace analyzer::log
             if (level == LEVEL::INFORMATION) { return; }
 #endif
             try { std::lock_guard<std::mutex> lock(log_mutex); }
-            catch (const std::system_error& /*err*/) {
+            catch (const std::system_error& err) {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                __output_values("[error] Logger.Push: In function 'lock_guard' - could not lock a mutex.");
+                __output_values("[error] Logger.Push: In function 'lock_guard' - ", err.what(), '.');
                 return;
             }
 
@@ -320,12 +325,11 @@ namespace analyzer::log
          * @fn bool Logger::ChangeLogFileName (std::string, std::ios_base::openmode) noexcept;
          * @brief Method that switches the output log file.
          * @param [in] path - Full path to new log file.
-         * @param [in] mode - Mode for open the log file. Default: Append (std::ios_base::app).
          * @return True - if log file name is changed successfully, otherwise - false.
          *
          * @note If the current engine on console mode then only the file name will be changed but the engine stay on the console mode.
          */
-        bool ChangeLogFileName (std::string /*path*/, std::ios_base::openmode /*mode*/ = std::ios_base::app) noexcept;
+        bool ChangeLogFileName (std::string /*path*/) noexcept;
 
         /**
          * @fn bool Logger::SwitchLoggingEngine(void) noexcept;
@@ -337,7 +341,7 @@ namespace analyzer::log
         /**
          * @fn inline std::string GetLogFileName(void) const noexcept;
          * @brief Method that returns current log file name.
-         * @return File name.
+         * @return Current log file name.
          */
         inline std::string GetLogFileName(void) const noexcept { return logFileName; }
     };

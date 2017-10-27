@@ -34,7 +34,7 @@ namespace analyzer::log
     {
         const auto it = errors.find(error);
         if (it != errors.end()) { return it->second; }
-        return std::string("Unknown error (" + std::to_string(error) + ").");
+        return std::string("Unknown error code: " + std::to_string(error) + '.');
     }
 
 
@@ -42,22 +42,17 @@ namespace analyzer::log
     {
         try
         {
-            if (common::file::checkFileExistence(logFileName) == true) {
-                currentRecords = common::file::getFileLines(logFileName);
-            }
-
-            fd.open(logFileName.c_str(), std::ios_base::app);
+            fd.open(logFileName.c_str(), std::ios_base::out);
             if (fd.is_open() == false || fd.fail() == true) {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                __output_values("[error] Logger.Logger: In constructor - Could not open log file - '", logFileName, "'.");
+                __output_values("[fatal] Logger.Logger: Could not open default log file - '", logFileName, "'.");
                 std::terminate();
             }
-
             out.rdbuf(fd.rdbuf());
         }
         catch (const std::ios_base::failure& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logger.Logger: In constructor - ", err.what(), '.');
+            __output_values("[fatal] Logger.Logger: When open default log file - ", err.what(), '.');
             std::terminate();
         }
     }
@@ -139,9 +134,9 @@ namespace analyzer::log
         {
             if (GetNameWithNextVolume(logFileName) == false)
             {
-                logFileName = lastFileName;
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
                 __output_values("[warning] Logger.ChangeVolume: Volume of log file is not changed - '", logFileName, "'.");
+                logFileName = lastFileName;
                 return false;
             }
 
@@ -149,7 +144,16 @@ namespace analyzer::log
                 break;
             }
             fileEntries = common::file::getFileLines(logFileName);
-        } while (fileEntries == common::file::ErrorState || fileEntries >= recordsLimit);
+        } while (fileEntries != common::file::ErrorState && fileEntries >= recordsLimit);
+
+        // If error is occurred then do recover last state.
+        if (fileEntries == common::file::ErrorState)
+        {
+            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+            __output_values("[warning] Logger.ChangeVolume: Volume of log file is not changed - '", logFileName, "'.");
+            logFileName = lastFileName;
+            return false;
+        }
 
         try
         {
@@ -160,6 +164,7 @@ namespace analyzer::log
                 {
                     out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
                     __output_values("[error] Logger.ChangeVolume: Could not open log file - '", logFileName, "'.");
+                    logFileName = lastFileName;
                     return false;
                 }
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
@@ -169,11 +174,12 @@ namespace analyzer::log
                 fd.close();
                 fd = std::move(out_temp);
                 out.rdbuf(fd.rdbuf());
-                currentRecords = fileEntries;
             }
+            currentRecords = fileEntries;
         }
         catch (const std::ios_base::failure& err)
         {
+            logFileName = lastFileName;
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             __output_values("[error] Logger.ChangeVolume: When change log file volume - ", err.what(), '.');
             return false;
@@ -201,22 +207,20 @@ namespace analyzer::log
         try
         {
             recordsLimit = size;
-            if (fd.is_open() == true) {
-                if (currentRecords >= recordsLimit) {
-                    ChangeVolume();
-                }
+            if (currentRecords >= recordsLimit) {
+                ChangeVolume();
             }
         }
         catch (const std::ios_base::failure& err)
         {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logger.SetLogFileRecordsLimit: When change volume size - ", err.what(), '.');
+            __output_values("[error] Logger.SetLogFileRecordsLimit: When change volume size limit - ", err.what(), '.');
             return false;
         }
         return true;
     }
 
-    bool Logger::ChangeLogFileName (std::string path, const std::ios_base::openmode mode) noexcept
+    bool Logger::ChangeLogFileName (std::string path) noexcept
     {
         try { std::lock_guard<std::mutex> lock(log_mutex); }
         catch (const std::system_error& err) {
@@ -227,58 +231,93 @@ namespace analyzer::log
 
         try
         {
+            // If now enable console mode then change to file log mode.
             if (fd.is_open() == false)
             {
                 fd.open(logFileName.c_str(), std::ios_base::app);
                 if (fd.is_open() == false || fd.fail() == true)
                 {
                     out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
+                    __output_values("[error] Logger.ChangeLogFileName: Could not open last log file - '", logFileName, "'.");
                     return false;
                 }
                 out.flush();
                 out.rdbuf(fd.rdbuf());
             }
 
+            // Check the volume in file name and if this volume not found then add it.
             if (CheckVolume(path) == false)
             {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                __output_values("[warning] Logger.ChangeLogFileName: Name of log file is not changed - '", logFileName, "'.");
+                __output_values("[warning] Logger.ChangeLogFileName: Name of log file is not changed - '", path, "'.");
                 return false;
             }
 
-            logFileName = path;
-            if (common::file::checkFileExistence(logFileName) == true)
+            // If the file already exist then check the opportunity to write to the file.
+            if (common::file::checkFileExistence(path) == true)
             {
-                const std::size_t fileEntries = common::file::getFileLines(logFileName);
-                if (fileEntries != common::file::ErrorState || fileEntries >= recordsLimit) {
-                    ChangeVolume();
+                const std::size_t fileEntries = common::file::getFileLines(path);
+                // If the log file entries in file more then limit then change volume of file.
+                if (fileEntries != common::file::ErrorState && fileEntries >= recordsLimit) {
+                    const std::string lastFileName = logFileName;
+                    logFileName = path;
+                    if (ChangeVolume() == false) {
+                        logFileName = lastFileName;
+                    }
                 }
-                else { currentRecords = fileEntries; }
+                // If error is occurred then do not do anything.
+                else if (fileEntries == common::file::ErrorState)
+                {
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[warning] Logger.ChangeLogFileName: Name of log file is not changed - '", path, "'.");
+                    return false;
+                }
+                // If file has a place for next records then change engine.
+                else
+                {
+                    std::ofstream out_temp(path.c_str(), std::ios_base::app);
+                    if (out_temp.is_open() == false || out_temp.fail() == true)
+                    {
+                        out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                        __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", path, "'.");
+                        return false;
+                    }
+                    out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                    __output_values("[info] Logger.ChangeLogFileName: Name of log file is changed to '", path, "'.");
+
+                    out.flush();
+                    fd.close();
+                    fd = std::move(out_temp);
+                    out.rdbuf(fd.rdbuf());
+                    logFileName = path;
+                    currentRecords = fileEntries;
+                }
             }
+            // If the file not exist then do attempt to open the new log file and change engine.
             else
             {
-                std::ofstream out_temp(path.c_str(), mode);
+                std::ofstream out_temp(path.c_str(), std::ios_base::app);
                 if (out_temp.is_open() == false || out_temp.fail() == true)
                 {
                     out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", logFileName, "'.");
+                    __output_values("[error] Logger.ChangeLogFileName: Could not open log file - '", path, "'.");
                     return false;
                 }
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                __output_values("[info] Logger.ChangeLogFileName: Name of log file is changed to '", logFileName, "'.");
+                __output_values("[info] Logger.ChangeLogFileName: Name of log file is changed to '", path, "'.");
 
                 out.flush();
                 fd.close();
                 fd = std::move(out_temp);
                 out.rdbuf(fd.rdbuf());
                 currentRecords = 0;
+                logFileName = path;
             }
         }
         catch (const std::ios_base::failure& err)
         {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            __output_values("[error] Logger.ChangeLogFileName: When change log engine - ", err.what(), '.');
+            __output_values("[error] Logger.ChangeLogFileName: When change log file name - ", err.what(), '.');
             return false;
         }
         return true;
@@ -308,7 +347,7 @@ namespace analyzer::log
                 {
                     out.rdbuf(std::clog.rdbuf());
                     out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    __output_values("[error] Logger.SwitchLoggingEngine: Could not open log file - '", logFileName, "'.");
+                    __output_values("[error] Logger.SwitchLoggingEngine: Could not open last log file - '", logFileName, "'.");
                     return false;
                 }
                 out.rdbuf(fd.rdbuf());

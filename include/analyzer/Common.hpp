@@ -199,7 +199,7 @@ namespace analyzer::common
 
         /**
          * @fn void replaceNonPrintableToSymbol (void *, std::size_t, char) noexcept;
-         * @brief Function that replaces all nonprintable values to symbol.
+         * @brief Function that replaces all non-printable values to symbol.
          * @param [in,out] data - Pointer to input data.
          * @param [in] size - Size of input data.
          * @param [in] symbol - One value in char type for insert. Default: '.' (0x2E).
@@ -231,6 +231,15 @@ namespace analyzer::common
          * @return File size in bytes or maximum value of std::size_t if an error.
          */
         std::size_t getFileSize (const std::string & /*path*/) noexcept;
+
+        /**
+         * @fn bool readFileToEnd (const std::string &, std::string &) noexcept;
+         * @brief Function that reads all data from file.
+         * @param [in] path - Path to file.
+         * @param [out] data - String value for assign.
+         * @return True - if the data is read from the file successfully, otherwise - false.
+         */
+        bool readFileToEnd (const std::string & /*path*/, std::string & /*data*/) noexcept;
 
         /**
          * @fn std::size_t getFileLines (const std::string & ) noexcept;

@@ -2,9 +2,29 @@
     "ProxyServer":
     {
         "Host": "127.0.0.1",
-        "Port": 222
+        "Port": 443
     },
-    "LoggingFile": "full_path_to_file/console",
-    "MaximumThreads": 8,
-    "MaximumSocketConnections": 500
+    "Logger":
+    {
+        "DirectoryPath": "full_path_to_directory",
+        "LogFile": "file_name/console",
+        "ErrorFile": "file_name/console",
+        "ReportFile": "file_name/console",
+        "LogLevel": 5,
+        "VolumeSize": 50000,
+        "VolumePrefix": "prefix",
+        "LogFileExtension": ".log"
+    },
+    "Actions":
+    {
+        "ExitAfterError": true
+    },
+    "Network":
+    {
+        "MaximumSocketConnections": 100
+    },
+    "Engine":
+    {
+        "MaximumThreads": 8
+    }
 }
