@@ -12,11 +12,11 @@ set(CMAKE_CXX_COMPILER   $ENV{COMPILER})
 
 set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
 set(WARNINGS   "-Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
-set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined  -Weverything")
+set(ADDITIONAL_FLAGS   "-Weverything  -fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
 
-set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG  ${ADDITIONAL_FLAGS} ${WARNINGS} ${USEFUL_WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG  ${WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
 set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE   ${WARNINGS}")
 
 

@@ -276,10 +276,10 @@ namespace analyzer::net
             if ((events.events & EPOLLIN) != 0u) { return 1; }
             if ((events.events & EPOLLOUT) != 0u) { return 2; }
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return error event: ", events.events, '.');
+                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return error event: ", uint32_t(events.events), '.');
             }
             else {
-                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return unknown event: ", events.events, '.');
+                LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return unknown event: ", uint32_t(events.events), '.');
             }
         }
         else if (wfd == 0) { LOG_ERROR("Socket.CheckSocketState [", fd, "]: In function 'epoll_wait' - Timeout expired."); }
@@ -303,10 +303,10 @@ namespace analyzer::net
         {
             if ((events.events & EPOLLOUT) != 0u) { return true; }
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return error event: ", events.events, '.');
+                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return error event: ", uint32_t(events.events), '.');
             }
             else {
-                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return unknown event: ", events.events, '.');
+                LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return unknown event: ", uint32_t(events.events), '.');
             }
         }
         else if (wfd == 0) { LOG_ERROR("Socket.IsReadyForSend [", fd, "]: In function 'epoll_wait (s)' - Timeout expired."); }
@@ -330,10 +330,10 @@ namespace analyzer::net
         {
             if ((events.events & EPOLLIN) != 0u) { return true; }
             if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
-                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return error event: ", events.events, '.');
+                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return error event: ", uint32_t(events.events), '.');
             }
             else {
-                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return unknown event: ", events.events, '.');
+                LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return unknown event: ", uint32_t(events.events), '.');
             }
         }
         else if (wfd == 0) { LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: In function 'epoll_wait (r)' - Timeout expired."); }
