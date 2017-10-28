@@ -31,18 +31,22 @@ matrix:
       addons:
         apt:
           sources:
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
+            - g++-6
       env: COMPILER=clang++-4.0 BUILD_TYPE=Release
 
     - os: linux
       addons:
         apt:
           sources:
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - g++-6
       env: COMPILER=clang++-5.0 BUILD_TYPE=Release
 
 
@@ -59,7 +63,7 @@ install:
     mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
     export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - sudo apt-get install -qq libssl-dev
-  - sudo apt-get install -qq g++-6
+  #- sudo apt-get install -qq g++-6
 
 
 script:
