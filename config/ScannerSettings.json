@@ -2,7 +2,8 @@
     "ProxyServer":
     {
         "Host": "127.0.0.1",
-        "Port": 443
+        "DstPort": 443,
+        "SrcPort": 129
     },
     "Logger":
     {
@@ -21,7 +22,11 @@
     },
     "Network":
     {
-        "MaximumSocketConnections": 100
+        "MaximumSocketConnections": 100,
+        "LocalPortsForBind": "129,560,1024-1500",
+        "TimeoutBetweenRequests": 3,
+        "TimeoutForAsyncWait": 3,
+        "TimeoutForReceive": 5
     },
     "Engine":
     {

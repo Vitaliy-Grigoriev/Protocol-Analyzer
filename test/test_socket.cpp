@@ -18,9 +18,13 @@ const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexc
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
+using namespace analyzer::log;
 
 int main(void)
 {
+    Logger::Instance().SwitchLoggingEngine();
+    Logger::Instance().SetLogLevel(LEVEL::INFORMATION);
+
     analyzer::net::Socket* sock = new analyzer::net::Socket;
 
     if (sock->Bind(12345) == false) {
@@ -43,14 +47,15 @@ int main(void)
         return EXIT_FAILURE;
     }
 
+    int32_t length = 0;
     char buff_receive[1024] = { };
-    const int32_t len = sock->Recv(buff_receive, sizeof(buff_receive) - 1, double_CRLF_functor, 250);
-    if (len == -1) {
+    const bool result = sock->Recv(buff_receive, sizeof(buff_receive) - 1, length, double_CRLF_functor, 250);
+    if (result == false) {
         std::cout << "[error] Recv fail..." << std::endl;
         delete sock;
         return EXIT_FAILURE;
     }
-    std::cout << "Received data length: " << len << std::endl << std::endl << buff_receive << std::endl;
+    std::cout << "Received data length: " << length << std::endl << std::endl << buff_receive << std::endl;
 
     sock->Close();
     delete sock;

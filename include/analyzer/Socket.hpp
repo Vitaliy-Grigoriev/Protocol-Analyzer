@@ -209,7 +209,7 @@ namespace analyzer::net
         // Receiving the message from external host over TCP.
         virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false);
         // Receiving the message from external host over TCP until the functor returns false value.
-        virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, CompleteFunctor /*functor*/, std::size_t /*chunkLength*/ = DEFAULT_RECEIVE_CHUNK);
+        bool Recv (char * /*data*/, std::size_t /*length*/, int32_t & /*obtainLength*/, CompleteFunctor /*functor*/, std::size_t /*chunkLength*/ = DEFAULT_RECEIVE_CHUNK);
         // Receiving the message from external host until reach the end over TCP.
         // 1. The socket is no data to read.
         // 2. Has expired connection timeout.

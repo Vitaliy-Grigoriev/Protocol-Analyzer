@@ -189,13 +189,13 @@ namespace analyzer::log
     protected:
         /**
          * @fn Logger::Logger (std::ostream &);
-         * @brief Protect constructor.
+         * @brief Protection constructor.
          */
         Logger(void) noexcept;
 
         /**
          * @fn Logger::~Logger(void);
-         * @brief Protect destructor.
+         * @brief Protection destructor.
          */
         ~Logger(void) noexcept;
 

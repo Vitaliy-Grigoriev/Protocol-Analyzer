@@ -186,8 +186,12 @@ namespace analyzer::net
                 if (errno == EWOULDBLOCK) {
                     if (IsReadyForRecv(3000) == false) {
                         if (idx == 0) { CloseAfterError(); return -1; }
-                        break; // In this case no any error.
+                        break; // In this case no any error because we have any data.
                     }
+                    continue;
+                }
+                // A signal occurred before any data was transmitted.
+                if (errno == EINTR) {
                     continue;
                 }
                 LOG_ERROR("Socket.Recv [", fd, "]: In function 'recv' - ", GET_ERROR(errno));
@@ -205,36 +209,42 @@ namespace analyzer::net
     }
 
     // Receiving the message from external host over TCP until the functor returns false value.
-    int32_t Socket::Recv (char* data, std::size_t length, CompleteFunctor functor, std::size_t chunkLength)
+    bool Socket::Recv (char* data, std::size_t length, int32_t& obtainLength, CompleteFunctor functor, std::size_t chunkLength)
     {
+        obtainLength = -1;
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Recv: Socket is invalid.");
-            return -1;
+            return false;
         }
 
+        // Check mistakes.
         if (chunkLength == 0) { chunkLength = DEFAULT_RECEIVE_CHUNK; }
         if (chunkLength > length) {
             chunkLength = length;
         }
 
+        bool successFunctor = false;
         std::size_t idx = 0;
         do
         {
             const int32_t result = Recv(&data[idx], chunkLength);
             if (result == -1) {
-                if (idx == 0) { return -1; }
-                break;  // In this case no any error.
+                if (idx == 0) { return false; }
+                break;  // In this case no any error because we have any data.
             }
+            if (result == 0) { break; }
 
             idx += static_cast<std::size_t>(result);
             length -= static_cast<std::size_t>(result);
             if (chunkLength > length) {
                 chunkLength = length;
             }
-        } while (length > 0 && functor(data, static_cast<std::size_t>(idx)) == false);
+            successFunctor = functor(data, static_cast<std::size_t>(idx));
+        } while (length > 0 && successFunctor == false);
 
+        obtainLength = static_cast<int32_t>(idx);
         LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
-        return static_cast<int32_t>(idx);
+        return successFunctor;
     }
 
     // Receiving the message from external host until reach the end.
@@ -248,10 +258,15 @@ namespace analyzer::net
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
 
         std::size_t idx = 0;
-        while (length > 0 && IsReadyForRecv(3000) && system_clock::now() < limit)
+        while (length > 0 && IsReadyForRecv(3000) == true && system_clock::now() < limit)
         {
             const intmax_t result = recv(fd, &data[idx], length, 0);
-            if (result == SOCKET_ERROR) {
+            if (result == SOCKET_ERROR)
+            {
+                // A signal occurred before any data was transmitted.
+                if (errno == EINTR) {
+                    continue;
+                }
                 LOG_ERROR("Socket.RecvToEnd [", fd, "]: In function 'recv' - ", GET_ERROR(errno));
                 CloseAfterError(); return -1;
             }

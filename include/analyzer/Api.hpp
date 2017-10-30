@@ -6,9 +6,10 @@
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
 #define PROTOCOL_ANALYZER_VERSION_PATCH 7
 
+#include "Log.hpp"
 #include "Socket.hpp"
-#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
-#include "Task.hpp"
+//#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
+//#include "Task.hpp"
 #include "Utilities.hpp"
 
 
