@@ -8,6 +8,18 @@
 
 namespace analyzer::common
 {
+    std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
+    {
+        time_t currTime = std::chrono::system_clock::to_time_t(time);
+        try {
+            return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
+        }
+        catch (const std::out_of_range& /*err*/) {
+            return std::string();
+        }
+    }
+
+
     namespace text
     {
         void trim_left (std::string& str) noexcept
@@ -126,15 +138,62 @@ namespace analyzer::common
     }  // namespace file.
 
 
-    std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
+
+    PortsParser::PortsParser (const std::string& ports, const char symbol) noexcept
     {
-        time_t currTime = std::chrono::system_clock::to_time_t(time);
-        try {
-            return std::string(ctime(&currTime)).erase(24, 1).erase(0, 4);
+        SetPorts(ports, symbol);
+    }
+
+    void PortsParser::SetPorts (const std::string& ports, const char symbol) noexcept
+    {
+        states = text::split(ports, symbol);
+        rangeState = rangeEnd = 0;
+    }
+
+    uint16_t PortsParser::GetNextPort(void) noexcept
+    {
+        if (states.empty() == true) {
+            return end;
         }
-        catch (const std::out_of_range& /*err*/) {
-            return std::string();
+
+        if (rangeEnd == end)
+        {
+            const std::string& value = states.at(0);
+            const std::size_t position = value.find('-');
+
+            try
+            {
+                if (position == std::string::npos)
+                {
+                    const uint64_t port = std::stoul(value, nullptr, 10);
+                    if (port < 65536) {
+                        states.erase(states.begin());
+                        return static_cast<uint16_t>(port);
+                    }
+                    states.clear();
+                    return end;
+                }
+
+                const uint64_t portStart = std::stoul(value, nullptr, 10);
+                const uint64_t portEnd = std::stoul(&value[position + 1], nullptr, 10);
+                if (portStart < portEnd && portEnd < 65536) {
+                    rangeState = static_cast<uint16_t>(portStart);
+                    rangeEnd = static_cast<uint16_t>(portEnd);
+                    return rangeState;
+                }
+            }
+            catch (const std::exception& /*err*/)
+            {
+                states.clear();
+                return end;
+            }
         }
+
+        if (++rangeState == rangeEnd) {
+            states.erase(states.begin());
+            rangeEnd = end;
+        }
+        return rangeState;
     }
 
 }  // namespace common.
