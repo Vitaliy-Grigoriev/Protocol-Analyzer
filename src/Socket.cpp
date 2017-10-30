@@ -2,6 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <fcntl.h>
+#include <csignal>
 #include <unistd.h>
 
 #include "../include/analyzer/Socket.hpp"
@@ -20,6 +21,9 @@ namespace analyzer::net
             return;
         }
 
+        if (DisableSignalSIGPIPE() == false) {
+            CloseAfterError(); return;
+        }
         if (SetSocketToNonBlock() == false) {
             CloseAfterError(); return;
         }
@@ -140,8 +144,13 @@ namespace analyzer::net
             const intmax_t result = send(fd, &data[idx], length, 0);
             if (result == SOCKET_ERROR)
             {
+                // The socket is marked non-blocking and the requested operation would block.
                 if (errno == EWOULDBLOCK) {
                     if (IsReadyForSend(3000) == false) { CloseAfterError(); return -1; }
+                    continue;
+                }
+                // A signal occurred before any data was transmitted.
+                if (errno == EINTR) {
                     continue;
                 }
                 LOG_ERROR("Socket.Send [", fd, "]: In function 'send' - ", GET_ERROR(errno));
@@ -173,6 +182,7 @@ namespace analyzer::net
             const intmax_t result = recv(fd, &data[idx], length, 0);
             if (result == SOCKET_ERROR)
             {
+                // The socket is marked non-blocking and the requested operation would block.
                 if (errno == EWOULDBLOCK) {
                     if (IsReadyForRecv(3000) == false) {
                         if (idx == 0) { CloseAfterError(); return -1; }
@@ -343,15 +353,30 @@ namespace analyzer::net
 
 
     // Set socket to Non-Blocking state.
-    bool Socket::SetSocketToNonBlock(void)
+    bool Socket::SetSocketToNonBlock(void) noexcept
     {
         const int32_t flags = fcntl(fd, F_GETFL, 0);
         if (flags == INVALID_SOCKET) {
-            LOG_ERROR("Socket.SetSocketToNonBlock [", fd, "]: Getting socket options error - ", GET_ERROR(errno));
+            LOG_ERROR("Socket.SetSocketToNonBlock [", fd, "]: When getting socket options - ", GET_ERROR(errno));
             return false;
         }
         if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == INVALID_SOCKET) {
-            LOG_ERROR("Socket.SetSocketToNonBlock [", fd, "]: Setting socket options error - ", GET_ERROR(errno));
+            LOG_ERROR("Socket.SetSocketToNonBlock [", fd, "]: When setting socket options - ", GET_ERROR(errno));
+            return false;
+        }
+        return true;
+    }
+
+
+    // Disable SIGPIPE signal for send.
+    bool Socket::DisableSignalSIGPIPE(void) const noexcept
+    {
+        static sigset_t mask;
+        sigemptyset(&mask);
+        sigaddset(&mask, SIGPIPE);
+        const int32_t ret = pthread_sigmask(SIG_BLOCK, &mask, nullptr);
+        if (ret != 0) {
+            LOG_ERROR("Socket.DisableSignalSIGPIPE [", fd, "]: When block signal 'SIG_BLOCK' - ", GET_ERROR(ret));
             return false;
         }
         return true;

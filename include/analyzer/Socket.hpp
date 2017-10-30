@@ -139,6 +139,7 @@ namespace analyzer::net
     };
 
 
+
     class Socket
     {
     private:
@@ -156,7 +157,9 @@ namespace analyzer::net
         struct epoll_event event = { };
 
         // Set Socket to Non-Blocking state.
-        bool SetSocketToNonBlock(void);
+        bool SetSocketToNonBlock(void) noexcept;
+        // Disable SIGPIPE signal for send.
+        bool DisableSignalSIGPIPE(void) const noexcept;
 
     protected:
         // The Socket descriptor.
