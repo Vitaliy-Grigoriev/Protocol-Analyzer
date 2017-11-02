@@ -56,8 +56,8 @@ namespace analyzer::net
     /**
      * @class SocketStatePool Socket.hpp "include/analyzer/Socket.hpp"
      * @brief This singleton class defined the interface of checking the status of socket descriptors.
-     * @note You must delete socket descriptor after you do not need it anymore.
      *
+     * @note You must delete socket descriptor after you do not need it anymore.
      * This singleton class is thread-safe.
      */
     class SocketStatePool
@@ -81,19 +81,19 @@ namespace analyzer::net
 
         /**
          * @var std::atomic<uint16_t> countOfDescriptors;
-         * @brief The number of all socket descriptors under observation.
+         * @brief The number of all socket descriptors under observation in current time.
          */
         std::atomic<uint16_t> countOfDescriptors = 0;
 
     protected:
         /**
-         * @fn SocketStatePool(void);
+         * @fn SocketStatePool::SocketStatePool(void) noexcept;
          * @brief Protect constructor.
          */
         SocketStatePool(void) noexcept;
 
         /**
-         * @fn ~SocketStatePool(void) = default;
+         * @fn SocketStatePool::~SocketStatePool(void);
          * @brief Protect default destructor.
          */
         ~SocketStatePool(void) = default;
@@ -105,37 +105,37 @@ namespace analyzer::net
         SocketStatePool & operator= (const SocketStatePool &) = delete;
 
         /**
-         * @fn static SocketsStatePool & Instance(void);
+         * @fn static SocketsStatePool & SocketStatePool::Instance(void) noexcept;
          * @brief Method that returns the instance of the singleton class.
          * @return The instance of singleton class.
          */
         static SocketStatePool & Instance(void) noexcept;
 
         /**
-         * @fn bool AddSocketDescriptor (int32_t, uint32_t);
+         * @fn bool SocketStatePool::RegisterDescriptor (int32_t, uint32_t) noexcept;
          * @brief Method that adds new socket descriptor to epoll set.
          * @param [in] fd - Socket descriptor.
          * @param [in] events - One or more EPOLL_EVENTS values.
          * @return Boolean value that indicate the adding status.
          */
-        //bool AddSocketDescriptor (int32_t /*fd*/, uint32_t /*events*/);
+        //bool RegisterDescriptor (int32_t /*fd*/, uint32_t /*events*/) noexcept;
 
         /**
-         * @fn bool DeleteSocketDescriptor (int32_t);
+         * @fn bool SocketStatePool::DeleteDescriptor (int32_t);
          * @brief Method that removes socket descriptor from epoll set.
          * @param [in] fd - Socket descriptor.
          * @return Boolean value that indicate the removal status.
          */
-        //bool DeleteSocketDescriptor (int32_t /*fd*/);
+        //bool DeleteDescriptor (int32_t /*fd*/) noexcept;
 
         /**
-         * @fn uint16_t CheckSocketStatus (int32_t, int32_t);
+         * @fn uint16_t SocketStatePool::CheckSocketStatus (int32_t, int32_t) noexcept;
          * @brief Method that checks socket status.
          * @param [in] fd - Socket descriptor.
          * @param [in] timeout - Timeout for waiting descriptor status. Default: unlimited.
          * @return Boolean value that indicate the removal status.
          */
-        //uint16_t CheckSocketStatus (int32_t /*fd*/, int32_t /*timeout*/ = DEFAULT_TIME_SIGWAIT);
+        //uint16_t CheckSocketStatus (int32_t /*fd*/, int32_t /*timeout*/ = DEFAULT_TIME_SIGWAIT) noexcept;
     };
 
 
@@ -319,6 +319,8 @@ namespace analyzer::net
         ~SocketSSL(void) final;
     };
 
+
 }  // namespace net.
+
 
 #endif  // PROTOCOL_ANALYZER_SOCKET_HPP

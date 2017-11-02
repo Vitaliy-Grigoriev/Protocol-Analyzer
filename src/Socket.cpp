@@ -5,6 +5,7 @@
 #include <csignal>
 #include <unistd.h>
 
+#include "../include/analyzer/System.hpp"
 #include "../include/analyzer/Socket.hpp"
 
 
@@ -382,7 +383,6 @@ namespace analyzer::net
         return true;
     }
 
-
     // Disable SIGPIPE signal for send.
     bool Socket::DisableSignalSIGPIPE(void) const noexcept
     {
@@ -397,7 +397,6 @@ namespace analyzer::net
         return true;
     }
 
-
     // Shutdown the connection.
     void Socket::Shutdown (const int32_t how) const
     {
@@ -411,7 +410,6 @@ namespace analyzer::net
         }
     }
 
-
     // Close the connection.
     void Socket::Close(void)
     {
@@ -423,14 +421,12 @@ namespace analyzer::net
         if (epfd != INVALID_SOCKET) { close(epfd); epfd = INVALID_SOCKET; }
     }
 
-
     // Cleaning after error.
     void Socket::CloseAfterError(void)
     {
         Close();
         exHost.clear();
     }
-
 
     // Destructor.
     Socket::~Socket(void)
@@ -445,7 +441,7 @@ namespace analyzer::net
 
     SocketStatePool::SocketStatePool(void) noexcept
     {
-        events = common::alloc_memory<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
+        events = system::alloc_memory<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
         if (events == nullptr) {
             LOG_FATAL("SocketStatePool.SocketStatePool: In function 'alloc_memory'.");
             std::terminate();
@@ -453,10 +449,10 @@ namespace analyzer::net
 
         epoll_fd = epoll_create1(0);
         if (epoll_fd == INVALID_SOCKET) {
-            LOG_ERROR("SocketStatePool.SocketStatePool: In function 'epoll_create1' - ", GET_ERROR(errno));
+            LOG_FATAL("SocketStatePool.SocketStatePool: In function 'epoll_create1' - ", GET_ERROR(errno));
+            std::terminate();
         }
     }
-
 
     SocketStatePool& SocketStatePool::Instance(void) noexcept
     {

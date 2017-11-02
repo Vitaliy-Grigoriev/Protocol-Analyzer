@@ -96,7 +96,7 @@ namespace analyzer::log
         StrSysError(void) noexcept;
 
         /**
-         * @fn StrSysError::~StrSysError(void) = default;
+         * @fn StrSysError::~StrSysError(void);
          * @brief Protect default destructor.
          */
         ~StrSysError(void) = default;
@@ -276,7 +276,7 @@ namespace analyzer::log
                 return;
             }
 
-            try { std::lock_guard<std::mutex> lock(logMutex); }
+            try { std::lock_guard<std::mutex> lock { logMutex }; }
             catch (const std::system_error& err) {
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
                 CommonLogger("[error] Logger.Push: In function 'lock_guard' - ", err.what(), '.');

@@ -4,11 +4,9 @@
 
 #include <limits>
 #include <random>
-#include <memory>
 #include <chrono>
 #include <string>
 #include <iomanip>
-#include <cstring>
 #include <sstream>
 #include <cstdint>
 #include <iterator>
@@ -25,44 +23,6 @@
 
 namespace analyzer::common
 {
-    /**
-      * @fn template <typename T> std::unique_ptr<T> alloc_memory(void) noexcept;
-      * @brief Function, which allocates dynamic memory.
-      * @return The smart pointer to allocated memory.
-      */
-    template <typename T>
-    std::unique_ptr<T> alloc_memory(void) noexcept
-    {
-        try {
-            return std::make_unique<T>();
-        }
-        catch (std::exception& /*err*/) {
-            return nullptr;
-        }
-    }
-
-    /**
-      * @fn template <typename T = char[]> std::unique_ptr<T[]> alloc_memory (const std::size_t, const T * = nullptr) noexcept;
-      * @brief Function that allocates dynamic memory and if needed fills it.
-      * @param [in] size - The size of memory.
-      * @param [in] data - The pointer to data for copy.
-      * @return The smart pointer to allocated memory.
-      */
-    template <typename T = char>
-    std::unique_ptr<T[]> alloc_memory (const std::size_t size, const T * data = nullptr) noexcept
-    {
-        try {
-            auto mem = std::make_unique<T[]>(size);
-            if (data == nullptr) { return mem; }
-            memcpy(mem.get(), data, size);
-            return mem;
-        }
-        catch (std::exception& /*err*/) {
-            return nullptr;
-        }
-    }
-
-
     /**
      * @fn template <typename T = uint32_t> std::enable_if_t<std::is_integral<T>::value, T> GetRandomValue(void) noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.

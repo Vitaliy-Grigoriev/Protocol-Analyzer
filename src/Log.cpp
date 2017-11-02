@@ -217,7 +217,7 @@ namespace analyzer::log
 
     bool Logger::SetLogFileRecordsLimit (const std::size_t size) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(logMutex); }
+        try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             CommonLogger("[error] Logger.SetLogFileRecordsLimit: In function 'lock_guard' - ", err.what(), '.');
@@ -242,7 +242,7 @@ namespace analyzer::log
 
     bool Logger::ChangeLogFileName (std::string path) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(logMutex); }
+        try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             CommonLogger("[error] Logger.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
@@ -345,7 +345,7 @@ namespace analyzer::log
 
     bool Logger::SwitchLoggingEngine(void) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(logMutex); }
+        try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
             out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
             CommonLogger("[error] Logger.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');

@@ -456,18 +456,18 @@ namespace analyzer::net
 
         ctx[SSL_METHOD_TLS1] = SSL_CTX_new( TLSv1_client_method() );
         if (ctx[SSL_METHOD_TLS1] == nullptr) {
-            LOG_ERROR("SSLContext: In function 'SSL_CTX_new (TLSv1.0)' - ", CheckSSLErrors());
-            abort();
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.0)' - ", CheckSSLErrors());
+            std::terminate();
         }
         ctx[SSL_METHOD_TLS11] = SSL_CTX_new( TLSv1_1_client_method() );
         if (ctx[SSL_METHOD_TLS11] == nullptr) {
-            LOG_ERROR("SSLContext: In function 'SSL_CTX_new (TLSv1.1)' - ", CheckSSLErrors());
-            abort();
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.1)' - ", CheckSSLErrors());
+            std::terminate();
         }
         ctx[SSL_METHOD_TLS12] = SSL_CTX_new( TLSv1_2_client_method() );
         if (ctx[SSL_METHOD_TLS12] == nullptr) {
-            LOG_ERROR("SSLContext: In function 'SSL_CTX_new (TLSv1.2)' - ", CheckSSLErrors());
-            abort();
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.2)' - ", CheckSSLErrors());
+            std::terminate();
         }
         LOG_INFO("SSLContext: Initialize SSL library is success.");
     }

@@ -18,7 +18,14 @@
  * @namespace analyzer
  * @brief The main namespace that contains definition of analyzer framework.
  */
-namespace analyzer {
+namespace analyzer
+{
+    /**
+     * @namespace system
+     * @brief The namespace that contains definition of various core functions.
+     */
+    namespace system {
+    }  // namespace system.
     /**
      * @namespace net
      * @brief The namespace that contains definitions of network transports.
@@ -48,6 +55,12 @@ namespace analyzer {
      * @brief The namespace that contains definition of common functions.
      */
     namespace common {
+        /**
+         * @namespace types
+         * @brief The namespace that contains definition of various framework types.
+         */
+        namespace types {
+        }  // namespace types.
         /**
          * @namespace text
          * @brief The namespace that contains definition of functions which works with text.
