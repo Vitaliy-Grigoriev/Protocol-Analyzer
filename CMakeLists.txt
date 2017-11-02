@@ -20,17 +20,20 @@ set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG  ${WARNINGS} ${ADDITIONAL_FLAGS} $
 set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE   ${WARNINGS}")
 
 
-set(TASK_LIB         include/analyzer/Task.hpp        src/Task.cpp src/TaskManager.cpp)
-set(LOGGING_LIB      include/analyzer/Log.hpp         src/Log.cpp)
-set(COMMON_LIB       include/analyzer/Common.hpp      src/Common.cpp)
+
+set(SYSTEM_LIB       include/analyzer/System.hpp       src/System.cpp)
+set(TASK_LIB         include/analyzer/Task.hpp         src/Task.cpp src/TaskManager.cpp)
+set(LOGGING_LIB      include/analyzer/Log.hpp          src/Log.cpp)
+set(COMMON_LIB       include/analyzer/Common.hpp include/analyzer/LockedDeque.hpp      src/Common.cpp)
 set(PROTOCOL_LIB     include/analyzer/Protocol.hpp include/analyzer/Http.hpp   src/Protocol.cpp src/Http.cpp)
-set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp       src/Timer.cpp)
-set(UTILITIES_LIB    include/analyzer/Utilities.hpp   src/Utilities.cpp)
-set(SOCKET_LIB       include/analyzer/Socket.hpp      src/Socket.cpp src/SocketSSL.cpp)
+set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp        src/Timer.cpp)
+set(UTILITIES_LIB    include/analyzer/Utilities.hpp    src/Utilities.cpp)
+set(SOCKET_LIB       include/analyzer/Socket.hpp       src/Socket.cpp src/SocketSSL.cpp)
 
 add_library(Task         STATIC   ${TASK_LIB})
 add_library(Common       STATIC   ${COMMON_LIB})
 add_library(Logging      STATIC   ${LOGGING_LIB})
+add_library(System       STATIC   ${SYSTEM_LIB})
 add_library(Diagnostic   STATIC   ${DIAGNOSTIC_LIB})
 add_library(Socket       STATIC   ${SOCKET_LIB})
 add_library(Protocol     STATIC   ${PROTOCOL_LIB})
