@@ -441,17 +441,22 @@ namespace analyzer::net
 
     SocketStatePool::SocketStatePool(void) noexcept
     {
-        events = system::alloc_memory<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
+        // Create array for socket events.
+        events = system::alloc_memory_array<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
         if (events == nullptr) {
             LOG_FATAL("SocketStatePool.SocketStatePool: In function 'alloc_memory'.");
             std::terminate();
         }
 
+        // Create epoll descriptor.
         epoll_fd = epoll_create1(0);
         if (epoll_fd == INVALID_SOCKET) {
             LOG_FATAL("SocketStatePool.SocketStatePool: In function 'epoll_create1' - ", GET_ERROR(errno));
             std::terminate();
         }
+
+        // Start thread for epoll loop with events pointer.
+
     }
 
     SocketStatePool& SocketStatePool::Instance(void) noexcept

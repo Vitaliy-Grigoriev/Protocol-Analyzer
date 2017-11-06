@@ -22,7 +22,7 @@ set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE   ${WARNINGS}")
 
 
 set(SYSTEM_LIB       include/analyzer/System.hpp       src/System.cpp)
-set(TASK_LIB         include/analyzer/Task.hpp         src/Task.cpp src/TaskManager.cpp)
+set(TASK_LIB         include/analyzer/Notification.hpp)        #include/analyzer/Task.hpp src/Task.cpp src/TaskManager.cpp)
 set(LOGGING_LIB      include/analyzer/Log.hpp          src/Log.cpp)
 set(COMMON_LIB       include/analyzer/Common.hpp include/analyzer/LockedDeque.hpp      src/Common.cpp)
 set(PROTOCOL_LIB     include/analyzer/Protocol.hpp include/analyzer/Http.hpp   src/Protocol.cpp src/Http.cpp)
@@ -41,8 +41,8 @@ add_library(Utilities    STATIC   ${UTILITIES_LIB})
 
 target_link_libraries(Logging     Common)
 target_link_libraries(Protocol    Logging Common)
-target_link_libraries(Socket      ssl crypto Logging Common)
-target_link_libraries(Task        pthread Socket Protocol Logging)
+target_link_libraries(Socket      ssl crypto Logging Common System)
+target_link_libraries(Task        pthread Logging Common)
 target_link_libraries(Utilities   Socket Protocol)
 
 
@@ -54,6 +54,7 @@ set(TIMING_TEST              test/test_timing.cpp       include/analyzer/Api.hpp
 set(LOGGING_TEST             test/test_logging.cpp      include/analyzer/Api.hpp)
 set(ANYTHING_TEST            test/test_anything.cpp     include/analyzer/Api.hpp)
 set(URI_PARSER_TEST          test/test_uri_parser.cpp   include/analyzer/Api.hpp)
+set(NOTIFICATION_TEST        test/test_notification.cpp include/analyzer/Notification.hpp)
 set(HTTP2_NEGOTIATION_TEST   test/test_http2_negotiation.cpp   include/analyzer/Api.hpp)
 
 add_executable(test_ssl                 ${SSL_TEST})
@@ -64,9 +65,11 @@ add_executable(test_timing              ${TIMING_TEST})
 add_executable(test_logging             ${LOGGING_TEST})
 add_executable(test_anything            ${ANYTHING_TEST})
 add_executable(test_uri_parser          ${URI_PARSER_TEST})
+add_executable(test_notification        ${NOTIFICATION_TEST})
 add_executable(test_http2_negotiation   ${HTTP2_NEGOTIATION_TEST})
 
 #target_link_libraries(test_manager             Task)
+target_link_libraries(test_notification        Task System)
 target_link_libraries(test_socket              Socket)
 target_link_libraries(test_common              Common)
 target_link_libraries(test_anything            Common)

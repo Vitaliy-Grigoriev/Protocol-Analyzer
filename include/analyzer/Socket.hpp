@@ -39,6 +39,7 @@
 
 #define DEFAULT_TIME_SIGWAIT (-1) // milli sec.
 #define MAXIMUM_SOCKET_DESCRIPTORS 1024 // Maximum descriptors for epoll_wait().
+#define UNLIMITED_LIVE_TIME 0 // Unlimited live time for socket descriptor in SocketStatePool.
 
 #define DEFAULT_RECEIVE_CHUNK 250 // Chunk part for receive massage.
 
@@ -57,8 +58,7 @@ namespace analyzer::net
      * @class SocketStatePool Socket.hpp "include/analyzer/Socket.hpp"
      * @brief This singleton class defined the interface of checking the status of socket descriptors.
      *
-     * @note You must delete socket descriptor after you do not need it anymore.
-     * This singleton class is thread-safe.
+     * @note This singleton class is thread-safe.
      */
     class SocketStatePool
     {
@@ -105,6 +105,67 @@ namespace analyzer::net
         SocketStatePool & operator= (const SocketStatePool &) = delete;
 
         /**
+         * @enum SOCKET_STATUS
+         * @brief The socket statuses in event notification.
+         *
+         * @note Definition of the epoll states:
+         * @note EPOLLERR   - Error condition happened on the associated file descriptor.
+         * @note EPOLLHUP   - Signals an unexpected close of the socket.
+         * @note EPOLLRDHUP - Stream socket peer closed connection, or shut down writing half of connection (used only with EPOLLIN).
+         * @note EPOLLIN    - Associated file is available for read operations.
+         * @note EPOLLOUT   - Associated file is available for write operations.
+         */
+        enum SOCKET_STATUS : uint16_t
+        {
+            STATUS_ERROR = 0x1,     // Set if epoll returns event EPOLLERR.
+            STATUS_UNKNOWN = 0x2,   // Set if epoll not returns any event for descriptor.
+            STATUS_CLOSED = 0x4,    // Set if epoll returns event EPOLLHUP or EPOLLRDHUP.
+            STATUS_WRCLOSED = 0x8,  // Set if epoll returns event EPOLLRDHUP|EPOLLIN.
+            STATUS_READ = 0x10,     // Set if epoll returns event EPOLLIN.
+            STATUS_WRITE = 0x20,    // Set if epoll returns event EPOLLOUT.
+            STATUS_ANOTHER = 0x40,  // Set if epoll returns any other event.
+            STATUS_DELETE = 0x80    // Set if socket descriptor is not registered or has been deleted.
+        };
+
+        /**
+         * @enum SOCKET_TYPE
+         * @brief The type of the socket descriptor.
+         *
+         * @note The following types can be used together:
+         * @note 1) TEST_ALWAYS with TEST_IMMEDIATELY. In this case default TASK_TYPE will be used.
+         */
+        enum SOCKET_TYPE : uint16_t
+        {
+            TEST_ON_REQUEST = 0x1,       // Descriptor will be checked once on request without save result, then notify waiting thread.
+            TEST_ONCE_AND_DELETE = 0x2,  // Descriptor will be checked once, then notify waiting thread and after that delete from common set.
+            TEST_ALWAYS = 0x4,           // Descriptor will be checked in all event loop with last TASK_TYPE, then save last result without notification.
+            TEST_IMMEDIATELY = 0x8,      // Descriptor will be checked once using the default TASK_TYPE without request and notification, then save result.
+            // Options section.
+            SAVE_LAST_RESULT = 0x10,     // Save last result in internal buffer.   Use only with TEST_ON_REQUEST.
+            WITHOUT_NOTIFICATION = 0x20, // No any notification will be sent. Result will be saved.      Use only with TEST_ON_REQUEST.
+            NOTIFY_ALWAYS = 0x40         // Notification will be sent always.      Use only with TEST_ALWAYS case.
+        };
+
+        /**
+         * @enum TASK_TYPE
+         * @brief The task type for observed socket descriptor.
+         *
+         * @note Task type determines in what cases the notification will be sent.
+         * @warning If SOCKET_TYPE is WITHOUT_NOTIFICATION, then no any notification will be sent.
+         *
+         * @attention Notification is ALWAYS sent in the following cases: STATUS_ERROR, STATUS_CLOSED, STATUS_ANOTHER.
+         * @attention Status STATUS_WRCLOSED may be sent instead STATUS_READ status if epoll event EPOLLRDHUP is set.
+         * @attention Status STATUS_ANOTHER may be sent with any other requested statuses.
+         */
+        enum TASK_TYPE : uint16_t
+        {
+            TASK_TYPE_READ = 0x1,   // .
+            TASK_TYPE_WRITE = 0x2,  // .
+            TASK_TYPE_CLOSE = 0x4,  // .
+            TASK_TYPE_ALL = 0x8     // Default task.
+        };
+
+        /**
          * @fn static SocketsStatePool & SocketStatePool::Instance(void) noexcept;
          * @brief Method that returns the instance of the singleton class.
          * @return The instance of singleton class.
@@ -112,30 +173,77 @@ namespace analyzer::net
         static SocketStatePool & Instance(void) noexcept;
 
         /**
-         * @fn bool SocketStatePool::RegisterDescriptor (int32_t, uint32_t) noexcept;
-         * @brief Method that adds new socket descriptor to epoll set.
+         * @fn bool SocketStatePool::RegisterSocket (int32_t, SOCKET_TYPE, uint32_t) noexcept;
+         * @brief Method that adds new socket descriptor to common set.
          * @param [in] fd - Socket descriptor.
-         * @param [in] events - One or more EPOLL_EVENTS values.
-         * @return Boolean value that indicate the adding status.
+         * @param [in] type - The type of socket descriptor. Default: TEST_ON_REQUEST.
+         * @param [in] liveTime - The time (in seconds) during which the socket descriptor is registered. Default: UNLIMITED_LIVE_TIME.
+         * @return Boolean value that indicates the adding status.
          */
-        //bool RegisterDescriptor (int32_t /*fd*/, uint32_t /*events*/) noexcept;
+        //bool RegisterSocket (int32_t /*fd*/, SOCKET_TYPE /*type*/ = TEST_ON_REQUEST, uint32_t /*liveTime*/ = UNLIMITED_LIVE_TIME) noexcept;
 
         /**
-         * @fn bool SocketStatePool::DeleteDescriptor (int32_t);
-         * @brief Method that removes socket descriptor from epoll set.
+         * @fn bool SocketStatePool::ChangeSocketType (int32_t, SOCKET_TYPE) noexcept;
+         * @brief Method that change the type of socket descriptor in common set.
          * @param [in] fd - Socket descriptor.
-         * @return Boolean value that indicate the removal status.
+         * @param [in] type - The type of socket descriptor.
+         * @return Boolean value that indicates the changing status.
          */
-        //bool DeleteDescriptor (int32_t /*fd*/) noexcept;
+        //bool ChangeSocketType (int32_t /*fd*/, SOCKET_TYPE /*type*/) noexcept;
 
         /**
-         * @fn uint16_t SocketStatePool::CheckSocketStatus (int32_t, int32_t) noexcept;
+         * @fn SOCKET_STATUS SocketStatePool::CheckSocketStatus (int32_t) noexcept;
          * @brief Method that checks socket status.
          * @param [in] fd - Socket descriptor.
-         * @param [in] timeout - Timeout for waiting descriptor status. Default: unlimited.
-         * @return Boolean value that indicate the removal status.
+         * @return SOCKET_STATUS value that indicates the status of socket descriptor.
+         *
+         * @note Method may returns the STATUS_UNKNOWN status if no any recent result.
+         * @note Method may returns the STATUS_DELETE status if socket descriptor is not registered or has been deleted.
          */
-        //uint16_t CheckSocketStatus (int32_t /*fd*/, int32_t /*timeout*/ = DEFAULT_TIME_SIGWAIT) noexcept;
+        //SOCKET_STATUS CheckSocketStatus (int32_t /*fd*/) noexcept;
+
+        /**
+         * @fn NotificationObserver<SOCKET_STATUS> * SocketStatePool::SetOrderNotification (int32_t) noexcept;
+         * @brief Method that checks socket status.
+         * @param [in] fd - Socket descriptor.
+         * @return NotificationObserver pointer that offers an interface for waiting and obtaining the result.
+         *
+         * @note Method may returns nullptr if an error occurred.
+         *
+         * @warning Use this method only in following cases:
+         * @warning 1) If CheckSocketStatus() method return STATUS_UNKNOWN status.
+         * @warning 2) If used TEST_IMMEDIATELY socket type or option WITHOUT_NOTIFICATION is set.
+         * @warning 3) If used NOTIFY_ALWAYS socket type option.
+         * @warning 4) If ChangeSocketType() method is used.
+         */
+        //NotificationObserver<SOCKET_STATUS> * SetOrderNotification (int32_t /*fd*/) noexcept;
+
+        /**
+         * @fn NotificationObserver<SOCKET_STATUS> * SocketStatePool::RegisterTask (int32_t, TASK_TYPE) noexcept;
+         * @brief Method that set request for socket descriptor.
+         * @param [in] fd - Socket descriptor.
+         * @param [in] task - The task for current descriptor. Default: TASK_TYPE_ALL.
+         * @return NotificationObserver pointer that offers an interface for waiting and obtaining the result.
+         *
+         * @warning Method may returns nullptr if an error occurred.
+         *
+         * @attention This method replaces previous request.
+         * @attention MUST NOT use this method with TEST_ALWAYS socket type. First use the method ChangeSocketType().
+         */
+        //NotificationObserver<SOCKET_STATUS> * RegisterTask (int32_t /*fd*/, TASK_TYPE /*task*/ = TASK_TYPE_ALL) noexcept;
+
+        /**
+         * @fn void SocketStatePool::DeleteDescriptor (int32_t);
+         * @brief Method that removes socket descriptor from epoll set.
+         * @param [in] fd - Socket descriptor.
+         * @return Boolean value that indicates the removal status.
+         *
+         * @note If parameter 'liveTime' was used when socket descriptor was registered, then no need to call this method.
+         * @note Socket class delete descriptor from pool in destructor.
+         *
+         * @attention Socket descriptor MUST be deleted if it is no longer needed.
+         */
+        //void DeleteDescriptor (int32_t /*fd*/) noexcept;
     };
 
 

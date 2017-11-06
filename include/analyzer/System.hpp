@@ -13,15 +13,16 @@
 namespace analyzer::system
 {
     /**
-      * @fn template <typename T> std::unique_ptr<T> alloc_memory(void) noexcept;
+      * @fn template <typename Type, typename... Args> std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
       * @brief Function that allocates dynamic memory.
-      * @return The smart pointer to allocated memory.
+      * @tparam args - Any params for construct object.
+      * @return The smart pointer to allocated object.
       */
-    template <typename T>
-    std::unique_ptr<T> alloc_memory(void) noexcept
+    template <typename Type, typename... Args>
+    std::unique_ptr<Type> allocMemoryForObject (Args &&... args) noexcept
     {
         try {
-            return std::make_unique<T>();
+            return std::make_unique<Type>(std::forward<Args>(args)...);
         }
         catch (std::exception& /*err*/) {
             return nullptr;
@@ -29,18 +30,18 @@ namespace analyzer::system
     }
 
     /**
-      * @fn template <typename T = char[]> std::unique_ptr<T[]> alloc_memory (const std::size_t, const T *) noexcept;
+      * @fn template <typename Type = char> std::unique_ptr<Type[]> alloc_memory (const std::size_t, const Type *) noexcept;
       * @brief Function that allocates dynamic memory and if needed fills it.
       * @param [in] size - The size of memory.
       * @param [in] data - The pointer to data for copy. Default: nullptr.
       * @param [in] length - The length of data for copy.
       * @return The smart pointer to allocated memory.
       */
-    template <typename T = char>
-    std::unique_ptr<T[]> alloc_memory (const std::size_t size, const T* data = nullptr, const std::size_t length = 0) noexcept
+    template <typename Type = char>
+    std::unique_ptr<Type[]> alloc_memory_array (const std::size_t size, const Type* data = nullptr, const std::size_t length = 0) noexcept
     {
         try {
-            auto memory = std::make_unique<T[]>(size);
+            auto memory = std::make_unique<Type[]>(size);
             if (data == nullptr) { return memory; }
 
             if (size <= length) {

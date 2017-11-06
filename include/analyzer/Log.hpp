@@ -84,7 +84,7 @@ namespace analyzer::log
      * @brief This singleton class defined the interface of receipt an system error.
      *
      * @note This singleton class is thread-safe.
-     * To use this class, use the macro GET_ERROR(const int32_t ErrorCode).
+     * @note To use this class, use the macro GET_ERROR(const int32_t ErrorCode).
      */
     class StrSysError
     {
@@ -129,8 +129,8 @@ namespace analyzer::log
      * @brief This singleton class defined the interface for program logging.
      *
      * @note This singleton class is thread-safe and fault-tolerant.
-     * To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
-     * Allow two types of logger engine: logfile-oriented and console-oriented.
+     * @note To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
+     * @note Allow two types of logger engine: logfile-oriented and console-oriented.
      *
      * @todo Support setting directory for log files.
      * @todo Support setting extension for log files.
@@ -182,7 +182,7 @@ namespace analyzer::log
          * @brief The logging level type.
          *
          * @note If message has level that less then current level, then this message will be blocked.
-         * Default: TRACE.
+         * @note Default: TRACE.
          */
         volatile LEVEL levelType = LEVEL::TRACE;
 
@@ -222,7 +222,7 @@ namespace analyzer::log
          * @return True - if logfile name is changed successfully, otherwise - false.
          *
          * @note This method change engine only if work logfile-oriented engine.
-         * If work console-oriented engine, then change only name of logfile and number of entries in it.
+         * @note If work console-oriented engine, then change only name of logfile and number of entries in it.
          */
         bool ChangeVolume(void) noexcept;
 
@@ -315,7 +315,7 @@ namespace analyzer::log
          * @return True - if logfile records limit is changed successfully, otherwise - false.
          *
          * @note If number of records in logfile more then limit, then logging engine switch logfile to the next volume.
-         * If enable console-oriented engine, then only logfile name and size of current records in it will be changed.
+         * @note If enable console-oriented engine, then only logfile name and size of current records in it will be changed.
          */
         bool SetLogFileRecordsLimit (std::size_t /*size*/) noexcept;
 
