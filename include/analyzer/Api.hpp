@@ -4,13 +4,16 @@
 
 #define PROTOCOL_ANALYZER_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
-#define PROTOCOL_ANALYZER_VERSION_PATCH 7
+#define PROTOCOL_ANALYZER_VERSION_PATCH 8
 
-#include "Log.hpp"
+#include "Log.hpp"  // In this header file also defined "Common.hpp".
+#include "Mutex.hpp"
+#include "System.hpp"
 #include "Socket.hpp"
 //#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
 //#include "Task.hpp"
 #include "Utilities.hpp"
+#include "Notification.hpp"
 
 
 ///////////////////   STRUCTURE OF PROTOCOL ANALYZER   ///////////////////

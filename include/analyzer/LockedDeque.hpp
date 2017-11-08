@@ -9,7 +9,7 @@
 #include <deque>
 #include <utility>
 
-// In System library must not use any another library because it is a core library.
+// In System library MUST NOT use any another library because it is a core library.
 
 
 namespace analyzer::common::types

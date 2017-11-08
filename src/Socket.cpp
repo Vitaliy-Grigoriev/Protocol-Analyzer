@@ -442,7 +442,7 @@ namespace analyzer::net
     SocketStatePool::SocketStatePool(void) noexcept
     {
         // Create array for socket events.
-        events = system::alloc_memory_array<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
+        events = system::allocMemoryForArray<struct epoll_event>(MAXIMUM_SOCKET_DESCRIPTORS);
         if (events == nullptr) {
             LOG_FATAL("SocketStatePool.SocketStatePool: In function 'alloc_memory'.");
             std::terminate();

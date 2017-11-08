@@ -14,6 +14,7 @@
 
 #include "Log.hpp"   // In this header file also defined "Common.hpp".
 #include "Http.hpp"
+#include "Notification.hpp"
 
 
 #define TCPv4 1
@@ -188,6 +189,8 @@ namespace analyzer::net
          * @param [in] fd - Socket descriptor.
          * @param [in] type - The type of socket descriptor.
          * @return Boolean value that indicates the changing status.
+         *
+         * @todo Need to implement adding TEST_ALWAYS with NOTIFY_ALWAYS option or other.
          */
         //bool ChangeSocketType (int32_t /*fd*/, SOCKET_TYPE /*type*/) noexcept;
 
@@ -282,7 +285,7 @@ namespace analyzer::net
         bool IsReadyForRecv (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
         // Checks availability socket on read/write.
         uint16_t CheckSocketState (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) const;
-        // Close after error. Must not use virtual methods in constructors so it is not a virtual method.
+        // Close after error. MUST NOT use virtual methods in constructors so it is not a virtual method.
         void CloseAfterError(void);
 
 

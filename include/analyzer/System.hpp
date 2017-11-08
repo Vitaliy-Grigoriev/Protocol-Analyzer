@@ -1,25 +1,24 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
+#pragma once
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
 
-#include <memory>   // std::unique_ptr<>().
+#include <memory>   // std::unique_ptr<T>().
 #include <cstring>  // memcpy().
 
-// In System library must not use any another library because it is a core library.
+// In System library MUST NOT use any another library because it is a core library.
 
 
 namespace analyzer::system
 {
     /**
-      * @fn template <typename Type, typename... Args> std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
+      * @fn template <typename Type, typename... Args>
+      * std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
       * @brief Function that allocates dynamic memory.
-      * @tparam args - Any params for construct object.
-      * @return The smart pointer to allocated object.
+      * @tparam [in] args - Any params for construct object.
+      * @return Smart pointer to allocated object of selected type object.
       */
     template <typename Type, typename... Args>
-    std::unique_ptr<Type> allocMemoryForObject (Args &&... args) noexcept
+    std::unique_ptr<Type> allocMemoryForObject (Args&&... args) noexcept
     {
         try {
             return std::make_unique<Type>(std::forward<Args>(args)...);
@@ -30,24 +29,25 @@ namespace analyzer::system
     }
 
     /**
-      * @fn template <typename Type = char> std::unique_ptr<Type[]> alloc_memory (const std::size_t, const Type *) noexcept;
-      * @brief Function that allocates dynamic memory and if needed fills it.
-      * @param [in] size - The size of memory.
-      * @param [in] data - The pointer to data for copy. Default: nullptr.
-      * @param [in] length - The length of data for copy.
-      * @return The smart pointer to allocated memory.
+      * @fn template <typename Type>
+      * std::unique_ptr<Type[]> alloc_memory (const std::size_t, const Type *, const std::size_t) noexcept;
+      * @brief Function that allocates dynamic memory for array of selected type and if needed fills it.
+      * @param [in] size - Size of selected type array.
+      * @param [in] data - Pointer to data for copy. Default: nullptr.
+      * @param [in] length - Size of data for copy. Default: 0.
+      * @return Smart pointer to allocated memory of selected type array.
       */
     template <typename Type = char>
-    std::unique_ptr<Type[]> alloc_memory_array (const std::size_t size, const Type* data = nullptr, const std::size_t length = 0) noexcept
+    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const Type* data = nullptr, const std::size_t length = 0) noexcept
     {
         try {
             auto memory = std::make_unique<Type[]>(size);
             if (data == nullptr) { return memory; }
 
             if (size <= length) {
-                memcpy(memory.get(), data, size);
+                memcpy(memory.get(), data, size * sizeof(Type));
             } else {
-                memcpy(memory.get(), data, length);
+                memcpy(memory.get(), data, length * sizeof(Type));
             }
             return memory;
         }
@@ -55,6 +55,7 @@ namespace analyzer::system
             return nullptr;
         }
     }
+
 
 }  // namespace system.
 

@@ -227,7 +227,8 @@ namespace analyzer::log
         bool ChangeVolume(void) noexcept;
 
         /**
-         * @fn template<typename T> static inline void Logger::CommonLogger (const T &) noexcept;
+         * @fn template<typename T>
+         * void Logger::CommonLogger (const T &) const noexcept;
          * @brief Common method that outputs the data to logfile.
          * @tparam [in] value - The current output parameter.
          */
@@ -238,13 +239,14 @@ namespace analyzer::log
         }
 
         /**
-         * @fn template<typename T, typename... Args> void Logger::CommonLogger (const T &, Args &&...) noexcept;
+         * @fn template<typename T, typename... Args>
+         * void Logger::CommonLogger (const T &, Args &&...) const noexcept;
          * @brief Common method that outputs the data to logfile.
          * @tparam [in] value - The current output parameter.
          * @tparam [in] params - Any data for logging.
          */
         template<typename T, typename... Args>
-        void CommonLogger (const T &value, Args &&... args) const noexcept
+        void CommonLogger (const T& value, Args&&... args) const noexcept
         {
             out << value;
             CommonLogger(std::forward<Args>(args)...);
@@ -264,7 +266,8 @@ namespace analyzer::log
         static Logger & Instance(void) noexcept;
 
         /**
-         * @fn template <typename... Args> void Logger::Push (LEVEL level, Args&&... args) noexcept;
+         * @fn template <typename... Args>
+         * void Logger::Push (volatile LEVEL, Args &&...) noexcept;
          * @brief Method that pushes any logging data to logfile.
          * @param [in] level - The level of the message.
          * @tparam [in] args - Any logging data.
@@ -320,7 +323,7 @@ namespace analyzer::log
         bool SetLogFileRecordsLimit (std::size_t /*size*/) noexcept;
 
         /**
-         * @fn bool Logger::ChangeLogFileName (std::string, std::ios_base::openmode) noexcept;
+         * @fn bool Logger::ChangeLogFileName (std::string) noexcept;
          * @brief Method that switches the output logfile.
          * @param [in] path - Full path to new logfile.
          * @return True - if logfile name is changed successfully, otherwise - false.
@@ -355,7 +358,7 @@ namespace analyzer::log
      * @fn void DbgHexDump (const char *, const void *, std::size_t, std::size_t);
      * @brief Function that outputs the data to logfile in hex dump format.
      * @param [in] message - Message in log string.
-     * @param [in] data - Data that must be displayed in hex format.
+     * @param [in] data - Data for transfer to hex format.
      * @param [in] size - The size of input data.
      * @param [in] hexLineLength - The length of one hex dump string. Default: 16.
      *

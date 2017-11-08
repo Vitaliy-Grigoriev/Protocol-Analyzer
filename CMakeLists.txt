@@ -21,10 +21,10 @@ set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE   ${WARNINGS}")
 
 
 
-set(SYSTEM_LIB       include/analyzer/System.hpp       src/System.cpp)
+set(SYSTEM_LIB       include/analyzer/System.hpp include/analyzer/Mutex.hpp      src/System.cpp src/Mutex.cpp)
 set(TASK_LIB         include/analyzer/Notification.hpp)        #include/analyzer/Task.hpp src/Task.cpp src/TaskManager.cpp)
 set(LOGGING_LIB      include/analyzer/Log.hpp          src/Log.cpp)
-set(COMMON_LIB       include/analyzer/Common.hpp include/analyzer/LockedDeque.hpp      src/Common.cpp)
+set(COMMON_LIB       include/analyzer/Common.hpp include/analyzer/LockedDeque.hpp      src/Common.cpp include/analyzer/Mutex.hpp)
 set(PROTOCOL_LIB     include/analyzer/Protocol.hpp include/analyzer/Http.hpp   src/Protocol.cpp src/Http.cpp)
 set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp        src/Timer.cpp)
 set(UTILITIES_LIB    include/analyzer/Utilities.hpp    src/Utilities.cpp)

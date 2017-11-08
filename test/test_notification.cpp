@@ -12,8 +12,14 @@ using namespace analyzer::system;
 
 int32_t main (int32_t size, char** data)
 {
-    auto notify = allocMemoryForObject<NotificationSubject<uint16_t>>();
-    notify->SetValue(116);
+    auto init = allocMemoryForObject<NotificationInit<uint16_t>>(117);
+
+    auto subject = init->ToSubject();
+    subject->SetValue(116);
+
+    NotificationObserver<uint16_t>* observer = subject->ToObserver();
+    //NotificationObserver<uint16_t>* observer = init->ToObserver();
+    std::cout << observer->Wait() << std::endl;
 
 
     return EXIT_SUCCESS;

@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <type_traits>
 
-// In Common library must not use any another library because it is a core library.
+// In Common library MUST NOT use any another library because it is a core library.
 
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
 
