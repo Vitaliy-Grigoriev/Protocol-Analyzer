@@ -2,12 +2,12 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #pragma once
-#ifndef PROTOCOL_ANALYZER_LOCKEDDEQUE_HPP
-#define PROTOCOL_ANALYZER_LOCKEDDEQUE_HPP
+#ifndef PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
+#define PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
 
-#include <mutex>
-#include <deque>
-#include <utility>
+#include <mutex>    // std::mutex, std::scoped_lock, std::lock_guard.
+#include <deque>    // std::deque.
+#include <utility>  // std::move, std::swap.
 
 // In System library MUST NOT use any another library because it is a core library.
 
@@ -16,8 +16,12 @@ namespace analyzer::common::types
 {
     /**
      * @class LockedDeque LockedDeque.hpp "include/analyzer/LockedDeque.hpp"
-     * @brief This class defined concurrency wrapper over deque to work in parallel threads.
+     * @brief This class defined concurrency wrapper over STL deque class to work in parallel threads.
      * @tparam [in] Type - Typename of stored data in STL deque.
+     *
+     * @note This deque container if type-protected.
+     *
+     * @todo Set the global limit for adding new values to the deque.
      */
     template <typename Type>
     class LockedDeque
@@ -48,11 +52,11 @@ namespace analyzer::common::types
         ~LockedDeque(void) = default;
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque &) noexcept;
-         * @brief Copy constructor.
-         * @param [in] other - The const reference of copied deque.
+         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept;
+         * @brief Copy constructor with LockedDeque<Type>.
+         * @tparam [in] other - The const reference of copied LockedDeque<Type>.
          */
-        LockedDeque (const LockedDeque& other) noexcept
+        LockedDeque (const LockedDeque<Type>& other) noexcept
         {
             try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -62,11 +66,25 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque &) noexcept;
-         * @brief Move assignment constructor.
-         * @param [in] other - The lvalue reference of moved deque.
+         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept;
+         * @brief Copy constructor with STL std::deque<Type>.
+         * @tparam [in] other - The const reference of copied STL std::deque<Type>.
          */
-        LockedDeque (LockedDeque&& other) noexcept
+        explicit LockedDeque (const std::deque<Type>& other) noexcept
+        {
+            try { std::lock_guard<std::mutex> lock { mutex }; }
+            catch (const std::system_error& /*err*/) {
+                return;
+            }
+            deque = other;
+        }
+
+        /**
+         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept;
+         * @brief Move assignment constructor with LockedDeque<Type>.
+         * @tparam [in] other - The rvalue reference of moved LockedDeque<Type>.
+         */
+        LockedDeque (LockedDeque<Type>&& other) noexcept
         {
             try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -76,12 +94,26 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn LockedDeque & LockedDeque::operator= (const LockedDeque &) noexcept;
+         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept;
+         * @brief Move assignment constructor with STL std::deque<Type>.
+         * @tparam [in] other - The rvalue reference of moved STL std::deque<Type>.
+         */
+        explicit LockedDeque (std::deque<Type>&& other) noexcept
+        {
+            try { std::lock_guard<std::mutex> lock { mutex }; }
+            catch (const std::system_error& /*err*/) {
+                return;
+            }
+            deque = std::move(other);
+        }
+
+        /**
+         * @fn LockedDeque<Type> & LockedDeque::operator= (const LockedDeque<Type> &) noexcept;
          * @brief Copy operator.
-         * @param [in] other - The const reference of copied deque.
+         * @tparam [in] other - The const reference of copied deque.
          * @return Reference of current class.
          */
-        LockedDeque& operator= (const LockedDeque& other) noexcept
+        LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept
         {
             try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -92,12 +124,12 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn LockedDeque & LockedDeque::operator= (LockedDeque &&) noexcept;
+         * @fn LockedDeque<Type> & LockedDeque::operator= (LockedDeque<Type> &&) noexcept;
          * @brief Move assignment operator.
-         * @param [in] other - The lvalue reference of moved deque.
+         * @tparam [in] other - The rvalue reference of moved deque.
          * @return Reference of current class.
          */
-        LockedDeque& operator= (LockedDeque&& other) noexcept
+        LockedDeque<Type>& operator= (LockedDeque<Type>&& other) noexcept
         {
             try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -138,7 +170,7 @@ namespace analyzer::common::types
         /**
          * @fn bool LockedDeque::Push (const Type &) noexcept;
          * @brief Method that push new value to front of deque.
-         * @param [in] value - New value for insert.
+         * @tparam [in] value - New value for insert.
          * @return True - if push is successful, otherwise - false.
          */
         bool Push (const Type& value) noexcept
@@ -154,7 +186,7 @@ namespace analyzer::common::types
         /**
          * @fn bool LockedDeque::PopBack (Type &) noexcept;
          * @brief Method that pop value from back of deque.
-         * @param [out] result - Returned value.
+         * @tparam [out] result - Returned value.
          * @return True - if pop is successful, otherwise - false.
          */
         bool PopBack (Type& result) noexcept
@@ -174,7 +206,7 @@ namespace analyzer::common::types
         /**
          * @fn bool LockedDeque::PopFront (Type &) noexcept;
          * @brief Method that pop value from front of deque.
-         * @param [out] result - Returned value.
+         * @tparam [out] result - Returned value.
          * @return True - if pop is successful, otherwise - false.
          */
         bool PopFront (Type& result) noexcept
@@ -193,8 +225,8 @@ namespace analyzer::common::types
 
         /**
          * @fn bool LockedDeque::Move (std::deque<Type> &) noexcept;
-         * @brief Method that moves all internal values to outside STL deque.
-         * @param [out] result - Returned value.
+         * @brief Method that moves all internal values to outside STL std::deque<Type>.
+         * @tparam [out] result - Returned value.
          * @return True - if move is successful, otherwise - false.
          */
         bool Move (std::deque<Type>& result) noexcept
@@ -207,6 +239,38 @@ namespace analyzer::common::types
                 return false;
             }
             result = std::move(deque);
+            return true;
+        }
+
+        /**
+         * @fn bool LockedDeque::Swap (LockedDeque<Type> &) noexcept;
+         * @brief Method that swaps internal value with outside LockedDeque<Type> object.
+         * @tparam [in,out] other - Swapped value reference.
+         * @return True - if swap is successful, otherwise - false.
+         */
+        bool Swap (LockedDeque<Type>& other) noexcept
+        {
+            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
+            catch (const std::system_error& /*err*/) {
+                return false;
+            }
+            std::swap(deque, other.deque);
+            return true;
+        }
+
+        /**
+         * @fn bool LockedDeque::Swap (std::deque<Type> &) noexcept;
+         * @brief Method that swaps internal value with outside STL std::deque<Type>.
+         * @tparam [in,out] other - Swapped value reference.
+         * @return True - if swap is successful, otherwise - false.
+         */
+        bool Swap (std::deque<Type>& other) noexcept
+        {
+            try { std::lock_guard<std::mutex> lock { mutex }; }
+            catch (const std::system_error& /*err*/) {
+                return false;
+            }
+            std::swap(deque, other);
             return true;
         }
 
@@ -229,4 +293,4 @@ namespace analyzer::common::types
 }  // namespace types.
 
 
-#endif  // PROTOCOL_ANALYZER_LOCKEDDEQUE_HPP
+#endif  // PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
