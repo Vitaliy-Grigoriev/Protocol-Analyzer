@@ -115,11 +115,14 @@ namespace analyzer::common::types
          */
         LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept
         {
-            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return *this;
+            if (this != &other)
+            {
+                try { std::scoped_lock<std::mutex, std::mutex> lock{mutex, other.mutex}; }
+                catch (const std::system_error & /*err*/) {
+                    return *this;
+                }
+                deque = other.deque;
             }
-            deque = other.deque;
             return *this;
         }
 
@@ -131,11 +134,14 @@ namespace analyzer::common::types
          */
         LockedDeque<Type>& operator= (LockedDeque<Type>&& other) noexcept
         {
-            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return *this;
+            if (this != &other)
+            {
+                try { std::scoped_lock<std::mutex, std::mutex> lock{mutex, other.mutex}; }
+                catch (const std::system_error & /*err*/) {
+                    return *this;
+                }
+                deque = std::move(other.deque);
             }
-            deque = std::move(other.deque);
             return *this;
         }
 
@@ -144,7 +150,7 @@ namespace analyzer::common::types
          * @brief Method that returns the size of deque.
          * @return Size of deque.
          */
-        std::size_t Size(void) const noexcept
+        std::size_t Size(void) noexcept
         {
             try { std::lock_guard<std::mutex> lock { mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -158,7 +164,7 @@ namespace analyzer::common::types
          * @brief Method that returns the internal state of deque.
          * @return State of deque.
          */
-        bool IsEmpty(void) const noexcept
+        bool IsEmpty(void) noexcept
         {
             try { std::lock_guard<std::mutex> lock { mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -195,6 +201,7 @@ namespace analyzer::common::types
             catch (const std::system_error& /*err*/) {
                 return false;
             }
+
             if (deque.empty() == true) {
                 return false;
             }
@@ -215,6 +222,7 @@ namespace analyzer::common::types
             catch (const std::system_error& /*err*/) {
                 return false;
             }
+
             if (deque.empty() == true) {
                 return false;
             }
@@ -235,6 +243,7 @@ namespace analyzer::common::types
             catch (const std::system_error& /*err*/) {
                 return false;
             }
+
             if (deque.empty() == true) {
                 return false;
             }
@@ -250,11 +259,14 @@ namespace analyzer::common::types
          */
         bool Swap (LockedDeque<Type>& other) noexcept
         {
-            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return false;
+            if (this != &other)
+            {
+                try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
+                catch (const std::system_error& /*err*/) {
+                    return false;
+                }
+                std::swap(deque, other.deque);
             }
-            std::swap(deque, other.deque);
             return true;
         }
 

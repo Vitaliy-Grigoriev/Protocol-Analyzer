@@ -27,10 +27,21 @@ int32_t main (int32_t size, char** data)
     deque1.Push(32);
     deque2.Swap(deque1);
 
-    std::cout << std::boolalpha << deque1.PopBack(res1) << std::endl;
+    std::cout << std::boolalpha << deque1.PopBack(res1) << "  " << res1 << std::endl;
 
     deque2.PopBack(res2);
     std::cout << res2 << std::endl;
+
+    deque2.Push(33);
+    std::deque<uint32_t> res3;
+    std::cout << std::boolalpha << deque2.Move(res3) << "  " << *res3.begin() << std::endl;
+    std::cout << std::boolalpha << deque2.IsEmpty() << std::endl;
+
+    deque2.Push(34);
+    deque2.Swap(deque2);
+    deque2.PopBack(res2);
+    std::cout << res2 << std::endl;
+
 
     std::cerr << "[+] Exit." << std::endl;
     return EXIT_SUCCESS;
