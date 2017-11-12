@@ -1,5 +1,12 @@
 # Protocol Analyzer
-<h1>Fuzz testing framework for network protocols.</h1>
+<h1><b>Fuzz testing framework for network protocols.</b></h1>
+<h2>The main purposes of this framework are:</h2>
+
+<b>1.</b> Verification of the operation of proprietary network protocols in accordance with the declared description;
+
+<b>2.</b> Detection of undeclared capabilities and undefined behavior in the implementation of proprietary network protocols;
+
+<b>3.</b> Audit of security and search for changes from the last sczn period.
 
 --------------
 
