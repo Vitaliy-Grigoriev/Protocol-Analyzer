@@ -12,35 +12,41 @@ using namespace analyzer;
 
 int32_t main (int32_t size, char** data)
 {
-    /*std::mutex mutex1 = { }, mutex2 = { };
-
-    mutex2.lock();
-    try {
-        std::scoped_lock<std::mutex, std::mutex> lock { mutex1, mutex2 };
+    auto sockets = system::allocMemoryForArrayOfObjects<net::SocketSSL>(3, SSL_METHOD_TLS11);
+    if (sockets == nullptr) {
+        std::cout << "[error] Alloc fail..." << std::endl;
+        return EXIT_FAILURE;
     }
-    catch (const std::system_error& err) {
-        std::cerr << "[error] Error: " << err.what() << std::endl;
-    }*/
 
-    uint32_t res1, res2;
-    common::types::LockedDeque<uint32_t> deque1, deque2;
-    deque1.Push(32);
-    deque2.Swap(deque1);
 
-    std::cout << std::boolalpha << deque1.PopBack(res1) << "  " << res1 << std::endl;
+    auto request = [] (net::SocketSSL* sock, const std::string& domain) noexcept -> bool
+    {
+        if (sock->Connect(domain.c_str()) == false) {
+            std::cout << "[error] Connection fail..." << std::endl;
+            return false;
+        }
 
-    deque2.PopBack(res2);
-    std::cout << res2 << std::endl;
+        const std::string buff = "GET / HTTP/1.1\r\nHost: " + domain + "\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
+        const int32_t ret = sock->Send(buff.c_str(), buff.size());
+        if (ret == -1) {
+            std::cout << "[error] Send fail..." << std::endl;
+            return false;
+        }
 
-    deque2.Push(33);
-    std::deque<uint32_t> res3;
-    std::cout << std::boolalpha << deque2.Move(res3) << "  " << *res3.begin() << std::endl;
-    std::cout << std::boolalpha << deque2.IsEmpty() << std::endl;
+        char buff_receive[16384] = { };
+        const int32_t result = sock->RecvToEnd(buff_receive, 16384);
+        if (result == -1) {
+            std::cout << "[error] Recv fail..." << std::endl;
+            return false;
+        }
+        std::cerr << "Received data length: " << result << std::endl << std::endl << std::endl;
+        return true;
+    };
 
-    deque2.Push(34);
-    deque2.Swap(deque2);
-    deque2.PopBack(res2);
-    std::cout << res2 << std::endl;
+
+    std::cerr << request(sockets[0].get(), "tproger.ru") << std::endl;
+    std::cerr << request(sockets[1].get(), "habrahabr.ru") << std::endl;
+    std::cerr << request(sockets[2].get(), "geektimes.ru") << std::endl;
 
 
     std::cerr << "[+] Exit." << std::endl;

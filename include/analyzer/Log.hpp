@@ -227,25 +227,25 @@ namespace analyzer::log
         bool ChangeVolume(void) noexcept;
 
         /**
-         * @fn template<typename T>
+         * @fn template <typename T>
          * void Logger::CommonLogger (const T &) const noexcept;
          * @brief Common method that outputs the data to logfile.
-         * @tparam [in] value - The current output parameter.
+         * @tparam [in] value - The current output template parameter.
          */
-        template<typename T>
-        void CommonLogger (const T &value) const noexcept
+        template <typename T>
+        void CommonLogger (const T& value) const noexcept
         {
             out << value << std::endl;
         }
 
         /**
-         * @fn template<typename T, typename... Args>
+         * @fn template <typename T, typename... Args>
          * void Logger::CommonLogger (const T &, Args &&...) const noexcept;
          * @brief Common method that outputs the data to logfile.
-         * @tparam [in] value - The current output parameter.
-         * @tparam [in] params - Any data for logging.
+         * @tparam [in] value - The current output template parameter.
+         * @tparam [in] args - Any data for logging.
          */
-        template<typename T, typename... Args>
+        template <typename T, typename... Args>
         void CommonLogger (const T& value, Args&&... args) const noexcept
         {
             out << value;

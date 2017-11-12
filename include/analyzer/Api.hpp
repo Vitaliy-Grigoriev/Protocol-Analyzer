@@ -76,6 +76,12 @@ namespace analyzer
          */
         namespace file {
         }  // namespace file.
+        /**
+         * @namespace convert
+         * @brief The namespace that contains definition of functions which converts various types of data to the desired representation.
+         */
+        namespace convert {
+        }  // namespace convert.
     }  // namespace common.
     /**
      * @namespace log

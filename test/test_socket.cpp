@@ -18,24 +18,23 @@ const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexc
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
-using namespace analyzer::log;
+using namespace analyzer;
 
-int main(void)
+
+int32_t main (int32_t size, char** data)
 {
-    Logger::Instance().SwitchLoggingEngine();
-    Logger::Instance().SetLogLevel(LEVEL::INFORMATION);
+    log::Logger::Instance().SwitchLoggingEngine();
+    log::Logger::Instance().SetLogLevel(log::LEVEL::INFORMATION);
 
-    analyzer::net::Socket* sock = new analyzer::net::Socket;
+    auto sock = system::allocMemoryForObject<net::Socket>();
 
     if (sock->Bind(12345) == false) {
         std::cout << "[error] Bind fail..." << std::endl;
-        delete sock;
         return EXIT_FAILURE;
     }
 
     if (sock->Connect("rucinema.net") == false) {
         std::cout << "[error] Connection fail..." << std::endl;
-        delete sock;
         return EXIT_FAILURE;
     }
 
@@ -43,7 +42,6 @@ int main(void)
     const int32_t ret = sock->Send(buff, sizeof(buff));
     if (ret == -1) {
         std::cout << "[error] Send fail..." << std::endl;
-        delete sock;
         return EXIT_FAILURE;
     }
 
@@ -52,13 +50,11 @@ int main(void)
     const bool result = sock->Recv(buff_receive, sizeof(buff_receive) - 1, length, double_CRLF_functor, 250);
     if (result == false) {
         std::cout << "[error] Recv fail..." << std::endl;
-        delete sock;
         return EXIT_FAILURE;
     }
     std::cout << "Received data length: " << length << std::endl << std::endl << buff_receive << std::endl;
 
     sock->Close();
-    delete sock;
     return EXIT_SUCCESS;
 }
 

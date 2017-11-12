@@ -24,7 +24,9 @@
 namespace analyzer::common
 {
     /**
-     * @fn template <typename T = uint32_t> std::enable_if_t<std::is_integral<T>::value, T> GetRandomValue(void) noexcept;
+     * @fn template <typename T>
+     * std::enable_if_t<std::is_integral<T>::value, T>
+     * GetRandomValue(void) noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.
      * @return The pseudo-random number of the type T.
      */
@@ -74,13 +76,14 @@ namespace analyzer::common
         void trim (std::string & /*str*/) noexcept;
 
         /**
-         * @fn template<typename Out> void split (const std::string &, char, std::insert_iterator<Out>) noexcept;
+         * @fn template <typename Out>
+         * void split (const std::string &, char, std::insert_iterator<Out>) noexcept;
          * @brief Split string into a vector of strings using the delimiter.
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
          * @param [in,out] result - Back iterator for adding new values.
          */
-        template<typename Out>
+        template <typename Out>
         void split (const std::string& str, char delimiter, std::back_insert_iterator<Out> result) noexcept
         {
             std::istringstream ss(str);
@@ -100,14 +103,15 @@ namespace analyzer::common
         std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
 
         /**
-         * @fn template<typename Type> std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
+         * @fn template <typename Type>
+         * std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
          * @brief Function that converts any data to hex format.
          * @param [in] data - Input data.
          * @param [in] width - Width of hex value. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
          * @return String in hex format of width length.
          */
-        template<typename Type,
+        template <typename Type,
                 typename std::enable_if<std::is_integral<Type>::value>::type * = nullptr,
                 typename std::enable_if<std::is_unsigned<Type>::value>::type * = nullptr>
         std::string getHexValue (const Type& data, const uint16_t width = 2, bool upper = true) noexcept
@@ -119,15 +123,16 @@ namespace analyzer::common
         }
 
         /**
-         * @fn template<typename Type> std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
-         * @brief Function that convertss string data to hex format.
+         * @fn template <typename Type>
+         * std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
+         * @brief Function that converts string data to hex format.
          * @param [in] data - Input data.
          * @param [in] length - Length of the data.
          * @param [in] width - Width of hex value for each type. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
          * @return String in hex format.
          */
-        template<typename Type>
+        template <typename Type>
         std::string getHexString (const Type* data, const std::size_t length, const uint16_t width = 2, bool upper = true) noexcept
         {
             std::string result;
@@ -177,6 +182,7 @@ namespace analyzer::common
 
     }  // namespace text.
 
+
     namespace file
     {
         /**
@@ -186,7 +192,7 @@ namespace analyzer::common
         static const std::size_t ErrorState = std::numeric_limits<std::size_t>::max();
 
         /**
-         * @fn bool checkFileExistence (const std::string & ) noexcept;
+         * @fn bool checkFileExistence (const std::string &) noexcept;
          * @brief Function that checks file existence.
          * @param [in] path - Path to file.
          * @return True - if file is exist, otherwise - false.
@@ -194,7 +200,7 @@ namespace analyzer::common
         bool checkFileExistence (const std::string & /*path*/) noexcept;
 
         /**
-         * @fn std::size_t getFileSize (const std::string & ) noexcept;
+         * @fn std::size_t getFileSize (const std::string &) noexcept;
          * @brief Function that returns file size.
          * @param [in] path - Path to file.
          * @return File size in bytes or maximum value of std::size_t if an error.
@@ -211,14 +217,35 @@ namespace analyzer::common
         bool readFileToEnd (const std::string & /*path*/, std::string & /*data*/) noexcept;
 
         /**
-         * @fn std::size_t getFileLines (const std::string & ) noexcept;
+         * @fn std::size_t getFileLines (const std::string &) noexcept;
          * @brief Function that returns number of file lines.
          * @param [in] path - Path to file.
          * @return Number of file lines or maximum value of std::size_t if an error.
          */
         std::size_t getFileLines (const std::string & /*path*/) noexcept;
+
     }  // namespace file.
 
+
+    namespace convert
+    {
+        /**
+         * @fn template <std::size_t I, std::size_t J, typename Type>
+         * auto toPair (const Type &) -> decltype(std::make_pair(std::get<I>(...), std::get<J>(...)))
+         * @brief Function that converts two indexes container value to pair type in compile time.
+         * @tparam [in] I - Index of the first element in input container.
+         * @tparam [in] J - Index of the second element in input container.
+         * @tparam [in] Type - Container type (for example: tuple);
+         * @tparam [in] value - Input container of selected type.
+         * @return The pair type of two selected elements in container.
+         */
+        template <std::size_t I, std::size_t J, typename Type>
+        auto toPair (const Type& value) -> decltype(std::make_pair(std::get<I>(value), std::get<J>(value)))
+        {
+            return std::make_pair(std::get<I>(value), std::get<J>(value));
+        }
+
+    }  // namespace convert.
 
 
     /**
