@@ -14,9 +14,11 @@
 <h2><b>Current goals</b></h2>
 
 * Development of the basis of network interaction for the needs of the framework;
-  * Epoll interface for all Sockets under the observation;
-  * Create Socket Pool for unique interface to take and control sockets;
-  * Create UDP socket interface.
+  * Epoll Socket State Pool interface for all Sockets under the observation;
+  * Managed Socket Pool for unique interface to take and control sockets;
+  * UDP Socket interface.
+  * RAW Socket interface.
+  * Netlink interface for interact with Linux Kernel.
 
 * Development of a unique interface for describing the Network Protocol;
   * Implement libJSON as submodule of framework for parsing input configs.
