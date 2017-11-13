@@ -293,8 +293,8 @@ namespace analyzer::net
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers is success.");
 #if ( defined(DEBUG) )
         std::ostringstream buff;
-        const auto result = common::text::split(secure, ';');
-        std::copy(result.begin(), result.end(), std::ostream_iterator<std::string>(buff, "\n|-----------------\n|"));
+        const auto result = common::text::splitInPlace(secure, ';');
+        std::copy(result.begin(), result.end(), std::ostream_iterator<std::string_view>(buff, "\n|-----------------\n|"));
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting following ciphers:\n|-----------------\n|", buff.str());
 #endif
         return true;

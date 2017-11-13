@@ -58,7 +58,7 @@ namespace analyzer::common::types
          */
         LockedDeque (const LockedDeque<Type>& other) noexcept
         {
-            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
+            try { std::scoped_lock lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
                 return;
             }
@@ -86,7 +86,7 @@ namespace analyzer::common::types
          */
         LockedDeque (LockedDeque<Type>&& other) noexcept
         {
-            try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
+            try { std::scoped_lock lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
                 return;
             }
@@ -117,7 +117,7 @@ namespace analyzer::common::types
         {
             if (this != &other)
             {
-                try { std::scoped_lock<std::mutex, std::mutex> lock{mutex, other.mutex}; }
+                try { std::scoped_lock lock{mutex, other.mutex}; }
                 catch (const std::system_error & /*err*/) {
                     return *this;
                 }
@@ -136,7 +136,7 @@ namespace analyzer::common::types
         {
             if (this != &other)
             {
-                try { std::scoped_lock<std::mutex, std::mutex> lock{mutex, other.mutex}; }
+                try { std::scoped_lock lock{mutex, other.mutex}; }
                 catch (const std::system_error & /*err*/) {
                     return *this;
                 }
@@ -261,7 +261,7 @@ namespace analyzer::common::types
         {
             if (this != &other)
             {
-                try { std::scoped_lock<std::mutex, std::mutex> lock { mutex, other.mutex }; }
+                try { std::scoped_lock lock { mutex, other.mutex }; }
                 catch (const std::system_error& /*err*/) {
                     return false;
                 }

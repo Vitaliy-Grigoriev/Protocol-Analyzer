@@ -20,29 +20,33 @@ set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG  ${WARNINGS} ${ADDITIONAL_FLAGS} $
 set(CMAKE_CXX_FLAGS_RELEASE   "-O3 -DRELEASE   ${WARNINGS}")
 
 
-
+# Core libraries.
 set(SYSTEM_LIB       include/analyzer/System.hpp include/analyzer/Mutex.hpp      src/System.cpp src/Mutex.cpp)
-set(TASK_LIB         include/analyzer/Notification.hpp)        #include/analyzer/Task.hpp src/Task.cpp src/TaskManager.cpp)
 set(LOGGING_LIB      include/analyzer/Log.hpp          src/Log.cpp)
 set(COMMON_LIB       include/analyzer/Common.hpp include/analyzer/LockedDeque.hpp      src/Common.cpp include/analyzer/Mutex.hpp)
+# Functional libraries.
+set(TASK_LIB         include/analyzer/Notification.hpp)        #include/analyzer/Task.hpp src/Task.cpp src/TaskManager.cpp)
+set(PARSER_LIB       include/analyzer/Parser.hpp       src/Parser.cpp)
 set(PROTOCOL_LIB     include/analyzer/Protocol.hpp include/analyzer/Http.hpp   src/Protocol.cpp src/Http.cpp)
 set(DIAGNOSTIC_LIB   include/analyzer/Timer.hpp        src/Timer.cpp)
 set(UTILITIES_LIB    include/analyzer/Utilities.hpp    src/Utilities.cpp)
 set(SOCKET_LIB       include/analyzer/Socket.hpp       src/Socket.cpp src/SocketSSL.cpp)
 
-add_library(Task         STATIC   ${TASK_LIB})
 add_library(Common       STATIC   ${COMMON_LIB})
-add_library(Logging      STATIC   ${LOGGING_LIB})
 add_library(System       STATIC   ${SYSTEM_LIB})
+add_library(Logging      STATIC   ${LOGGING_LIB})
+add_library(Task         STATIC   ${TASK_LIB})
+add_library(Parser       STATIC   ${PARSER_LIB})
 add_library(Diagnostic   STATIC   ${DIAGNOSTIC_LIB})
 add_library(Socket       STATIC   ${SOCKET_LIB})
 add_library(Protocol     STATIC   ${PROTOCOL_LIB})
 add_library(Utilities    STATIC   ${UTILITIES_LIB})
 
 target_link_libraries(Logging     Common)
-target_link_libraries(Protocol    Logging Common)
-target_link_libraries(Socket      ssl crypto Logging Common System)
-target_link_libraries(Task        pthread Logging Common)
+target_link_libraries(Parser      Logging)
+target_link_libraries(Protocol    Logging)
+target_link_libraries(Socket      ssl crypto Logging System)
+target_link_libraries(Task        pthread Logging)
 target_link_libraries(Utilities   Socket Protocol)
 
 
@@ -72,7 +76,7 @@ add_executable(test_http2_negotiation   ${HTTP2_NEGOTIATION_TEST})
 target_link_libraries(test_notification        Task System)
 target_link_libraries(test_socket              Socket)
 target_link_libraries(test_common              Common)
-target_link_libraries(test_anything            Common System Socket)
+target_link_libraries(test_anything            Common System Socket Parser)
 target_link_libraries(test_logging             Logging)
 target_link_libraries(test_uri_parser          Protocol)
 target_link_libraries(test_ssl                 Utilities)

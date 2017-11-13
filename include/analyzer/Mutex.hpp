@@ -120,7 +120,7 @@ namespace analyzer::system
         }
     };
 
-
 }  // namespace system.
+
 
 #endif  // PROTOCOL_ANALYZER_MUTEX_HPP

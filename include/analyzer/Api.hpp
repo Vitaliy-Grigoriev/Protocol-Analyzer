@@ -66,19 +66,19 @@ namespace analyzer
         }  // namespace types.
         /**
          * @namespace text
-         * @brief The namespace that contains definition of functions which works with text.
+         * @brief The namespace that contains definition of various functions which works with text.
          */
         namespace text {
         }  // namespace text.
         /**
          * @namespace file
-         * @brief The namespace that contains definition of functions which works with files.
+         * @brief The namespace that contains definition of various functions which works with files.
          */
         namespace file {
         }  // namespace file.
         /**
          * @namespace convert
-         * @brief The namespace that contains definition of functions which converts various types of data to the desired representation.
+         * @brief The namespace that contains definition of various functions which converts various types of data to the desired representation.
          */
         namespace convert {
         }  // namespace convert.
@@ -95,6 +95,12 @@ namespace analyzer
      */
     namespace task {
     }  // namespace task.
+    /**
+     * @namespace parser
+     * @brief The namespace that contains definitions of various parsers.
+     */
+    namespace parser {
+    }  // namespace parser.
     /**
      * @namespace diagnostic
      * @brief The namespace that contains definitions of diagnostic tools.

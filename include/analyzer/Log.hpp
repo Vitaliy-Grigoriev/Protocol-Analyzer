@@ -364,6 +364,7 @@ namespace analyzer::log
      *
      * @todo Add three flag: is_offset, is_data, is_upper...
      * @todo Add dependency length of the offset from the length of data.
+     * @todo Improvement in case when using std::string_view.
      */
     void DbgHexDump (const char * /*message*/, const void * /*data*/, std::size_t /*size*/, std::size_t /*hexLineLength*/ = 16);
 

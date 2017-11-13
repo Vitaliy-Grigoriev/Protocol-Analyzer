@@ -38,12 +38,33 @@ namespace analyzer::common
             trim_right(str);
         }
 
+
         std::vector<std::string> split (const std::string& str, char delimiter) noexcept
         {
             std::vector<std::string> result;
             split(str, delimiter, std::back_inserter(result));
             return result;
         }
+
+        std::vector<std::string_view> splitInPlace (std::string_view str, char delimiter) noexcept
+        {
+            std::vector<std::string_view> result;
+            std::string_view::size_type start = 0;
+            auto pos = str.find_first_of(delimiter, start);
+            while (pos != std::string_view::npos)
+            {
+                if (pos != start) {
+                    result.push_back(str.substr(start, pos - start));
+                }
+                start = pos + 1;
+                pos = str.find_first_of(delimiter, start);
+            }
+            if (start < str.size()) {
+                result.push_back(str.substr(start, str.size() - start));
+            }
+            return result;
+        }
+
 
         unsigned char charToUChar (const char symbol) noexcept
         {
@@ -71,10 +92,10 @@ namespace analyzer::common
 
     namespace file
     {
-        bool checkFileExistence (const std::string& path) noexcept
+        bool checkFileExistence (std::string_view path) noexcept
         {
             try {
-                std::ifstream file(path.c_str(), std::ios_base::binary);
+                std::ifstream file(path.data(), std::ios_base::binary);
                 if (file.is_open() == true && file.fail() == false)
                 {
                     file.close();
@@ -85,10 +106,10 @@ namespace analyzer::common
             return false;
         }
 
-        std::size_t getFileSize (const std::string& path) noexcept
+        std::size_t getFileSize (std::string_view path) noexcept
         {
             try {
-                std::ifstream file(path.c_str(), std::ios_base::binary);
+                std::ifstream file(path.data(), std::ios_base::binary);
                 if (file.is_open() == true && file.fail() == false)
                 {
                     const auto size = file.seekg(0, std::ios_base::end).tellg();
@@ -100,7 +121,7 @@ namespace analyzer::common
             return ErrorState;
         }
 
-        bool readFileToEnd (const std::string& path, std::string& data) noexcept
+        bool readFileToEnd (std::string_view path, std::string& data) noexcept
         {
             try {
                 const std::size_t size = getFileSize(path);
@@ -109,7 +130,7 @@ namespace analyzer::common
                 }
                 data.reserve(size);
 
-                std::ifstream file(path.c_str(), std::ios_base::in);
+                std::ifstream file(path.data(), std::ios_base::in);
                 if (file.is_open() == true && file.fail() == false)
                 {
                     data.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -120,10 +141,10 @@ namespace analyzer::common
             return false;
         }
 
-        std::size_t getFileLines (const std::string& path) noexcept
+        std::size_t getFileLines (std::string_view path) noexcept
         {
             try {
-                std::ifstream file(path.c_str(), std::ios_base::in);
+                std::ifstream file(path.data(), std::ios_base::in);
                 if (file.is_open() == true && file.fail() == false)
                 {
                     const auto count = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
@@ -136,64 +157,5 @@ namespace analyzer::common
         }
 
     }  // namespace file.
-
-
-
-    PortsParser::PortsParser (const std::string& ports, const char symbol) noexcept
-    {
-        SetPorts(ports, symbol);
-    }
-
-    void PortsParser::SetPorts (const std::string& ports, const char symbol) noexcept
-    {
-        states = text::split(ports, symbol);
-        rangeState = rangeEnd = 0;
-    }
-
-    uint16_t PortsParser::GetNextPort(void) noexcept
-    {
-        if (states.empty() == true) {
-            return end;
-        }
-
-        if (rangeEnd == end)
-        {
-            const std::string& value = states.at(0);
-            const std::size_t position = value.find('-');
-
-            try
-            {
-                if (position == std::string::npos)
-                {
-                    const uint64_t port = std::stoul(value, nullptr, 10);
-                    if (port < 65536) {
-                        states.erase(states.begin());
-                        return static_cast<uint16_t>(port);
-                    }
-                    states.clear();
-                    return end;
-                }
-
-                const uint64_t portStart = std::stoul(value, nullptr, 10);
-                const uint64_t portEnd = std::stoul(&value[position + 1], nullptr, 10);
-                if (portStart < portEnd && portEnd < 65536) {
-                    rangeState = static_cast<uint16_t>(portStart);
-                    rangeEnd = static_cast<uint16_t>(portEnd);
-                    return rangeState;
-                }
-            }
-            catch (const std::exception& /*err*/)
-            {
-                states.clear();
-                return end;
-            }
-        }
-
-        if (++rangeState == rangeEnd) {
-            states.erase(states.begin());
-            rangeEnd = end;
-        }
-        return rangeState;
-    }
 
 }  // namespace common.

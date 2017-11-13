@@ -12,13 +12,12 @@
 #include <iterator>
 #include <exception>
 #include <algorithm>
+#include <string_view>
 #include <type_traits>
 
 // In Common library MUST NOT use any another library because it is a core library.
 
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
-
-#define DEFAULT_TIMEOUT_TASK_THREAD 10  // sec.
 
 
 namespace analyzer::common
@@ -75,13 +74,14 @@ namespace analyzer::common
          */
         void trim (std::string & /*str*/) noexcept;
 
+
         /**
          * @fn template <typename Out>
          * void split (const std::string &, char, std::insert_iterator<Out>) noexcept;
          * @brief Split string into a vector of strings using the delimiter.
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
-         * @param [in,out] result - Back iterator for adding new values.
+         * @param [out] result - Back iterator for adding new values.
          */
         template <typename Out>
         void split (const std::string& str, char delimiter, std::back_insert_iterator<Out> result) noexcept
@@ -101,6 +101,16 @@ namespace analyzer::common
          * @return The vector of string values.
          */
         std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
+
+        /**
+         * @fn std::vector<std::string_view> splitInPlace (std::string_view, char) noexcept;
+         * @brief Unallocated split string into a vector of strings using the delimiter.
+         * @param [in] str - Unallocated input string reference.
+         * @param [in] delimiter - Parsing separator.
+         * @return The vector of unallocated string values.
+         */
+        std::vector<std::string_view> splitInPlace (std::string_view /*str*/, char /*delimiter*/) noexcept;
+
 
         /**
          * @fn template <typename Type>
@@ -192,37 +202,37 @@ namespace analyzer::common
         static const std::size_t ErrorState = std::numeric_limits<std::size_t>::max();
 
         /**
-         * @fn bool checkFileExistence (const std::string &) noexcept;
+         * @fn bool checkFileExistence (const std::string_view &) noexcept;
          * @brief Function that checks file existence.
          * @param [in] path - Path to file.
          * @return True - if file is exist, otherwise - false.
          */
-        bool checkFileExistence (const std::string & /*path*/) noexcept;
+        bool checkFileExistence (std::string_view /*path*/) noexcept;
 
         /**
-         * @fn std::size_t getFileSize (const std::string &) noexcept;
+         * @fn std::size_t getFileSize (const std::string_view &) noexcept;
          * @brief Function that returns file size.
          * @param [in] path - Path to file.
          * @return File size in bytes or maximum value of std::size_t if an error.
          */
-        std::size_t getFileSize (const std::string & /*path*/) noexcept;
+        std::size_t getFileSize (std::string_view /*path*/) noexcept;
 
         /**
-         * @fn bool readFileToEnd (const std::string &, std::string &) noexcept;
+         * @fn bool readFileToEnd (const std::string_view &, std::string &) noexcept;
          * @brief Function that reads all data from file.
          * @param [in] path - Path to file.
          * @param [out] data - String value for assign.
          * @return True - if the data is read from the file successfully, otherwise - false.
          */
-        bool readFileToEnd (const std::string & /*path*/, std::string & /*data*/) noexcept;
+        bool readFileToEnd (std::string_view /*path*/, std::string & /*data*/) noexcept;
 
         /**
-         * @fn std::size_t getFileLines (const std::string &) noexcept;
+         * @fn std::size_t getFileLines (const std::string_view &) noexcept;
          * @brief Function that returns number of file lines.
          * @param [in] path - Path to file.
          * @return Number of file lines or maximum value of std::size_t if an error.
          */
-        std::size_t getFileLines (const std::string & /*path*/) noexcept;
+        std::size_t getFileLines (std::string_view /*path*/) noexcept;
 
     }  // namespace file.
 
@@ -246,72 +256,6 @@ namespace analyzer::common
         }
 
     }  // namespace convert.
-
-
-    /**
-     * @class PortsParser Common.hpp "include/analyzer/Common.hpp"
-     * @brief Class that parses the range of ports.
-     */
-    class PortsParser
-    {
-    private:
-        /**
-         * @var uint16_t rangeEnd;
-         * @brief Variable that contains the last value of range.
-         */
-        uint16_t rangeEnd = 0;
-        /**
-         * @var uint16_t rangeStart;
-         * @brief Variable that contains the first value of range.
-         */
-        uint16_t rangeState = 0;
-        /**
-         * @var std::vector<std::string> states;
-         * @brief Vector of strings that contains the split values on input.
-         */
-        std::vector<std::string> states;
-
-    protected:
-        /**
-         * @fn PortsParser::~PortsParser(void);
-         * @brief Protection default destructor.
-         */
-        ~PortsParser(void) = default;
-
-    public:
-        PortsParser (PortsParser &&) = delete;
-        PortsParser (const PortsParser &) = delete;
-        PortsParser & operator= (PortsParser &&) = delete;
-        PortsParser & operator= (const PortsParser &) = delete;
-
-        /**
-         * @var static const uint16_t end;
-         * @brief Static variable that indicates the end of parsing or error.
-         */
-        static const uint16_t end = 0;
-
-        /**
-         * @fn explicit PortsParser (const std::string &, char) noexcept;
-         * @brief Constructor of PortParser class.
-         * @param [in] ports - The sequence of ports listed through a separator.
-         * @param [in] symbol - The separator. Default: ','.
-         */
-        explicit PortsParser (const std::string & /*ports*/, char /*symbol*/ = ',') noexcept;
-
-        /**
-         * @fn void SetPorts (const std::string &, char) noexcept;
-         * @brief Method that resets internal state of port parser.
-         * @param [in] ports - The sequence of ports listed through a separator.
-         * @param [in] symbol - The separator. Default: ','.
-         */
-        void SetPorts (const std::string & /*ports*/, char /*symbol*/ = ',') noexcept;
-
-        /**
-         * @fn uint16_t GetNextPort(void) noexcept;
-         * @brief Method that gets next parsing port.
-         */
-        uint16_t GetNextPort(void) noexcept;
-    };
 
 
 
@@ -392,5 +336,6 @@ namespace analyzer::common
 
 
 }  // namespace common.
+
 
 #endif  // PROTOCOL_ANALYZER_COMMON_HPP

@@ -8,6 +8,10 @@
 #include <unordered_map>
 
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
+#include "Notification.hpp"
+
+#define DEFAULT_TIMEOUT_TASK 10  // sec.
+#define TIMEOUT_TASK_UNLIMITED 0
 
 
 namespace analyzer::task
@@ -50,7 +54,7 @@ namespace analyzer::task
         TaskContext & operator= (const TaskContext &) = delete;
 
 
-        explicit TaskContext (const std::string& name, uint32_t time_out = DEFAULT_TIMEOUT_TASK_THREAD) noexcept
+        explicit TaskContext (const std::string& name, uint32_t time_out = DEFAULT_TIMEOUT_TASK) noexcept
                 : workerName(name), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_IDLE), exitCode(0)
         { }
 
@@ -164,5 +168,6 @@ namespace analyzer::task
     };
 
 }  // namespace task.
+
 
 #endif  // PROTOCOL_ANALYZER_TASK_HPP
