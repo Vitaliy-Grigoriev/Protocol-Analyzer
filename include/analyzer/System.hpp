@@ -15,6 +15,7 @@ namespace analyzer::system
       * @fn template <typename Type, typename... Args>
       * std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
       * @brief Function that allocates memory for object of selected type and constructs it.
+      * @tparam [in] Type - Typename of allocated data.
       * @tparam [in] args - Any params for construct object.
       * @return Smart pointer to allocated object of selected type object.
       */
@@ -31,24 +32,25 @@ namespace analyzer::system
 
     /**
       * @fn template <typename Type>
-      * std::unique_ptr<Type[]> alloc_memory (const std::size_t, const Type *, const std::size_t) noexcept;
+      * std::unique_ptr<Type[]> alloc_memory (const std::size_t, const void *, const std::size_t) noexcept;
       * @brief Function that allocates memory for array of selected type and if needed fills it.
+      * @tparam [in] Type - Typename of allocated data.
       * @param [in] size - Size of selected type array.
-      * @param [in] data - Pointer to data for copy. Default: nullptr.
-      * @param [in] length - Size of data for copy. Default: 0.
+      * @param [in] data - Pointer to any data for copy. Default: nullptr.
+      * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.
       */
-    template <typename Type = char>
-    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const Type* data = nullptr, const std::size_t length = 0) noexcept
+    template <typename Type>
+    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const void* data = nullptr, const std::size_t length = 0) noexcept
     {
         try {
             auto memory = std::make_unique<Type[]>(size);
-            if (data == nullptr) { return memory; }
+            if (data == nullptr || length == 0) { return memory; }
 
-            if (size <= length) {
+            if (size * sizeof(Type) <= length) {
                 memcpy(memory.get(), data, size * sizeof(Type));
             } else {
-                memcpy(memory.get(), data, length * sizeof(Type));
+                memcpy(memory.get(), data, length);
             }
             return memory;
         }
@@ -61,6 +63,7 @@ namespace analyzer::system
       * @fn template <typename Type, typename... Args>
       * std::unique_ptr<std::unique_ptr<Type>[]> allocMemoryForArrayOfObjects (const std::size_t, Args &&...) noexcept;
       * @brief Function that allocates memory for array of selected pointer type and then allocates memory for each object and constructs them.
+      * @tparam [in] Type - Typename of allocated data.
       * @param [in] size - Size of array of selected smart pointer type.
       * @tparam [in] args - Any params for construct each object.
       * @return Smart pointer to allocated memory of selected smart pointer type array.

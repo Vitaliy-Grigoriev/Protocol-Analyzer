@@ -9,6 +9,8 @@
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
 #include "Mutex.hpp"
 #include "System.hpp"
+#include "LockedDeque.hpp"
+#include "RawDataBuffer.hpp"
 #include "Socket.hpp"
 //#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
 //#include "Task.hpp"

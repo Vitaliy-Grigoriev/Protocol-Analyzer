@@ -8,11 +8,12 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
-#include <cstdint>
+#include <cstddef> // std::size_t, std::byte.
+#include <cstdint> // std::int*_t.
 #include <iterator>
 #include <exception>
 #include <algorithm>
-#include <string_view>
+#include <string_view> // std::string_view.
 #include <type_traits>
 
 // In Common library MUST NOT use any another library because it is a core library.
@@ -23,21 +24,22 @@
 namespace analyzer::common
 {
     /**
-     * @fn template <typename T>
-     * std::enable_if_t<std::is_integral<T>::value, T>
+     * @fn template <typename Type>
+     * std::enable_if_t<std::is_integral<Type>::value, Type>
      * GetRandomValue(void) noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.
-     * @return The pseudo-random number of the type T.
+     * @tparam [in] Type - Typename of the integral value for the random generating engine. Default: uint32_t.
+     * @return The pseudo-random number of the selected type.
      */
-    template <typename T = uint32_t>
-    std::enable_if_t<std::is_integral<T>::value, T>
+    template <typename Type = uint32_t>
+    std::enable_if_t<std::is_integral<Type>::value, Type>
     GetRandomValue(void) noexcept
     {
-        using param_t = typename std::uniform_int_distribution<T>::param_type;
+        using param_t = typename std::uniform_int_distribution<Type>::param_type;
         std::mt19937 gen{ std::random_device()() };
-        std::uniform_int_distribution<T> dist;
+        std::uniform_int_distribution<Type> dist;
 
-        return dist(gen, param_t(std::numeric_limits<T>::min() + 1, std::numeric_limits<T>::max() - 1));
+        return dist(gen, param_t(std::numeric_limits<Type>::min() + 1, std::numeric_limits<Type>::max() - 1));
     }
 
 
@@ -81,7 +83,7 @@ namespace analyzer::common
          * @brief Split string into a vector of strings using the delimiter.
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
-         * @param [out] result - Back iterator for adding new values.
+         * @tparam [out] result - Back insert iterator of selected type for adding new values.
          */
         template <typename Out>
         void split (const std::string& str, char delimiter, std::back_insert_iterator<Out> result) noexcept
@@ -116,7 +118,7 @@ namespace analyzer::common
          * @fn template <typename Type>
          * std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
          * @brief Function that converts any data to hex format.
-         * @param [in] data - Input data.
+         * @tparam [in] data - Input data of selected type.
          * @param [in] width - Width of hex value. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
          * @return String in hex format of width length.
@@ -136,7 +138,7 @@ namespace analyzer::common
          * @fn template <typename Type>
          * std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
          * @brief Function that converts string data to hex format.
-         * @param [in] data - Input data.
+         * @tparam [in] data - Input data of selected type.
          * @param [in] length - Length of the data.
          * @param [in] width - Width of hex value for each type. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
@@ -243,8 +245,8 @@ namespace analyzer::common
          * @fn template <std::size_t I, std::size_t J, typename Type>
          * auto toPair (const Type &) -> decltype(std::make_pair(std::get<I>(...), std::get<J>(...)))
          * @brief Function that converts two indexes container value to pair type in compile time.
-         * @tparam [in] I - Index of the first element in input container.
-         * @tparam [in] J - Index of the second element in input container.
+         * @param [in] I - Index of the first element in input container.
+         * @param [in] J - Index of the second element in input container.
          * @tparam [in] Type - Container type (for example: tuple);
          * @tparam [in] value - Input container of selected type.
          * @return The pair type of two selected elements in container.
@@ -262,16 +264,17 @@ namespace analyzer::common
     /**
      * @class Data Common.hpp "include/analyzer/Common.hpp"
      * @brief Class container that defined the interface to manage anything data.
+     * @tparam [in] Type - Typename of stored data. Default: char.
      */
-    template <typename T = char>
+    template <typename Type = char>
     class Data
     {
     private:
         /**
-         * @var std::unique_ptr<T[]> data;
+         * @var std::unique_ptr<Type[]> data;
          * @brief Variable that contains unique pointer to data.
          */
-        std::unique_ptr<T[]> data = nullptr;
+        std::unique_ptr<Type[]> data = nullptr;
         /**
          * @var std::size_t length;
          * @brief Variable that contains length of stored data.
@@ -280,22 +283,22 @@ namespace analyzer::common
 
     public:
         /**
-         * @fn Data::Data (T *, const std::size_t) noexcept;
+         * @fn Data::Data (Type *, const std::size_t) noexcept;
          * @brief Constructor of Data class.
          * @tparam [in] in - Any data for sharing.
          * @param [in] size - Size of this data.
          */
-        Data (T* in, const std::size_t size) noexcept
+        Data (Type* in, const std::size_t size) noexcept
                 : data(in), length(size)
         { }
 
         /**
-         * @fn Data::Data (std::unique_ptr<T[]> &, const std::size_t) noexcept;
+         * @fn Data::Data (std::unique_ptr<Type[]> &, const std::size_t) noexcept;
          * @brief Constructor of Data class.
          * @tparam [in] in - Any data for sharing.
          * @param [in] size - Size of this data.
          */
-        Data (std::unique_ptr<T[]>& in, const std::size_t size) noexcept
+        Data (std::unique_ptr<Type[]>& in, const std::size_t size) noexcept
                 : data(std::move(in)), length(size)
         { }
 
@@ -310,21 +313,21 @@ namespace analyzer::common
         }
 
         /**
-         * @fn inline T * Data::Get(void) const noexcept;
+         * @fn inline Type * Data::Get(void) const noexcept;
          * @brief Method that returns pointer to the internal data.
          * @return Pointer to the internal data.
          */
-        inline T* Get(void) const noexcept
+        inline Type* Get(void) const noexcept
         {
             return data.get();
         }
 
         /**
-         * @fn inline T * Data::GetAt (const std::size_t) const noexcept;
+         * @fn inline Type * Data::GetAt (const std::size_t) const noexcept;
          * @brief Method that returns pointer to any shift of the internal data.
          * @return Pointer to any shift of the internal data.
          */
-        inline T* GetAt (const std::size_t index) const noexcept
+        inline Type* GetAt (const std::size_t index) const noexcept
         {
             return index < length ? &data[index] : nullptr;
         }

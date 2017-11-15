@@ -110,8 +110,8 @@ namespace analyzer::common::types
         /**
          * @fn LockedDeque<Type> & LockedDeque::operator= (const LockedDeque<Type> &) noexcept;
          * @brief Copy operator.
-         * @tparam [in] other - The const reference of copied deque.
-         * @return Reference of current class.
+         * @tparam [in] other - The const reference of copied LockedDeque<Type> class.
+         * @return Reference of the current LockedDeque<Type> class.
          */
         LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept
         {
@@ -129,8 +129,8 @@ namespace analyzer::common::types
         /**
          * @fn LockedDeque<Type> & LockedDeque::operator= (LockedDeque<Type> &&) noexcept;
          * @brief Move assignment operator.
-         * @tparam [in] other - The rvalue reference of moved deque.
-         * @return Reference of current class.
+         * @tparam [in] other - The rvalue reference of moved LockedDeque<Type> class.
+         * @return Reference of the current LockedDeque<Type> class.
          */
         LockedDeque<Type>& operator= (LockedDeque<Type>&& other) noexcept
         {

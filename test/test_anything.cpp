@@ -5,13 +5,31 @@
 #include <iostream>
 
 #include "../include/analyzer/Api.hpp"
-#include "../include/analyzer/LockedDeque.hpp"
 
 using namespace analyzer;
 
 
 int32_t main (int32_t size, char** data)
 {
+    std::string text = "0123456789";
+    common::types::RawDataBuffer buffer1 = { };
+    buffer1.AssignData(text.data(), text.size());
+    std::cout << buffer1.Size() << std::endl;
+
+    common::types::RawDataBuffer buffer2(buffer1);
+    std::cout << buffer1.Size() << std::endl;
+    std::cout << buffer2.Size() << std::endl;
+
+    common::types::RawDataBuffer buffer3 = std::move(buffer1);
+    std::cout << buffer1.Size() << std::endl;
+    std::cout << buffer3.Size() << std::endl;
+
+    std::cout << char(buffer3[5]) << std::endl;
+    std::cout << char(buffer3[20]) << std::endl;
+
+    return EXIT_FAILURE;
+
+
     auto sockets = system::allocMemoryForArrayOfObjects<net::SocketSSL>(3, SSL_METHOD_TLS11);
     if (sockets == nullptr) {
         std::cout << "[error] Alloc fail..." << std::endl;
