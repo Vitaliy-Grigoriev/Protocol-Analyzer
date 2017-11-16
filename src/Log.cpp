@@ -278,9 +278,10 @@ namespace analyzer::log
             {
                 const std::size_t fileEntries = common::file::getFileLines(path);
                 // If the logfile entries in file more then limit then change volume of file.
-                if (fileEntries != common::file::ErrorState && fileEntries >= recordsLimit) {
-                    const std::string lastFileName = logFileName;
-                    logFileName = path;
+                if (fileEntries != common::file::ErrorState && fileEntries >= recordsLimit)
+                {
+                    const std::string lastFileName = std::move(logFileName);
+                    logFileName = std::move(path);
                     if (ChangeVolume() == false) {
                         logFileName = lastFileName;
                     }
@@ -309,8 +310,8 @@ namespace analyzer::log
                     fd.close();
                     fd = std::move(out_temp);
                     out.rdbuf(fd.rdbuf());
-                    logFileName = path;
                     currentRecords = fileEntries;
+                    logFileName = std::move(path);
                 }
             }
             // If the logfile not exist, then do attempt to open the new logfile and change engine.
@@ -331,7 +332,7 @@ namespace analyzer::log
                 fd = std::move(out_temp);
                 out.rdbuf(fd.rdbuf());
                 currentRecords = 0;
-                logFileName = path;
+                logFileName = std::move(path);
             }
         }
         catch (const std::ios_base::failure& err)
