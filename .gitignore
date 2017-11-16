@@ -41,5 +41,6 @@
 /build
 /check
 /coverity
+/pvs-result
 /cmake-build-debug
 /cmake-build-release
