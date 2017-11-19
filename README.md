@@ -23,15 +23,16 @@
 * Development of the basis of network interaction for the needs of the framework;
   * Epoll Socket State Pool interface for all Sockets under the observation;
   * Managed Socket Pool for unique interface to take and control sockets;
-  * UDP Socket interface.
-  * RAW Socket interface.
+  * UDP Socket interface;
+  * RAW Socket interface;
   * Netlink interface for interact with Linux Kernel.
 
 * Development of a unique interface for describing the Network Protocol;
   * Implement libJSON as submodule of framework for parsing input configs.
 
 * Development of a unique interface for create Tasks and manage them;
-* Development of a unique interface for store Global information and Settings in runtime.
+* Development of a unique interface for store Global information and Settings in runtime;
+* Development main data class for working with binary data and build all infrastructure around it.
 
 --------------
 
