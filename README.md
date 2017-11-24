@@ -20,18 +20,19 @@
 
 <h2><b>Current goals</b></h2>
 
-* Development of the basis of network interaction for the needs of the framework;
+* Development the basis of network interaction for the needs of the framework;
   * Epoll Socket State Pool interface for all Sockets under the observation;
   * Managed Socket Pool for unique interface to take and control sockets;
   * UDP Socket interface;
   * RAW Socket interface;
-  * Netlink interface for interact with Linux Kernel.
+  * Netlink interface for interact with Linux Kernel;
+  * Create two error interfaces: POSIX-oriented, C++ exceptions.
 
-* Development of a unique interface for describing the Network Protocol;
+* Development an unique interface for describing the Network Protocol;
   * Implement libJSON as submodule of framework for parsing input configs.
 
-* Development of a unique interface for create Tasks and manage them;
-* Development of a unique interface for store Global information and Settings in runtime;
+* Development an unique interface for create Tasks and manage them;
+* Development an unique interface for store Global information and Settings in runtime;
 * Development main data class for working with binary data and build all infrastructure around it.
 
 --------------
@@ -44,5 +45,5 @@
 
 * CMake >= 3.8.0 (for C++17 standard support)
 
-* Compiler that support C++17 ('clang-5.0.0' for example).
+* Compiler, supported C++17 (for example: 'clang-4.0.1' or higher).
 
