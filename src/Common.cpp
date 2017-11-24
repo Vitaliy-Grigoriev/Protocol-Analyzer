@@ -22,20 +22,21 @@ namespace analyzer::common
 
     namespace text
     {
-        void trim_left (std::string& str) noexcept
+        std::string & trimLeft (std::string& str) noexcept
         {
             str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int32_t, int32_t>(std::isspace))));
+            return str;
         }
 
-        void trim_right (std::string& str) noexcept
+        std::string & trimRight (std::string& str) noexcept
         {
             str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int32_t, int32_t>(std::isspace))).base(), str.end());
+            return str;
         }
 
-        void trim (std::string& str) noexcept
+        std::string & trim (std::string& str) noexcept
         {
-            trim_left(str);
-            trim_right(str);
+            return trimLeft(trimRight(str));
         }
 
 

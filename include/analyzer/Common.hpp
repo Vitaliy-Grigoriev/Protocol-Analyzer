@@ -55,26 +55,59 @@ namespace analyzer::common
     namespace text
     {
         /**
-         * @fn void trim_left (std::string &);
+         * @fn std::string & trimLeft (std::string &) noexcept;
          * @brief Trim string value from start in place.
-         * @param [in,out] str - Target string.
+         * @param [in,out] str - Reference of target string.
+         * @return Reference of the trimmed string.
          */
-        void trim_left (std::string & /*str*/) noexcept;
+        std::string & trimLeft (std::string & /*str*/) noexcept;
 
         /**
-         * @fn void trim_right (std::string &);
+         * @fn std::string & trimRight (std::string &) noexcept;
          * @brief Trim string value from end in place.
-         * @param [in,out] str - Target string.
+         * @param [in,out] str - Reference of target string.
+         * @return Reference of the trimmed string.
          */
-        void trim_right (std::string & /*str*/) noexcept;
+        std::string & trimRight (std::string & /*str*/) noexcept;
+
+        /**
+         * @fn std::string & trim (std::string &) noexcept;
+         * @brief Trim string value from both ends in place.
+         * @param [in,out] str - Reference of target string.
+         * @return Reference of the trimmed string.
+         */
+        std::string & trim (std::string & /*str*/) noexcept;
 
 
         /**
-         * @fn void trim (std::string &);
-         * @brief Trim string value from both ends in place.
-         * @param [in,out] str - Target string.
+         * @fn static inline std::string trimLeftCopy (std::string) noexcept;
+         * @brief Copying trim string value from start.
+         * @param [in] str - Target string.
+         * @return Trimmed string.
          */
-        void trim (std::string & /*str*/) noexcept;
+        static inline std::string trimLeftCopy (std::string str) noexcept {
+            return trimLeft(str);;
+        }
+
+        /**
+         * @fn static inline std::string trimRightCopy (std::string) noexcept;
+         * @brief Copying trim string value from end.
+         * @param [in] str - Target string.
+         * @return Trimmed string.
+         */
+        static inline std::string trimRightCopy (std::string str) noexcept {
+            return trimRight(str);
+        }
+
+        /**
+         * @fn static inline std::string trimCopy (std::string) noexcept;
+         * @brief Copying trim string value from both sides.
+         * @param [in] str - Target string.
+         * @return Trimmed string from both sides.
+         */
+        static inline std::string trimCopy (std::string str) noexcept {
+            return trim(str);
+        }
 
 
         /**
