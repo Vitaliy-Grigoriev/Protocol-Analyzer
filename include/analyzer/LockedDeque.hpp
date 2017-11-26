@@ -40,23 +40,23 @@ namespace analyzer::common::types
 
     public:
         /**
-         * @fn LockedDeque::LockedDeque(void);
+         * @fn LockedDeque::LockedDeque(void) noexcept(true/false);
          * @brief Default constructor.
          */
-        LockedDeque(void) = default;
+        LockedDeque(void) noexcept(std::is_nothrow_default_constructible_v<std::deque<Type>>) = default;
 
         /**
-         * @fn LockedDeque::~LockedDeque(void);
+         * @fn LockedDeque::~LockedDeque(void) noexcept;
          * @brief Default destructor.
          */
-        ~LockedDeque(void) = default;
+        ~LockedDeque(void) noexcept = default;
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept;
-         * @brief Copy constructor with LockedDeque<Type>.
+         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept(true/false);
+         * @brief Copy assignment constructor with LockedDeque<Type>.
          * @tparam [in] other - The const reference of copied LockedDeque<Type>.
          */
-        LockedDeque (const LockedDeque<Type>& other) noexcept
+        LockedDeque (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
             try { std::scoped_lock lock { mutex, other.mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -66,11 +66,11 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept;
-         * @brief Copy constructor with STL std::deque<Type>.
+         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept(true/false);
+         * @brief Copy assignment constructor with STL std::deque<Type>.
          * @tparam [in] other - The const reference of copied STL std::deque<Type>.
          */
-        explicit LockedDeque (const std::deque<Type>& other) noexcept
+        explicit LockedDeque (const std::deque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
             try { std::lock_guard<std::mutex> lock { mutex }; }
             catch (const std::system_error& /*err*/) {
@@ -108,17 +108,17 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn LockedDeque<Type> & LockedDeque::operator= (const LockedDeque<Type> &) noexcept;
-         * @brief Copy operator.
+         * @fn LockedDeque<Type> & LockedDeque::operator= (const LockedDeque<Type> &) noexcept(true/false);
+         * @brief Copy assignment operator.
          * @tparam [in] other - The const reference of copied LockedDeque<Type> class.
          * @return Reference of the current LockedDeque<Type> class.
          */
-        LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept
+        LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_assignable_v<std::deque<Type>>)
         {
             if (this != &other)
             {
                 try { std::scoped_lock lock{mutex, other.mutex}; }
-                catch (const std::system_error & /*err*/) {
+                catch (const std::system_error& /*err*/) {
                     return *this;
                 }
                 deque = other.deque;
@@ -137,7 +137,7 @@ namespace analyzer::common::types
             if (this != &other)
             {
                 try { std::scoped_lock lock{mutex, other.mutex}; }
-                catch (const std::system_error & /*err*/) {
+                catch (const std::system_error& /*err*/) {
                     return *this;
                 }
                 deque = std::move(other.deque);
@@ -146,7 +146,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn std::size_t LockedDeque::Size(void) const noexcept
+         * @fn std::size_t LockedDeque::Size(void) noexcept;
          * @brief Method that returns the size of deque.
          * @return Size of deque.
          */
@@ -160,7 +160,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn bool LockedDeque::IsEmpty(void) const noexcept;
+         * @fn bool LockedDeque::IsEmpty(void) noexcept;
          * @brief Method that returns the internal state of deque.
          * @return State of deque.
          */
@@ -181,11 +181,13 @@ namespace analyzer::common::types
          */
         bool Push (const Type& value) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
-            catch (const std::system_error& /*err*/) {
+            try {
+                std::lock_guard<std::mutex> lock { mutex };
+                deque.emplace_front(value);
+            }
+            catch (const std::exception& /*err*/) {
                 return false;
             }
-            deque.emplace_front(value);
             return true;
         }
 
@@ -197,16 +199,18 @@ namespace analyzer::common::types
          */
         bool PopBack (Type& result) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return false;
-            }
+            try {
+                std::lock_guard<std::mutex> lock { mutex };
 
-            if (deque.empty() == true) {
+                if (deque.empty() == true) {
+                    return false;
+                }
+                result = deque.back();
+                deque.pop_back();
+            }
+            catch (const std::exception& /*err*/) {
                 return false;
             }
-            result = deque.back();
-            deque.pop_back();
             return true;
         }
 
@@ -218,16 +222,18 @@ namespace analyzer::common::types
          */
         bool PopFront (Type& result) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return false;
-            }
+            try {
+                std::lock_guard<std::mutex> lock { mutex };
 
-            if (deque.empty() == true) {
+                if (deque.empty() == true) {
+                    return false;
+                }
+                result = deque.begin();
+                deque.pop_front();
+            }
+            catch (const std::exception& /*err*/) {
                 return false;
             }
-            result = deque.begin();
-            deque.pop_front();
             return true;
         }
 
