@@ -95,30 +95,24 @@ namespace analyzer::common
     {
         bool checkFileExistence (std::string_view path) noexcept
         {
-            try {
-                std::ifstream file(path.data(), std::ios_base::binary);
-                if (file.is_open() == true && file.fail() == false)
-                {
-                    file.close();
-                    return true;
-                }
+            std::ifstream file(path.data(), std::ios_base::binary);
+            if (file.is_open() == true && file.good() == true)
+            {
+                file.close();
+                return true;
             }
-            catch (const std::exception& /*err*/) { }
             return false;
         }
 
         std::size_t getFileSize (std::string_view path) noexcept
         {
-            try {
-                std::ifstream file(path.data(), std::ios_base::binary);
-                if (file.is_open() == true && file.fail() == false)
-                {
-                    const auto size = file.seekg(0, std::ios_base::end).tellg();
-                    file.close();
-                    return static_cast<std::size_t>(size);
-                }
+            std::ifstream file(path.data(), std::ios_base::binary);
+            if (file.is_open() == true && file.good() == true)
+            {
+                const auto size = file.seekg(0, std::ios_base::end).tellg();
+                file.close();
+                return static_cast<std::size_t>(size);
             }
-            catch (const std::exception& /*err*/) { }
             return ErrorState;
         }
 
@@ -132,7 +126,7 @@ namespace analyzer::common
                 data.reserve(size);
 
                 std::ifstream file(path.data(), std::ios_base::in);
-                if (file.is_open() == true && file.fail() == false)
+                if (file.is_open() == true && file.good() == true)
                 {
                     data.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
                     return true;
@@ -146,7 +140,7 @@ namespace analyzer::common
         {
             try {
                 std::ifstream file(path.data(), std::ios_base::in);
-                if (file.is_open() == true && file.fail() == false)
+                if (file.is_open() == true && file.good() == true)
                 {
                     const auto count = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
                     file.close();

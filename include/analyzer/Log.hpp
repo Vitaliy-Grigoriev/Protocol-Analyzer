@@ -128,7 +128,7 @@ namespace analyzer::log
      * @class Logger Log.hpp "include/analyzer/Log.hpp"
      * @brief This singleton class defined the interface for program logging.
      *
-     * @note This singleton class is thread-safe and fault-tolerant.
+     * @note This singleton class is thread-safe, exception-safe and fault-tolerant.
      * @note To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
      * @note Allow two types of logger engine: logfile-oriented and console-oriented.
      *
@@ -151,6 +151,11 @@ namespace analyzer::log
          * @brief Descriptor of the logfile.
          */
         std::ofstream fd;
+        /**
+         * @var mutable std::streambuf * defaultIO;
+         * @brief Default IO buffer of std::ostream.
+         */
+        mutable std::streambuf* defaultIO = nullptr;
         /**
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
@@ -188,13 +193,13 @@ namespace analyzer::log
 
     protected:
         /**
-         * @fn Logger::Logger (std::ostream &);
+         * @fn Logger::Logger(void) noexcept;
          * @brief Protection constructor.
          */
         Logger(void) noexcept;
 
         /**
-         * @fn Logger::~Logger(void);
+         * @fn Logger::~Logger(void) noexcept;
          * @brief Protection destructor.
          */
         ~Logger(void) noexcept;
@@ -221,6 +226,7 @@ namespace analyzer::log
          * @brief Change volume the logfile.
          * @return True - if logfile name is changed successfully, otherwise - false.
          *
+         * @note This method is strong exception safety.
          * @note This method change engine only if work logfile-oriented engine.
          * @note If work console-oriented engine, then change only name of logfile and number of entries in it.
          */
@@ -235,7 +241,14 @@ namespace analyzer::log
         template <typename T>
         void CommonLogger (const T& value) const noexcept
         {
-            out << value << std::endl;
+            try {
+                out << value << std::endl;
+            }
+            catch (std::ios_base::failure& err) {
+                out.rdbuf(defaultIO);
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                out << "[error] Logger.CommonLogger: Exception occurred when push new log data - " << err.what() << '.' << std::endl;
+            }
         }
 
         /**
@@ -248,8 +261,15 @@ namespace analyzer::log
         template <typename T, typename... Args>
         void CommonLogger (const T& value, Args&&... args) const noexcept
         {
-            out << value;
-            CommonLogger(std::forward<Args>(args)...);
+            try {
+                out << value;
+                CommonLogger(std::forward<Args>(args)...);
+            }
+            catch (std::ios_base::failure& err) {
+                out.rdbuf(defaultIO);
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                out << "[error] Logger.CommonLogger Exception occurred when push new log data - " << err.what() << '.' << std::endl;
+            }
         }
 
     public:
@@ -286,28 +306,37 @@ namespace analyzer::log
                 return;
             }
 
-            out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-            switch (level)
-            {
-                case LEVEL::TRACE:
-                    out << "[trace] ";
-                    break;
-                case LEVEL::INFORMATION:
-                    out << "[info] ";
-                    break;
-                case LEVEL::WARNING:
-                    out << "[warning] ";
-                    break;
-                case LEVEL::ERROR:
-                    out << "[error] ";
-                    break;
-                case LEVEL::FATAL:
-                    out << "[fatal] ";
-                    break;
+            try {
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                switch (level)
+                {
+                    case LEVEL::TRACE:
+                        out << "[trace] ";
+                        break;
+                    case LEVEL::INFORMATION:
+                        out << "[info] ";
+                        break;
+                    case LEVEL::WARNING:
+                        out << "[warning] ";
+                        break;
+                    case LEVEL::ERROR:
+                        out << "[error] ";
+                        break;
+                    case LEVEL::FATAL:
+                        out << "[fatal] ";
+                        break;
+                }
+                CommonLogger(std::forward<Args>(args)...);
+                if (fd.is_open() == true && ++currentRecords >= recordsLimit) {
+                    ChangeVolume();
+                }
             }
-            CommonLogger(std::forward<Args>(args)...);
-            if (fd.is_open() == true && ++currentRecords >= recordsLimit) {
-                ChangeVolume();
+            catch (std::ios_base::failure& err)
+            {
+                out.rdbuf(defaultIO);
+                if (fd.is_open() == true && fd.good() == true) { fd.close(); }
+                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                CommonLogger("[error] Logger.Push: Exception occurred when push new log data - ", err.what(), '.');
             }
         }
 

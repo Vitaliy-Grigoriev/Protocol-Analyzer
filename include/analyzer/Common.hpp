@@ -357,8 +357,9 @@ namespace analyzer::common
 
         /**
          * @fn inline Type * Data::GetAt (const std::size_t) const noexcept;
-         * @brief Method that returns pointer to any shift of the internal data.
-         * @return Pointer to any shift of the internal data.
+         * @brief Method that returns a pointer to an element by selected index.
+         * @param [in] index - Index of element in data.
+         * @return Return a pointer to an element by selected index or nullptr in an error occurred.
          */
         inline Type* GetAt (const std::size_t index) const noexcept
         {
