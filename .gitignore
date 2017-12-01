@@ -24,6 +24,7 @@
 /log
 /build
 /check
+/fullhtml
 /pvs-result
 /cmake-build-debug
 /cmake-build-release
