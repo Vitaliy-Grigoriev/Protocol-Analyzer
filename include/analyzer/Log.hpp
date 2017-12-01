@@ -132,10 +132,10 @@ namespace analyzer::log
      * @note To use this class, use following macro definitions: LOG_TRACE, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_FATAL.
      * @note Allow two types of logger engine: logfile-oriented and console-oriented.
      *
-     * @todo Support setting directory for log files.
-     * @todo Support setting extension for log files.
+     * @todo Support custom directories for log files.
+     * @todo Support setting for users extension for log files.
      * @todo Change std::ofstream to std::filesystem.
-     * @todo Implement user prefix for volume.
+     * @todo Implement users prefix for volume.
      * @todo Implement output error and fatal messages to another files (std::cerr, error logfile).
      */
     class Logger
