@@ -19,7 +19,7 @@ namespace analyzer::common::types
      * @brief This class defined concurrency wrapper over STL deque class to work in parallel threads.
      * @tparam [in] Type - Typename of stored data in STL deque.
      *
-     * @note This deque container if type-protected.
+     * @note This deque container if type-protected and provides a convenient RAII-style mechanism.
      *
      * @todo Set the global limit for adding new values to the deque.
      */
@@ -42,6 +42,8 @@ namespace analyzer::common::types
         /**
          * @fn LockedDeque::LockedDeque(void) noexcept(true/false);
          * @brief Default constructor.
+         *
+         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
          */
         LockedDeque(void) noexcept(std::is_nothrow_default_constructible_v<std::deque<Type>>) = default;
 
@@ -55,6 +57,8 @@ namespace analyzer::common::types
          * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept(true/false);
          * @brief Copy assignment constructor with LockedDeque<Type>.
          * @tparam [in] other - The const reference of copied LockedDeque<Type>.
+         *
+         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
          */
         LockedDeque (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
@@ -69,6 +73,8 @@ namespace analyzer::common::types
          * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept(true/false);
          * @brief Copy assignment constructor with STL std::deque<Type>.
          * @tparam [in] other - The const reference of copied STL std::deque<Type>.
+         *
+         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
          */
         explicit LockedDeque (const std::deque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
@@ -112,6 +118,8 @@ namespace analyzer::common::types
          * @brief Copy assignment operator.
          * @tparam [in] other - The const reference of copied LockedDeque<Type> class.
          * @return Reference of the current LockedDeque<Type> class.
+         *
+         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
          */
         LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_assignable_v<std::deque<Type>>)
         {
@@ -162,7 +170,7 @@ namespace analyzer::common::types
         /**
          * @fn bool LockedDeque::IsEmpty(void) noexcept;
          * @brief Method that returns the internal state of deque.
-         * @return State of deque.
+         * @return True - if the container size is 0, otherwise - false.
          */
         bool IsEmpty(void) noexcept
         {
@@ -183,7 +191,7 @@ namespace analyzer::common::types
         {
             try {
                 std::lock_guard<std::mutex> lock { mutex };
-                deque.emplace_front(value);
+                deque.push_front(value);
             }
             catch (const std::exception& /*err*/) {
                 return false;
@@ -195,22 +203,22 @@ namespace analyzer::common::types
          * @fn bool LockedDeque::PopBack (Type &) noexcept;
          * @brief Method that pop value from back of deque.
          * @tparam [out] result - Returned value.
-         * @return True - if pop is successful, otherwise - false.
+         * @return True - if pop back element is successful, otherwise - false.
+         *
+         * @note Use this method for pop the oldest value in the deque.
          */
         bool PopBack (Type& result) noexcept
         {
-            try {
-                std::lock_guard<std::mutex> lock { mutex };
-
-                if (deque.empty() == true) {
-                    return false;
-                }
-                result = deque.back();
-                deque.pop_back();
-            }
+            try { std::lock_guard<std::mutex> lock { mutex }; }
             catch (const std::exception& /*err*/) {
                 return false;
             }
+
+            if (deque.empty() == true) {
+                return false;
+            }
+            result = deque.back();
+            deque.pop_back();
             return true;
         }
 
@@ -218,22 +226,20 @@ namespace analyzer::common::types
          * @fn bool LockedDeque::PopFront (Type &) noexcept;
          * @brief Method that pop value from front of deque.
          * @tparam [out] result - Returned value.
-         * @return True - if pop is successful, otherwise - false.
+         * @return True - if pop the front element is successful, otherwise - false.
          */
         bool PopFront (Type& result) noexcept
         {
-            try {
-                std::lock_guard<std::mutex> lock { mutex };
-
-                if (deque.empty() == true) {
-                    return false;
-                }
-                result = deque.begin();
-                deque.pop_front();
-            }
-            catch (const std::exception& /*err*/) {
+            try { std::lock_guard<std::mutex> lock { mutex }; }
+            catch (const std::system_error& /*err*/) {
                 return false;
             }
+
+            if (deque.empty() == true) {
+                return false;
+            }
+            result = deque.front();
+            deque.pop_front();
             return true;
         }
 
@@ -241,7 +247,7 @@ namespace analyzer::common::types
          * @fn bool LockedDeque::Move (std::deque<Type> &) noexcept;
          * @brief Method that moves all internal values to outside STL std::deque<Type>.
          * @tparam [out] result - Returned value.
-         * @return True - if move is successful, otherwise - false.
+         * @return True - if at least 1 element has been moved, otherwise - false.
          */
         bool Move (std::deque<Type>& result) noexcept
         {
