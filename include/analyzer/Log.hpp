@@ -233,16 +233,17 @@ namespace analyzer::log
         bool ChangeVolume(void) noexcept;
 
         /**
-         * @fn template <typename T>
-         * void Logger::CommonLogger (const T &) const noexcept;
+         * @fn template <typename Type>
+         * void Logger::CommonLogger (const Type &) const noexcept;
          * @brief Common method that outputs the data to logfile.
          * @tparam [in] value - The current output template parameter.
          */
-        template <typename T>
-        void CommonLogger (const T& value) const noexcept
+        template <typename Type>
+        void CommonLogger (const Type& value) const noexcept
         {
             try {
-                out << value << std::endl;
+                // Without std::endl because it calls the flush() method.
+                out << value << '\n';
             }
             catch (std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
@@ -252,14 +253,14 @@ namespace analyzer::log
         }
 
         /**
-         * @fn template <typename T, typename... Args>
-         * void Logger::CommonLogger (const T &, Args &&...) const noexcept;
+         * @fn template <typename Type, typename... Args>
+         * void Logger::CommonLogger (const Type &, Args &&...) const noexcept;
          * @brief Common method that outputs the data to logfile.
          * @tparam [in] value - The current output template parameter.
-         * @tparam [in] args - Any data for logging.
+         * @tparam [in] args - Any next data for logging.
          */
-        template <typename T, typename... Args>
-        void CommonLogger (const T& value, Args&&... args) const noexcept
+        template <typename Type, typename... Args>
+        void CommonLogger (const Type& value, Args&&... args) const noexcept
         {
             try {
                 out << value;
@@ -326,6 +327,7 @@ namespace analyzer::log
                         out << "[fatal] ";
                         break;
                 }
+
                 CommonLogger(std::forward<Args>(args)...);
                 if (fd.is_open() == true && ++currentRecords >= recordsLimit) {
                     ChangeVolume();
@@ -358,6 +360,7 @@ namespace analyzer::log
          * @return True - if logfile name is changed successfully, otherwise - false.
          *
          * @note If enable console-oriented engine, then mode will be changed to logfile-oriented engine.
+         * @attention It is not mistake when the path is passed by value.
          */
         bool ChangeLogFileName (std::string /*path*/) noexcept;
 
