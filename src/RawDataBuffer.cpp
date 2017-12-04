@@ -10,7 +10,7 @@ namespace analyzer::common::types
 {
     // Copy constructor.
     RawDataBuffer::RawDataBuffer (const RawDataBuffer& other) noexcept
-            : bitStream(*this)
+            : bitStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
         if (data != nullptr) {
@@ -20,7 +20,7 @@ namespace analyzer::common::types
 
     // Move assignment constructor.
     RawDataBuffer::RawDataBuffer (RawDataBuffer&& other) noexcept
-            : bitStream(*this)
+            : bitStreamTransform(*this)
     {
         if (other.data != nullptr) {
             data = std::move(other.data);
@@ -31,7 +31,7 @@ namespace analyzer::common::types
 
     // Allocate constructor.
     RawDataBuffer::RawDataBuffer (const std::size_t size) noexcept
-            : bitStream(*this)
+            : bitStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr) {
@@ -84,15 +84,82 @@ namespace analyzer::common::types
     }
 
 
-    void RawDataBuffer::BitStreamEngine::shiftLeft (std::byte* bits, const std::size_t size, std::size_t shift, bool isRound) const noexcept
-    {
+    /*************************************** BitStreamEngine ***************************************/
 
+    /**
+     * @fn static void leftRoundBytesShift (std::byte *, const std::byte *, std::byte *) noexcept;
+     * @brief Support function that performs left byte round shift to the selected byte.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence.
+     * @param [in] newHead - Byte to which the left shift is performed.
+     */
+    static void leftRoundBytesShift (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
+    {
+        if (head >= end || newHead < head || newHead > end) { return; }
+        std::byte* next = newHead;
+        while (head != next)
+        {
+            std::swap(*head++, *next++);
+            if (next == end) {
+                next = newHead;
+            } else if (head == newHead) {
+                newHead = next;
+            }
+        }
     }
+
+    /**
+     * @fn static void rightRoundBytesShift (const std::byte *, std::byte *, std::byte *) noexcept;
+     * @brief Support function that performs right byte round shift to the selected byte.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence.
+     * @param [in] newEnd - Byte to which the right shift is performed.
+     */
+    static void rightRoundBytesShift (const std::byte* head, std::byte* end, std::byte* newEnd) noexcept
+    {
+        if (head >= end || newEnd < head || newEnd > end) { return; }
+        end--;
+        std::byte* prev = newEnd;
+        while (end != prev)
+        {
+            std::swap(*prev--, *end--);
+            if (prev == std::prev(head)) {
+                prev = newEnd;
+            } else if (end == newEnd) {
+                newEnd = prev;
+            }
+        }
+    }
+
+    /**
+     * @fn static inline void leftRoundBytesShift (const std::byte *, std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs left byte round shift by a specified byte offset.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence.
+     * @param [in] shift - Byte offset for round left shift.
+     */
+    static inline void leftRoundBytesShift (std::byte* head, const std::byte* end, const std::size_t shift) noexcept
+    {
+        leftRoundBytesShift(head, end, head + shift);
+    }
+
+    /**
+     * @fn static inline void rightRoundBytesShift (const std::byte *, std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs right byte round shift by a specified byte offset.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence.
+     * @param [in] shift - Byte offset for round right shift.
+     */
+    static inline void rightRoundBytesShift (const std::byte* head, std::byte* end, const std::size_t shift) noexcept
+    {
+        rightRoundBytesShift(head, end, end - shift - 1);
+    }
+
 
 
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftLeft (const std::size_t shift) const noexcept
     {
-        shiftLeft(storedData.data.get(), storedData.length, shift, false);
+        //shiftLeft(storedData.data.get(), storedData.length, shift, false);
         return *this;
     }
 
@@ -101,5 +168,16 @@ namespace analyzer::common::types
         //shiftLeft(storedData.data.get(), storedData.length, shift, false);
         return *this;
     }
+
+    const RawDataBuffer::BitStreamEngine & RawDataBuffer::BitStreamEngine::RoundShiftLeft (const std::size_t shift) const noexcept
+    {
+        return *this;
+    }
+
+    const RawDataBuffer::BitStreamEngine & RawDataBuffer::BitStreamEngine::RoundShiftRight (const std::size_t shift) const noexcept
+    {
+        return *this;
+    }
+
 
 }  // namespace types.

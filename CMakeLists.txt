@@ -11,7 +11,7 @@ set(CMAKE_BUILD_TYPE   $ENV{BUILD_TYPE})
 set(CMAKE_CXX_COMPILER   $ENV{COMPILER})
 
 set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
-set(WARNINGS   "-Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
+set(WARNINGS   "-Wno-missing-prototypes -Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
 set(ADDITIONAL_FLAGS   "-Weverything  -fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")

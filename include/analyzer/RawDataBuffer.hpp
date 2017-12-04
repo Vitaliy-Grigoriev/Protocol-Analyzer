@@ -16,7 +16,7 @@ namespace analyzer::common::types
     private:
         /**
          * @class BitStreamEngine RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
-         * @brief A class that operates on a sequence of bits and offers an interface for working with them.
+         * @brief Class that operates on a sequence of bits and offers an interface for working with them.
          */
         class BitStreamEngine
         {
@@ -24,21 +24,18 @@ namespace analyzer::common::types
 
         private:
             /**
-             * @var RawDataBuffer & rawData;
-             * @brief The reference of RawDataBuffer owner class.
+             * @var RawDataBuffer & storedData;
+             * @brief Reference of the RawDataBuffer owner class.
              */
             RawDataBuffer & storedData;
 
-            /**
-             * @fn void BitStreamEngine::shiftLeft (std::byte *, std::size_t, std::size_t, bool) const noexcept;
-             * @param [in,out] data - Input data sequence for change.
-             * @param [in] size - Size of input data in bytes.
-             * @param [in] shift - The count of bits for left shift.
-             * @param [in] isRound - Boolean flag that indicates about the type of shift: direct or round.
-             */
-            void shiftLeft (std::byte * /*data*/, std::size_t /*size*/, std::size_t /*shift*/, bool /*isRound*/) const noexcept;
-
         public:
+            BitStreamEngine(void) = delete;
+            BitStreamEngine (BitStreamEngine &&) = delete;
+            BitStreamEngine (const BitStreamEngine &) = delete;
+            BitStreamEngine & operator= (BitStreamEngine &&) = delete;
+            BitStreamEngine & operator= (const BitStreamEngine &) = delete;
+
             /**
              * @fn explicit BitStreamEngine::BitStreamEngine (RawDataBuffer &) noexcept;
              * @brief Default constructor of BitStreamEngine class.
@@ -51,24 +48,50 @@ namespace analyzer::common::types
             { }
 
             /**
+             * @fn BitStreamEngine::~BitStreamEngine(void) noexcept;
+             * @brief Default destructor.
+             */
+            ~BitStreamEngine(void) noexcept = default;
+
+            /**
              * @fn inline std::size_t BitStreamEngine::Length(void) const noexcept;
-             * @return The length of stored data in bits.
+             * @brief Method that returns the length of stored data in bits.
+             * @return Length of stored data in bits.
              */
             inline std::size_t Length(void) const noexcept { return storedData.Size() * 8; }
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t) const noexcept;
-             * @param [in] shift - The count of bits for left shift.
-             * @return The reference of current class.
+             * @brief Method that performs direct left bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct left bit shift.
+             * @return Const reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftLeft (std::size_t /*shift*/) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::ShiftRight (std::size_t) const noexcept;
-             * @param [in] shift - The count of bits for right shift.
-             * @return The reference of current class.
+             * @brief Method that performs direct right bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct right bit shift.
+             * @return Const reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftRight (std::size_t /*shift*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
+             * @brief Method that performs round left bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for round left shift.
+             * @return Const reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & RoundShiftLeft (std::size_t /*shift*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::RoundShiftRight (std::size_t) const noexcept;
+             * @brief Method that performs round right bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for round right shift.
+             * @return Const reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
+
         };
 
     private:
@@ -83,10 +106,10 @@ namespace analyzer::common::types
          */
         std::size_t length = 0;
         /**
-         * @var BitStreamEngine bitStream;
+         * @var BitStreamEngine bitStreamTransform;
          * @brief Engine for working with sequence of bits.
          */
-        BitStreamEngine bitStream;
+        BitStreamEngine bitStreamTransform;
 
     public:
         /**
@@ -94,7 +117,7 @@ namespace analyzer::common::types
          * @brief Default constructor.
          */
         RawDataBuffer(void) noexcept
-                : bitStream(*this)
+                : bitStreamTransform(*this)
         { }
 
         /**
@@ -107,6 +130,8 @@ namespace analyzer::common::types
          * @fn RawDataBuffer::RawDataBuffer (const RawDataBuffer &) noexcept;
          * @brief Copy assignment constructor.
          * @tparam [in] other - The const reference of copied RawDataBuffer class.
+         *
+         * @attention Need to check the size of data after use this constructor because it is 'noexcept'.
          */
         RawDataBuffer (const RawDataBuffer & /*other*/) noexcept;
 
@@ -121,6 +146,8 @@ namespace analyzer::common::types
          * @fn explicit RawDataBuffer::RawDataBuffer (std::size_t) noexcept;
          * @brief Constructor that allocates specified amount of bytes.
          * @param [in] size - Number of bytes for allocate.
+         *
+         * @attention Need to check the size of data after use this method because it is 'noexcept'.
          */
         explicit RawDataBuffer (std::size_t /*size*/) noexcept;
 
@@ -129,6 +156,8 @@ namespace analyzer::common::types
          * @brief Copy assignment operator.
          * @tparam [in] other - The const reference of copied RawDataBuffer class.
          * @return Reference of the current RawDataBuffer class.
+         *
+         * @attention Need to check the size of data after use this operator because it is 'noexcept'.
          */
         RawDataBuffer & operator= (const RawDataBuffer & /*other*/) noexcept;
 
@@ -147,7 +176,7 @@ namespace analyzer::common::types
          * @tparam [in] Type - Typename of assigned data.
          * @param [in] other - Pointer to the const data of selected type.
          * @param [in] size - The number of elements in the input data of selected type.
-         * @return True - if assignment is successful, otherwise - false.
+         * @return True - if data assignment is successful, otherwise - false.
          */
         template <typename Type>
         bool AssignData (const Type* other, const std::size_t size) noexcept
@@ -160,6 +189,13 @@ namespace analyzer::common::types
             }
             return true;
         }
+
+        /**
+         * @fn const RawDataBuffer::BitStreamEngine & RawDataBuffer::Transform(void) const noexcept;
+         * @brief Method that returns the reference to internal transform engine for working with bits.
+         * @return Const reference of the BitStreamEngine class.
+         */
+        const BitStreamEngine& Transform(void) const noexcept { return bitStreamTransform; }
 
         /**
          * @fn inline std::size_t RawDataBuffer::Size(void) const noexcept
