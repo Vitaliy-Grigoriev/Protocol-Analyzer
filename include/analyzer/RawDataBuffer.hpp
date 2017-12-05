@@ -17,6 +17,8 @@ namespace analyzer::common::types
         /**
          * @class BitStreamEngine RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
          * @brief Class that operates on a sequence of bits and offers an interface for working with them.
+         *
+         * @attention This class MUST BE initialized in all constructors of owner class.
          */
         class BitStreamEngine
         {
@@ -40,8 +42,6 @@ namespace analyzer::common::types
              * @fn explicit BitStreamEngine::BitStreamEngine (RawDataBuffer &) noexcept;
              * @brief Default constructor of BitStreamEngine class.
              * @param [in] owner - Reference of RawDataBuffer owner class.
-             *
-             * @warning This class MUST BE initialized in all constructors of owner class.
              */
             explicit BitStreamEngine (RawDataBuffer& owner) noexcept
                     : storedData(owner)
@@ -110,6 +110,11 @@ namespace analyzer::common::types
          * @brief Engine for working with sequence of bits.
          */
         BitStreamEngine bitStreamTransform;
+        /**
+         * @var ByteStreamEngine byteStreamTransform;
+         * @brief Engine for working with sequence of bytes.
+         */
+        //ByteStreamEngine byteStreamTransform;
 
     public:
         /**
@@ -191,11 +196,18 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn const RawDataBuffer::BitStreamEngine & RawDataBuffer::Transform(void) const noexcept;
-         * @brief Method that returns the reference to internal transform engine for working with bits.
+         * @fn const RawDataBuffer::BitStreamEngine & RawDataBuffer::BitsTransform(void) const noexcept;
+         * @brief Method that returns const reference of the nested BitStreamEngine class for working with bits.
          * @return Const reference of the BitStreamEngine class.
          */
-        const BitStreamEngine& Transform(void) const noexcept { return bitStreamTransform; }
+        const BitStreamEngine& BitsTransform(void) const noexcept { return bitStreamTransform; }
+
+        /**
+         * @fn const RawDataBuffer::ByteStreamEngine & RawDataBuffer::BytesTransform(void) const noexcept;
+         * @brief Method that returns const reference of the nested ByteStreamEngine class for working with bytes.
+         * @return Const reference of the ByteStreamEngine class.
+         */
+        //const ByteStreamEngine& BytesTransform(void) const noexcept { return byteStreamTransform; }
 
         /**
          * @fn inline std::size_t RawDataBuffer::Size(void) const noexcept
