@@ -42,7 +42,8 @@ namespace analyzer::common::types
     // Copy operator.
     RawDataBuffer& RawDataBuffer::operator= (const RawDataBuffer& other) noexcept
     {
-        if (this != &other) {
+        if (this != &other)
+        {
             data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
             if (data != nullptr) {
                 length = other.length;
@@ -70,6 +71,7 @@ namespace analyzer::common::types
         length = 0;
     }
 
+    // Safety getter of internal value.
     std::byte* RawDataBuffer::GetAt (const std::size_t index) const noexcept
     {
         return index < length ? &data[index] : nullptr;
@@ -82,6 +84,7 @@ namespace analyzer::common::types
         const uint16_t t = *reinterpret_cast<const uint16_t*>(endianness);
         return (t & 0x100) == 0;
     }
+
 
 
     /* ***************************************************************************************************** */
@@ -236,23 +239,37 @@ namespace analyzer::common::types
 
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftLeft (const std::size_t shift) const noexcept
     {
-        //shiftLeft(storedData.data.get(), storedData.length, shift, false);
+        if (storedData.data != nullptr && storedData.length > 0)
+        {
+
+        }
         return *this;
     }
 
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftRight (const std::size_t shift) const noexcept
     {
-        //shiftLeft(storedData.data.get(), storedData.length, shift, false);
+        if (storedData.data != nullptr && storedData.length > 0)
+        {
+
+        }
         return *this;
     }
 
-    const RawDataBuffer::BitStreamEngine & RawDataBuffer::BitStreamEngine::RoundShiftLeft (const std::size_t shift) const noexcept
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftLeft (const std::size_t shift) const noexcept
     {
+        if (storedData.data != nullptr && storedData.length > 0)
+        {
+
+        }
         return *this;
     }
 
-    const RawDataBuffer::BitStreamEngine & RawDataBuffer::BitStreamEngine::RoundShiftRight (const std::size_t shift) const noexcept
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftRight (const std::size_t shift) const noexcept
     {
+        if (storedData.data != nullptr && storedData.length > 0)
+        {
+
+        }
         return *this;
     }
 

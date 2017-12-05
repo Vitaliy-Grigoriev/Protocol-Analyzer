@@ -26,10 +26,10 @@ namespace analyzer::common::types
 
         private:
             /**
-             * @var RawDataBuffer & storedData;
-             * @brief Reference of the RawDataBuffer owner class.
+             * @var const RawDataBuffer & storedData;
+             * @brief Const reference of the RawDataBuffer owner class.
              */
-            RawDataBuffer & storedData;
+            const RawDataBuffer & storedData;
 
         public:
             BitStreamEngine(void) = delete;
@@ -39,11 +39,11 @@ namespace analyzer::common::types
             BitStreamEngine & operator= (const BitStreamEngine &) = delete;
 
             /**
-             * @fn explicit BitStreamEngine::BitStreamEngine (RawDataBuffer &) noexcept;
-             * @brief Default constructor of BitStreamEngine class.
-             * @param [in] owner - Reference of RawDataBuffer owner class.
+             * @fn explicit BitStreamEngine::BitStreamEngine (const RawDataBuffer &) noexcept;
+             * @brief Constructor of nested BitStreamEngine class.
+             * @param [in] owner - Const reference of RawDataBuffer owner class.
              */
-            explicit BitStreamEngine (RawDataBuffer& owner) noexcept
+            explicit BitStreamEngine (const RawDataBuffer& owner) noexcept
                     : storedData(owner)
             { }
 
@@ -96,7 +96,7 @@ namespace analyzer::common::types
 
     private:
         /**
-         * @var std::unique_ptr<std::byte[]>data;
+         * @var std::unique_ptr<std::byte[]> data;
          * @brief Internal variable that contains binary raw data.
          */
         std::unique_ptr<std::byte[]> data = nullptr;
@@ -226,14 +226,14 @@ namespace analyzer::common::types
         /**
          * @fn inline bool RawDataBuffer::IsEmpty(void) const noexcept;
          * @brief Method that returns the state of RawDataBuffer.
-         * @return True - if RawDataBuffer is empty, otherwise - false.
+         * @return True - if RawDataBuffer class is empty, otherwise - false.
          */
         inline bool IsEmpty(void) const noexcept { return length == 0; }
 
         /**
          * @fn explicit operator RawDataBuffer::bool(void) const noexcept;
          * @brief Operator that returns the state of RawDataBuffer.
-         * @return True - if RawDataBuffer is not empty, otherwise - false.
+         * @return True - if RawDataBuffer class is not empty, otherwise - false.
          */
         explicit operator bool(void) const noexcept { return length != 0; }
 
@@ -267,7 +267,9 @@ namespace analyzer::common::types
          * @return True - if on the system little endian, false - big endian.
          */
         bool CheckSystemEndian(void) const noexcept;
+
     };
+
 
 }  // namespace types.
 
