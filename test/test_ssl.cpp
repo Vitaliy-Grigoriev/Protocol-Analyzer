@@ -4,7 +4,7 @@
 #include <map>
 #include <iostream>
 
-#include "../include/analyzer/Api.hpp"
+#include "../include/analyzer/AnalyzerApi.hpp"
 
 
 int32_t main (int32_t size, char** data)

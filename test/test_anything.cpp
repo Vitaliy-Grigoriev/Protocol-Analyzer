@@ -6,14 +6,16 @@
 #include <iostream>
 #include <algorithm>
 
-#include "../include/analyzer/Api.hpp"
+#include "../include/analyzer/AnalyzerApi.hpp"
 
 using namespace analyzer;
 
 
-void roundShiftBytesInArray (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
+void leftRoundBytesShift (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
 {
+    if (head >= end || newHead <= head || newHead >= end) { return; }
     std::byte* next = newHead;
+
     while (head != next)
     {
         std::swap(*head++, *next++);
@@ -25,20 +27,79 @@ void roundShiftBytesInArray (std::byte* head, const std::byte* end, std::byte* n
     }
 }
 
-void directShiftBytesInArray (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
+void leftRoundBytesShift (std::byte* head, const std::byte* end, const std::size_t shift) noexcept
 {
-    std::byte* next = newHead;
-    while (head != newHead)
-    {
-        *head++ = *next++;
-        if (next == end) {
-            break;
-        }
-    }
-    memset(newHead, 0, end - newHead);
+    leftRoundBytesShift(head, end, head + shift);
 }
 
-void shiftLeft (std::byte* data, const std::size_t size, std::size_t shift, bool isRound) noexcept
+
+void rightRoundBytesShift (const std::byte* head, std::byte* end, std::byte* newEnd) noexcept
+{
+    if (head >= end || newEnd < head || newEnd >= --end) { return; }
+    std::byte* prev = newEnd;
+    const std::byte* const rend = std::prev(head);
+
+    while (end != prev)
+    {
+        std::swap(*prev--, *end--);
+        if (prev == rend) {
+            prev = newEnd;
+        } else if (end == newEnd) {
+            newEnd = prev;
+        }
+    }
+}
+
+void rightRoundBytesShift (const std::byte* head, std::byte* end, const std::size_t shift) noexcept
+{
+    rightRoundBytesShift(head, end, end - shift - 1);
+}
+
+
+void leftDirectBytesShift (std::byte* head, const std::byte* end, std::byte* newHead, bool value = false) noexcept
+{
+    if (head >= end || newHead <= head || newHead >= end) { return; }
+    std::byte* next = newHead;
+
+    while (next != end)
+    {
+        *head++ = *next++;
+        if (head == newHead) {
+            newHead = next;
+        }
+    }
+    memset(head, (value == false ? 0x00 : 0xFF), static_cast<std::size_t>(end - head));
+}
+
+void leftDirectBytesShift (std::byte* head, const std::byte* end, const std::size_t shift, bool value = false) noexcept
+{
+    leftDirectBytesShift(head, end, head + shift, value);
+}
+
+
+void rightDirectBytesShift (std::byte* head, std::byte* end, std::byte* newEnd, bool value = false) noexcept
+{
+    if (head >= end || newEnd < head || newEnd >= --end) { return; }
+    std::byte* prev = newEnd;
+    const std::byte* const rend = std::prev(head);
+
+    while (prev != rend)
+    {
+        *end-- = *prev--;
+        if (end == newEnd) {
+            newEnd = prev;
+        }
+    }
+    memset(head, (value == false ? 0x00 : 0xFF), static_cast<std::size_t>(end - prev));
+}
+
+void rightDirectBytesShift (std::byte* head, std::byte* end, const std::size_t shift, bool value = false) noexcept
+{
+    rightDirectBytesShift(head, end, end - shift - 1, value);
+}
+
+
+void leftBitsShift (std::byte* data, const std::size_t size, std::size_t shift, bool isRound) noexcept
 {
     if (data != nullptr && size > 0)
     {
@@ -91,15 +152,10 @@ void shiftLeft (std::byte* data, const std::size_t size, std::size_t shift, bool
 
 int32_t main (int32_t size, char** data)
 {
-    uint8_t array[] = { 0, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    uint8_t array[] = { 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
     auto head = reinterpret_cast<std::byte*>(array);
-    directShiftBytesInArray(head, head + sizeof(array), head + 11);
-    //roundShiftBytesInArray(head, head + sizeof(array), head + 11);
 
-    for (unsigned char idx : array) {
-        std::cout << int(idx) << "  ";
-    }
-    std::cout << std::endl;
+
 
     return EXIT_SUCCESS;
 

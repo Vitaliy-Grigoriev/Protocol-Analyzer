@@ -23,7 +23,7 @@ http://code.google.com/events/#&product=browser
 #include <string>
 #include <iostream>
 
-#include "../include/analyzer/Api.hpp"
+#include "../include/analyzer/AnalyzerApi.hpp"
 
 
 int main(void)

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "../include/analyzer/Api.hpp"
+#include "../include/analyzer/AnalyzerApi.hpp"
 
 
 const auto CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
