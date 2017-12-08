@@ -2,6 +2,8 @@
 #ifndef PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 #define PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 
+#include <ostream>
+
 // In RawDataBuffer library MUST NOT use any another library because it is a core library.
 
 
@@ -56,25 +58,27 @@ namespace analyzer::common::types
             /**
              * @fn inline std::size_t BitStreamEngine::Length(void) const noexcept;
              * @brief Method that returns the length of stored data in bits.
-             * @return Length of stored data in bits.
+             * @return Length of bit sequense of stored data.
              */
             inline std::size_t Length(void) const noexcept { return storedData.Size() * 8; }
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t) const noexcept;
+             * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t, bool) const noexcept;
              * @brief Method that performs direct left bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct left bit shift.
+             * @param [in] fillBit - Value of the fill bit after the left shift. Default: false.
              * @return Const reference of BitStreamEngine class.
              */
-            const BitStreamEngine & ShiftLeft (std::size_t /*shift*/) const noexcept;
+            const BitStreamEngine & ShiftLeft (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::ShiftRight (std::size_t) const noexcept;
+             * @fn const BitStreamEngine & BitStreamEngine::ShiftRight (std::size_t, bool) const noexcept;
              * @brief Method that performs direct right bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct right bit shift.
+             * @param [in] fillBit - Value of the fill bit after the right shift. Default: false.
              * @return Const reference of BitStreamEngine class.
              */
-            const BitStreamEngine & ShiftRight (std::size_t /*shift*/) const noexcept;
+            const BitStreamEngine & ShiftRight (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
@@ -92,6 +96,42 @@ namespace analyzer::common::types
              */
             const BitStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
 
+            /**
+             * @fn bool BitStreamEngine::Test (std::size_t) const noexcept;
+             * @brief Method that checks the bit under the specified index.
+             * @param [in] index - Index of bit in binary sequence.
+             * @return Boolean value that indicates about the value of the selected bit.
+             *
+             * @note This method returns value 'false' if the index out-of-range.
+             */
+            bool Test (std::size_t /*index*/) const noexcept;
+
+            /**
+             * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
+             * @brief Operator that returns the value of bit under the specified index.
+             * @param [in] index - Index of bit in binary sequence.
+             * @return Boolean value that indicates about the value of the selected bit.
+             */
+            inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
+
+            /**
+             * @fn friend std::ostream & operator<< (std::ostream &, const BitStreamEngine &) noexcept;
+             * @brief Operator that outputs internal binary raw data in binary string format.
+             * @param [in,out] stream - Reference of the output stream engine.
+             * @param [in] engine - Reference of the BitStreamEngine class.
+             * @return Reference of the inputed STL std::ostream class.
+             */
+            friend std::ostream & operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
+            {
+                try {
+                    stream.unsetf(std::ios_base::boolalpha);
+                    for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
+                        stream << engine.Test(idx);
+                    }
+                }
+                catch (std::ios_base::failure& /*err*/) { }
+                return stream;
+            }
         };
 
     private:
@@ -188,6 +228,27 @@ namespace analyzer::common::types
         {
             length = size * sizeof(Type);
             data = system::allocMemoryForArray<std::byte>(length, other, length);
+            if (data == nullptr) {
+                length = 0;
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * @fn template <typename Type>
+         * bool RawDataBuffer::AssignData (const Type *, const std::size_t) noexcept;
+         * @brief Method that assigns data to RawDataBuffer.
+         * @tparam [in] Type - Typename of assigned data.
+         * @param [in] begin - Pointer to the first element of const data of selected type.
+         * @param [in] end - Pointer to the element following the last one of const data of selected type.
+         * @return True - if data assignment is successful, otherwise - false.
+         */
+        template <typename Type>
+        bool AssignData (const Type* begin, const Type* end) noexcept
+        {
+            length = std::distance(begin, end) * sizeof(Type);
+            data = system::allocMemoryForArray<std::byte>(length, begin, length);
             if (data == nullptr) {
                 length = 0;
                 return false;
