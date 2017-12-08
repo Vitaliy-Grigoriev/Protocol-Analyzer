@@ -17,15 +17,15 @@ int32_t main (int32_t size, char** data)
     auto head = reinterpret_cast<std::byte*>(array);
 
     common::types::RawDataBuffer buffer = { };
-    buffer.AssignData(array, sizeof(array));
+    buffer.AssignData(array, array + sizeof(array));
     std::cout << buffer.Size() << std::endl;
 
     std::cout << buffer.BitsTransform() << std::endl;
-    std::cout << buffer.BitsTransform().ShiftLeft(1, true) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftLeft(2) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftLeft(3) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftLeft(4, true) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftLeft(256, true) << std::endl;
+    std::cout << buffer.BitsTransform().ShiftRight(1, true) << std::endl;
+    std::cout << buffer.BitsTransform().ShiftRight(2) << std::endl;
+    std::cout << buffer.BitsTransform().ShiftRight(3) << std::endl;
+    std::cout << buffer.BitsTransform().ShiftRight(4, true) << std::endl;
+    std::cout << buffer.BitsTransform().ShiftRight(256, true) << std::endl;
 
 
 

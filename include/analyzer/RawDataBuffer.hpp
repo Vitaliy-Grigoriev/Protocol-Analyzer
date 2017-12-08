@@ -237,7 +237,7 @@ namespace analyzer::common::types
 
         /**
          * @fn template <typename Type>
-         * bool RawDataBuffer::AssignData (const Type *, const std::size_t) noexcept;
+         * bool RawDataBuffer::AssignData (const Type *, const Type *) noexcept;
          * @brief Method that assigns data to RawDataBuffer.
          * @tparam [in] Type - Typename of assigned data.
          * @param [in] begin - Pointer to the first element of const data of selected type.

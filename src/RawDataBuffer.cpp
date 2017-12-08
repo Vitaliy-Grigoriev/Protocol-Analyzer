@@ -275,7 +275,31 @@ namespace analyzer::common::types
     {
         if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
         {
+            const std::size_t size = Length();
+            if (shift >= size) {
+                memset(storedData.data.get(), (fillBit == false ? 0x00 : 0xFF), storedData.length);
+                return *this;
+            }
 
+            const std::size_t countOfBytesShift = shift / 8;
+            if (countOfBytesShift > 0) {
+                rightDirectBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift, fillBit);
+            }
+
+            const std::size_t tailBits = shift % 8;
+            if (tailBits > 0)
+            {
+                for (std::size_t idx = storedData.Size() - 1; idx > 0; --idx) {
+                    storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                }
+
+                std::byte* const first = &storedData.data[0];
+                if (fillBit == false) {
+                    *first >>= tailBits;
+                } else {
+                    *first = (std::byte(0xFF) << (8 - tailBits)) | (*first >> tailBits);
+                }
+            }
         }
         return *this;
     }
