@@ -21,11 +21,10 @@ int32_t main (int32_t size, char** data)
     std::cout << buffer.Size() << std::endl;
 
     std::cout << buffer.BitsTransform() << std::endl;
-    std::cout << buffer.BitsTransform().ShiftRight(1, true) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftRight(2) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftRight(3) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftRight(4, true) << std::endl;
-    std::cout << buffer.BitsTransform().ShiftRight(256, true) << std::endl;
+    for (std::size_t idx = 0; idx < buffer.BitsTransform().Length(); ++idx) {
+        buffer.BitsTransform().Invert(idx);
+    }
+    std::cout << buffer.BitsTransform() << std::endl;
 
 
 

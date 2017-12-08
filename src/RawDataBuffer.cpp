@@ -234,9 +234,7 @@ namespace analyzer::common::types
         rightDirectBytesShift(head, end, end - shift - 1, fillBit);
     }
 
-
-
-
+    // Method that performs direct left bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftLeft (const std::size_t shift, bool fillBit) const noexcept
     {
         if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
@@ -255,22 +253,21 @@ namespace analyzer::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                for (std::size_t idx = 0; idx < storedData.Size() - 1; ++idx) {
+                const std::size_t lastIndex = storedData.Size() - 1;
+                for (std::size_t idx = 0; idx < lastIndex; ++idx) {
                     storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
                 }
 
-                std::byte* const last = &storedData.data[storedData.Size() - 1];
-                if (fillBit == false) {
-                    *last <<= tailBits;
-                } else {
-                    *last = (std::byte(0xFF) >> (8 - tailBits)) | (*last << tailBits);
+                storedData.data[lastIndex] <<= tailBits;
+                if (fillBit == true) {
+                    storedData.data[lastIndex] |= (std::byte(0xFF) >> (8 - tailBits));
                 }
             }
         }
         return *this;
     }
 
-
+    // Method that performs direct right bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftRight (const std::size_t shift, bool fillBit) const noexcept
     {
         if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
@@ -293,44 +290,104 @@ namespace analyzer::common::types
                     storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
                 }
 
-                std::byte* const first = &storedData.data[0];
-                if (fillBit == false) {
-                    *first >>= tailBits;
-                } else {
-                    *first = (std::byte(0xFF) << (8 - tailBits)) | (*first >> tailBits);
+                storedData.data[0] >>= tailBits;
+                if (fillBit == true) {
+                    storedData.data[0] |= (std::byte(0xFF) << (8 - tailBits));
                 }
             }
         }
         return *this;
     }
 
-
-    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftLeft (const std::size_t shift) const noexcept
+    // Method that performs round left bit shift by a specified bit offset.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
         {
+            const std::size_t size = Length();
+            if (shift >= size) {
+                shift %= size;
+            }
 
+            const std::size_t countOfBytesShift = shift / 8;
+            if (countOfBytesShift > 0) {
+                leftRoundBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift);
+            }
+
+            const std::size_t tailBits = shift % 8;
+            if (tailBits > 0)
+            {
+                const std::byte first = storedData.data[0];
+                const std::size_t lastIndex = storedData.Size() - 1;
+                for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                    storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                }
+                storedData.data[lastIndex] <<= tailBits;
+                storedData.data[lastIndex] |= (first >> (8 - tailBits));
+            }
         }
         return *this;
     }
 
-
-    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftRight (const std::size_t shift) const noexcept
+    // Method that performs round right bit shift by a specified bit offset.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
         {
+            const std::size_t size = Length();
+            if (shift >= size) {
+                shift %= size;
+            }
 
+            const std::size_t countOfBytesShift = shift / 8;
+            if (countOfBytesShift > 0) {
+                rightRoundBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift);
+            }
+
+            const std::size_t tailBits = shift % 8;
+            if (tailBits > 0)
+            {
+                const std::byte last = storedData.data[storedData.Size() - 1];
+                for (std::size_t idx = storedData.Size() - 1; idx > 0; --idx) {
+                    storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                }
+                storedData.data[0] >>= tailBits;
+                storedData.data[0] |= (last << (8 - tailBits));
+            }
         }
         return *this;
     }
 
-
+    // Method that checks the bit under the specified index.
     bool RawDataBuffer::BitStreamEngine::Test (const std::size_t index) const noexcept
     {
         if (index >= Length()) { return false; }
         const std::size_t part = index >> 3; // Division by eight (8).
         const std::byte shift = std::byte(0x80) >> (index % 8);
         return ((storedData.data[part] & shift) != std::byte(0x00));
+    }
+
+    // Method that set the bit under the specified index to new value.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Set (const std::size_t index, bool bitValue) const noexcept
+    {
+        if (index >= Length()) { return *this; }
+        const std::size_t part = index >> 3; // Division by eight (8).
+        const std::byte shift = std::byte(0x80) >> (index % 8);
+        if (bitValue == true) {
+            storedData.data[part] |= shift;
+        }
+        else { storedData.data[part] &= ~shift; }
+        return *this;
+    }
+
+    // Method that inverts the bit under the specified index.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Invert (const std::size_t index) const noexcept
+    {
+        if (index >= Length()) { return *this; }
+        const std::size_t part = index >> 3; // Division by eight (8).
+        const std::byte shift = std::byte(0x80) >> (index % 8);
+        storedData.data[part] ^= shift;
+        return *this;
     }
 
 

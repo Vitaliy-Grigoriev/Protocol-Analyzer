@@ -66,7 +66,7 @@ namespace analyzer::common::types
              * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t, bool) const noexcept;
              * @brief Method that performs direct left bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct left bit shift.
-             * @param [in] fillBit - Value of the fill bit after the left shift. Default: false.
+             * @param [in] fillBit - Value of the fill bit after the left shift. Default: false (0).
              * @return Const reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftLeft (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
@@ -75,7 +75,7 @@ namespace analyzer::common::types
              * @fn const BitStreamEngine & BitStreamEngine::ShiftRight (std::size_t, bool) const noexcept;
              * @brief Method that performs direct right bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct right bit shift.
-             * @param [in] fillBit - Value of the fill bit after the right shift. Default: false.
+             * @param [in] fillBit - Value of the fill bit after the right shift. Default: false (0).
              * @return Const reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftRight (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
@@ -102,9 +102,26 @@ namespace analyzer::common::types
              * @param [in] index - Index of bit in binary sequence.
              * @return Boolean value that indicates about the value of the selected bit.
              *
-             * @note This method returns value 'false' if the index out-of-range.
+             * @warning This method always returns value 'false' if the index out-of-range.
              */
             bool Test (std::size_t /*index*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::Set (std::size_t, bool) const noexcept;
+             * @brief Method that set the bit under the specified index to new value.
+             * @param [in] index - Index of bit in binary sequence.
+             * @param [in] bitValue - New value of selected bit. Default: true (1).
+             * @return Const reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & Set (std::size_t /*index*/, bool /*bitValue*/ = true) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::Invert (std::size_t) const noexcept;
+             * @brief Method that inverts the bit under the specified index.
+             * @param [in] index - Index of bit in binary sequence.
+             * @return Const reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & Invert (std::size_t /*index*/) const noexcept;
 
             /**
              * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
@@ -119,9 +136,9 @@ namespace analyzer::common::types
              * @brief Operator that outputs internal binary raw data in binary string format.
              * @param [in,out] stream - Reference of the output stream engine.
              * @param [in] engine - Reference of the BitStreamEngine class.
-             * @return Reference of the inputed STL std::ostream class.
+             * @return Reference of the inputted STL std::ostream class.
              */
-            friend std::ostream & operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
+            friend std::ostream& operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
             {
                 try {
                     stream.unsetf(std::ios_base::boolalpha);
@@ -314,7 +331,7 @@ namespace analyzer::common::types
          * @param [in] index - Index of element in data.
          * @return Return a pointer to an element by selected index or nullptr in an error occurred.
          */
-        std::byte* GetAt (std::size_t /*index*/) const noexcept;
+        std::byte * GetAt (std::size_t /*index*/) const noexcept;
 
         /**
          * @fn void RawDataBuffer::Clear(void) noexcept;
