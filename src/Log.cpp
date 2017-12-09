@@ -52,6 +52,7 @@ namespace analyzer::log
                 std::terminate();
             }
 
+            std::ios::sync_with_stdio(false);
             out.exceptions(std::ios_base::failbit | std::ios_base::badbit);
             defaultIO = out.rdbuf();
             out.rdbuf(fd.rdbuf());
