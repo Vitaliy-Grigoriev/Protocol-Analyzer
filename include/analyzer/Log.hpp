@@ -245,7 +245,7 @@ namespace analyzer::log
                 // Without std::endl because it calls the flush() method.
                 out << value << '\n';
             }
-            catch (std::ios_base::failure& err) {
+            catch (const std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
                 out << "[error] Logger.CommonLogger: Exception occurred when push new log data - " << err.what() << '.' << std::endl;
@@ -266,7 +266,7 @@ namespace analyzer::log
                 out << value;
                 CommonLogger(std::forward<Args>(args)...);
             }
-            catch (std::ios_base::failure& err) {
+            catch (const std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
                 out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
                 out << "[error] Logger.CommonLogger Exception occurred when push new log data - " << err.what() << '.' << std::endl;
@@ -333,7 +333,7 @@ namespace analyzer::log
                     ChangeVolume();
                 }
             }
-            catch (std::ios_base::failure& err)
+            catch (const std::ios_base::failure& err)
             {
                 out.rdbuf(defaultIO);
                 if (fd.is_open() == true && fd.good() == true) { fd.close(); }

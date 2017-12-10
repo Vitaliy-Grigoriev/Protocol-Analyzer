@@ -2,7 +2,7 @@
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
 
-#include <memory>     // std::unique_ptr.
+#include <memory>     // std::unique_ptr, std::make_unique.
 #include <cstring>    // memcpy.
 #include <algorithm>  // std::generate.
 
@@ -16,23 +16,24 @@ namespace analyzer::system
       * std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
       * @brief Function that allocates memory for object of selected type and constructs it.
       * @tparam [in] Type - Typename of allocated data.
-      * @tparam [in] args - Any params for construct object.
+      * @tparam [in] args - Arguments for construct the object.
       * @return Smart pointer to allocated object of selected type object.
       */
+    [[nodiscard]]
     template <typename Type, typename... Args>
     std::unique_ptr<Type> allocMemoryForObject (Args&&... args) noexcept
     {
         try {
             return std::make_unique<Type>(std::forward<Args>(args)...);
         }
-        catch (std::exception& /*err*/) {
+        catch (const std::exception& /*err*/) {
             return nullptr;
         }
     }
 
     /**
       * @fn template <typename Type>
-      * std::unique_ptr<Type[]> alloc_memory (const std::size_t, const void *, const std::size_t) noexcept;
+      * std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t, const void *, const std::size_t) noexcept;
       * @brief Function that allocates memory for array of selected type and if needed fills it.
       * @tparam [in] Type - Typename of allocated data.
       * @param [in] size - Size of selected type array.
@@ -40,6 +41,7 @@ namespace analyzer::system
       * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.
       */
+    [[nodiscard]]
     template <typename Type>
     std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const void* data = nullptr, const std::size_t length = 0) noexcept
     {
@@ -54,7 +56,7 @@ namespace analyzer::system
             }
             return memory;
         }
-        catch (std::exception& /*err*/) {
+        catch (const std::exception& /*err*/) {
             return nullptr;
         }
     }
@@ -65,9 +67,10 @@ namespace analyzer::system
       * @brief Function that allocates memory for array of selected pointer type and then allocates memory for each object and constructs them.
       * @tparam [in] Type - Typename of allocated data.
       * @param [in] size - Size of array of selected smart pointer type.
-      * @tparam [in] args - Any params for construct each object.
+      * @tparam [in] args - Arguments for construct each object in array.
       * @return Smart pointer to allocated memory of selected smart pointer type array.
       */
+    [[nodiscard]]
     template <typename Type, typename... Args>
     std::unique_ptr<std::unique_ptr<Type>[]> allocMemoryForArrayOfObjects (const std::size_t size, Args&&... args) noexcept
     {
@@ -78,11 +81,10 @@ namespace analyzer::system
             std::generate(array.get(), array.get() + size, construct);
             return array;
         }
-        catch (std::exception& /*err*/) {
+        catch (const std::exception& /*err*/) {
             return nullptr;
         }
     }
-
 
 }  // namespace system.
 
