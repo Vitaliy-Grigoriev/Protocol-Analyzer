@@ -1,6 +1,5 @@
 # Protocol Analyzer
 <h2><b>Fuzz testing framework for network protocols.</b></h2>
---------------
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Vitaliy-Grigoriev/Protocol-Analyzer/blob/master/LICENSE)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10369.svg)](https://scan.coverity.com/projects/vitaliy-grigoriev-protocol-analyzer)
