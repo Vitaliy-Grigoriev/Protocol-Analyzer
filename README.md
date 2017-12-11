@@ -13,6 +13,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Vitaliy-Grigoriev/Protocol-Analyzer/blob/master/LICENSE)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10369.svg)](https://scan.coverity.com/projects/vitaliy-grigoriev-protocol-analyzer)
 [![Build Status](https://travis-ci.org/Vitaliy-Grigoriev/Protocol-Analyzer.svg?branch=master)](/Vitaliy-Grigoriev/Protocol-Analyzer)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/62752273b4bc42d7af29b182c97295d3)](https://www.codacy.com/app/vit.link420/Protocol-Analyzer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Vitaliy-Grigoriev/Protocol-Analyzer&amp;utm_campaign=Badge_Grade)
 
 <h3><b>The framework under the deep development.</b> Version 0.0.8.</h3>
 
