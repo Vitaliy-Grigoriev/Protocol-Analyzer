@@ -36,9 +36,9 @@
 
 --------------
 
-<h2><b>Requirements for building</b></h2>
+<h2><b>Requirements for building the project</b></h2>
 
-<h4>The following package is required to build the Protocol Analyzer:</h4>
+<h4>The following packages are required to build the Protocol Analyzer:</h4>
 
 * OpenSSL >= 1.0.2h (libssl-dev)
 
