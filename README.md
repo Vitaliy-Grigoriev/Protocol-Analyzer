@@ -12,11 +12,11 @@
 --------------
 <h2><b>The main purposes of the framework</b></h2>
 
-<b>1.</b> Verification of the operation of proprietary network protocols in accordance with the declared description;
+* Verification of the operation of proprietary network protocols in accordance with the declared description;
 
-<b>2.</b> Detection of undeclared capabilities and undefined behavior in the implementation of proprietary network protocols;
+* Detection of undeclared capabilities and undefined behavior in the implementation of proprietary network protocols;
 
-<b>3.</b> Audit of security and search for changes from the last scan period.
+* Audit of security and search for changes from the last scan period.
 
 <h2><b>Current goals</b></h2>
 
