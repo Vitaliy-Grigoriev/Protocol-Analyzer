@@ -17,6 +17,7 @@
 
 * Audit of security and search for changes from the last scan period.
 
+--------------
 <h2><b>Current goals</b></h2>
 
 * Development the basis of network interaction for the needs of the framework;
@@ -32,17 +33,15 @@
 
 * Development an unique interface for create Tasks and manage them;
 * Development an unique interface for store Global information and Settings in runtime;
-* Development main data class for working with binary data and build all infrastructure around it.
+* Development main data class for working with binary data and build all infrastructure around it;
+* Create a low-level and high-level API for analyzer library.
 
 --------------
-
 <h2><b>Requirements for building the project</b></h2>
 
-<h4>The following packages are required to build the Protocol Analyzer:</h4>
+* OpenSSL >= 1.0.2h (libssl-dev);
 
-* OpenSSL >= 1.0.2h (libssl-dev)
-
-* CMake >= 3.8.0 (for C++17 standard support)
+* CMake >= 3.8.0 (for C++17 standard support);
 
 * Compiler, supported C++17 ('clang-4.0.1', 'gcc-7.0' or higher).
 
