@@ -1,13 +1,5 @@
 # Protocol Analyzer
 <h1><b>Fuzz testing framework for network protocols.</b></h1>
-<h2>The main purposes of this framework:</h2>
-
-<b>1.</b> Verification of the operation of proprietary network protocols in accordance with the declared description;
-
-<b>2.</b> Detection of undeclared capabilities and undefined behavior in the implementation of proprietary network protocols;
-
-<b>3.</b> Audit of security and search for changes from the last scan period.
-
 --------------
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Vitaliy-Grigoriev/Protocol-Analyzer/blob/master/LICENSE)
@@ -18,6 +10,13 @@
 <h3><b>The framework under the deep development.</b> Version 0.0.8.</h3>
 
 --------------
+<h2><b>The main purposes of the framework</b></h2>
+
+<b>1.</b> Verification of the operation of proprietary network protocols in accordance with the declared description;
+
+<b>2.</b> Detection of undeclared capabilities and undefined behavior in the implementation of proprietary network protocols;
+
+<b>3.</b> Audit of security and search for changes from the last scan period.
 
 <h2><b>Current goals</b></h2>
 
