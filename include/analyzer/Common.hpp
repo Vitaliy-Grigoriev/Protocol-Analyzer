@@ -2,19 +2,20 @@
 #ifndef PROTOCOL_ANALYZER_COMMON_HPP
 #define PROTOCOL_ANALYZER_COMMON_HPP
 
-#include <limits>
-#include <random>
-#include <chrono>
-#include <string>
-#include <iomanip>
-#include <sstream>
-#include <cstddef> // std::size_t, std::byte.
-#include <cstdint> // std::int*_t.
-#include <iterator>
-#include <exception>
-#include <algorithm>
-#include <string_view> // std::string_view.
-#include <type_traits>
+#include <limits>  // std::numeric_limits.
+#include <random>  // std::uniform_int_distribution.
+#include <chrono>  // std::system_clock.
+#include <string>  // std::string.
+#include <vector>  // std::vector.
+#include <memory>  // std::unique_ptr.
+#include <iomanip>  // std::setfill, std::setw.
+#include <utility>  // std::get, std::move.
+#include <sstream>  // std::istringstream.
+#include <cstddef>  // std::size_t, std::byte.
+#include <cstdint>  // std::int*_t.
+#include <iterator>  // std::back_insert_iterator, std::istreambuf_iterator.
+#include <string_view>  // std::string_view.
+#include <type_traits>  // std::enable_if, std::is_integral, std::is_unsigned.
 
 // In Common library MUST NOT use any another library because it is a core library.
 

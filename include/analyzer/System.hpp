@@ -18,9 +18,11 @@ namespace analyzer::system
       * @tparam [in] Type - Typename of allocated data.
       * @tparam [in] args - Arguments for construct the object.
       * @return Smart pointer to allocated object of selected type object.
+      *
+      * @note Return value is marked with the "nodiscard" attribute.
       */
-    [[nodiscard]]
     template <typename Type, typename... Args>
+    [[nodiscard]]
     std::unique_ptr<Type> allocMemoryForObject (Args&&... args) noexcept
     {
         try {
@@ -40,9 +42,11 @@ namespace analyzer::system
       * @param [in] data - Pointer to any data for copy. Default: nullptr.
       * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.
+      *
+      * @note Return value is marked with the "nodiscard" attribute.
       */
-    [[nodiscard]]
     template <typename Type>
+    [[nodiscard]]
     std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const void* data = nullptr, const std::size_t length = 0) noexcept
     {
         try {
@@ -69,9 +73,11 @@ namespace analyzer::system
       * @param [in] size - Size of array of selected smart pointer type.
       * @tparam [in] args - Arguments for construct each object in array.
       * @return Smart pointer to allocated memory of selected smart pointer type array.
+      *
+      * @note Return value is marked with the "nodiscard" attribute.
       */
-    [[nodiscard]]
     template <typename Type, typename... Args>
+    [[nodiscard]]
     std::unique_ptr<std::unique_ptr<Type>[]> allocMemoryForArrayOfObjects (const std::size_t size, Args&&... args) noexcept
     {
         try {

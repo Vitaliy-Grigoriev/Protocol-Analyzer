@@ -1,7 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <fstream>
+#include <fstream>  // std::ifstream.
+#include <stdexcept>  // std::exception, std::out_of_range.
+#include <algorithm>  // std::find_if, std::count.
 
 #include "../include/analyzer/Common.hpp"
 
@@ -128,7 +130,7 @@ namespace analyzer::common
                 std::ifstream file(path.data(), std::ios_base::in);
                 if (file.is_open() == true && file.good() == true)
                 {
-                    data.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                    data.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
                     return true;
                 }
             }
