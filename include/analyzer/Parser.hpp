@@ -26,7 +26,7 @@ namespace analyzer::parser
          */
         uint16_t rangeState = 0;
         /**
-         * @var std::vector<std::string> states;
+         * @var std::vector<std::string_view> states;
          * @brief Vector of strings that contains the split values on input.
          */
         std::vector<std::string_view> states = { };
@@ -55,7 +55,7 @@ namespace analyzer::parser
         static const uint16_t end = 0;
 
         /**
-         * @fn explicit PortsParser (const std::string_view &, char) noexcept;
+         * @fn explicit PortsParser (std::string_view, char) noexcept;
          * @brief Constructor of PortParser class.
          * @param [in] ports - The sequence of ports listed through a separator.
          * @param [in] symbol - The separator. Default: ','.
@@ -63,7 +63,7 @@ namespace analyzer::parser
         explicit PortsParser (std::string_view /*ports*/, char /*symbol*/ = ',') noexcept;
 
         /**
-         * @fn void SetPorts (const std::string_view &, char) noexcept;
+         * @fn void SetPorts (std::string_view, char) noexcept;
          * @brief Method that resets internal state of port parser.
          * @param [in] ports - The sequence of ports listed through a separator.
          * @param [in] symbol - The separator. Default: ','.

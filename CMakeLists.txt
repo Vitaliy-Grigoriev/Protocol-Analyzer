@@ -22,14 +22,15 @@ set(ADDITIONAL_FLAGS   "-Weverything  -fsanitize=address  -fsanitize=leak  -fsan
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
 
-set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -DDEBUG   ${WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG     "-O0 -g -DDEBUG   ${WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
 set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   ${WARNINGS}")
 
 
 # Core libraries.
 set(SYSTEM_LIB       ${INCLUDES}/System.hpp ${INCLUDES}/Mutex.hpp    ${SOURCES}/System.cpp ${SOURCES}/Mutex.cpp)
 set(LOGGING_LIB      ${INCLUDES}/Log.hpp                             ${SOURCES}/Log.cpp)
-set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp     ${SOURCES}/Common.cpp ${SOURCES}/RawDataBuffer.cpp ${INCLUDES}/Mutex.hpp)
+#set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp ${INCLUDES}/RawDataBufferIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/RawDataBuffer.cpp ${SOURCES}/RawDataBufferIterator.cpp)
+set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp     ${SOURCES}/Common.cpp)
 # Functional libraries.
 set(TASK_LIB         ${INCLUDES}/Notification.hpp) #${INCLUDES}/Task.hpp ${SOURCES}/Task.cpp   ${SOURCES}/TaskManager.cpp)
 set(PARSER_LIB       ${INCLUDES}/Parser.hpp                          ${SOURCES}/Parser.cpp)
@@ -61,7 +62,7 @@ set(SSL_TEST                 ${TESTS}/test_ssl.cpp                  ${INCLUDES}/
 set(SOCKET_TEST              ${TESTS}/test_socket.cpp               ${INCLUDES}/AnalyzerApi.hpp)
 set(COMMON_TEST              ${TESTS}/test_common.cpp               ${INCLUDES}/AnalyzerApi.hpp)
 set(TIMING_TEST              ${TESTS}/test_timing.cpp               ${INCLUDES}/AnalyzerApi.hpp)
-#set(MANAGER_TEST             ${TESTS}/test_manager.cpp             ${INCLUDES}/AnalyzerApi.hpp)
+#set(MANAGER_TEST             ${TESTS}/test_manager.cpp              ${INCLUDES}/AnalyzerApi.hpp)
 set(LOGGING_TEST             ${TESTS}/test_logging.cpp              ${INCLUDES}/AnalyzerApi.hpp)
 set(ANYTHING_TEST            ${TESTS}/test_anything.cpp             ${INCLUDES}/AnalyzerApi.hpp)
 set(URI_PARSER_TEST          ${TESTS}/test_uri_parser.cpp           ${INCLUDES}/AnalyzerApi.hpp)
@@ -83,7 +84,7 @@ add_executable(test_http2_negotiation   ${HTTP2_NEGOTIATION_TEST})
 target_link_libraries(test_notification        Task System)
 target_link_libraries(test_socket              Socket)
 target_link_libraries(test_common              Common)
-target_link_libraries(test_anything            Common System Parser)
+target_link_libraries(test_anything            Logging Common System Parser)
 target_link_libraries(test_logging             Logging)
 target_link_libraries(test_uri_parser          Protocol)
 target_link_libraries(test_ssl                 Utilities)
