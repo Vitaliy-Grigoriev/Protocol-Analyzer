@@ -25,7 +25,7 @@ int32_t main (int32_t size, char** data)
     std::cout << buffer.BitsTransform() << std::endl;*/
 
     parser::PortsParser parse;
-    parse.SetPorts("80;1-5;433;", ';');
+    parse.SetPorts("80;1-5;433;27-33;90", ';');
     for (uint16_t port = parse.GetNextPort(); port != parser::PortsParser::end; port = parse.GetNextPort()) {
         std::cerr << "[+] Next port: " << port << std::endl;
     }

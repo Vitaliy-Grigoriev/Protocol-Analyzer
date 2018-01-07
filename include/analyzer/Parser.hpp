@@ -9,37 +9,37 @@
 namespace analyzer::parser
 {
     /**
-     * @class PortsParser Common.hpp "include/analyzer/Common.hpp"
+     * @class PortsParser Parser.hpp "include/analyzer/Parser.hpp"
      * @brief Class that parses the range of ports.
      */
     class PortsParser
     {
     private:
         /**
+         * @var uint16_t rangeState;
+         * @brief Variable that contains the current value of range.
+         */
+        uint16_t rangeState = 0;
+        /**
          * @var uint16_t rangeEnd;
          * @brief Variable that contains the last value of range.
          */
         uint16_t rangeEnd = 0;
         /**
-         * @var uint16_t rangeStart;
-         * @brief Variable that contains the first value of range.
-         */
-        uint16_t rangeState = 0;
-        /**
-         * @var std::vector<std::string_view> states;
+         * @var std::vector<std::string_view> inputStates;
          * @brief Vector of strings that contains the split values on input.
          */
-        std::vector<std::string_view> states = { };
+        std::vector<std::string_view> inputStates = { };
 
     public:
         /**
          * @fn PortsParser::PortsParser(void);
-         * @brief Protection default constructor.
+         * @brief Default constructor.
          */
         PortsParser(void) = default;
         /**
          * @fn PortsParser::~PortsParser(void);
-         * @brief Protection default destructor.
+         * @brief Default destructor.
          */
         ~PortsParser(void) = default;
 
@@ -55,24 +55,29 @@ namespace analyzer::parser
         static const uint16_t end = 0;
 
         /**
-         * @fn explicit PortsParser (std::string_view, char) noexcept;
+         * @fn explicit PortsParser::PortsParser (std::string_view, char) noexcept;
          * @brief Constructor of PortParser class.
          * @param [in] ports - The sequence of ports listed through a separator.
-         * @param [in] symbol - The separator. Default: ','.
+         * @param [in] delimiter - The separator. Default: ','.
+         *
+         * @note For example: 80,1-5,433,25-36,90.
          */
-        explicit PortsParser (std::string_view /*ports*/, char /*symbol*/ = ',') noexcept;
+        explicit PortsParser (std::string_view /*ports*/, char /*delimiter*/ = ',') noexcept;
 
         /**
-         * @fn void SetPorts (std::string_view, char) noexcept;
-         * @brief Method that resets internal state of port parser.
+         * @fn void PortsParser::SetPorts (std::string_view, char) noexcept;
+         * @brief Method that sets internal state of port parser.
          * @param [in] ports - The sequence of ports listed through a separator.
-         * @param [in] symbol - The separator. Default: ','.
+         * @param [in] delimiter - The separator. Default: ','.
          */
-        void SetPorts (std::string_view /*ports*/, char /*symbol*/ = ',') noexcept;
+        void SetPorts (std::string_view /*ports*/, char /*delimiter*/ = ',') noexcept;
 
         /**
-         * @fn uint16_t GetNextPort(void) noexcept;
-         * @brief Method that gets next parsing port.
+         * @fn uint16_t PortsParser::GetNextPort(void) noexcept;
+         * @brief Method that gets next port value in input range.
+         * @return Port number or PortsParser::end value if port enumeration is complete or an error occurred.
+         *
+         * @note The program MUST check the return value for PortsParser::end value.
          */
         uint16_t GetNextPort(void) noexcept;
     };

@@ -1,47 +1,50 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/analyzer/Log.hpp"
+#include "../include/analyzer/Log.hpp"  // In this header file also defined "Common.hpp".
 #include "../include/analyzer/Parser.hpp"
 
 
 namespace analyzer::parser
 {
-    PortsParser::PortsParser (std::string_view ports, const char symbol) noexcept
+    PortsParser::PortsParser (std::string_view ports, const char delimiter) noexcept
     {
-        SetPorts(ports, symbol);
+        SetPorts(ports, delimiter);
     }
 
-    void PortsParser::SetPorts (std::string_view ports, const char symbol) noexcept
+    void PortsParser::SetPorts (std::string_view ports, const char delimiter) noexcept
     {
-        states = common::text::splitInPlace(ports, symbol);
+        inputStates = common::text::splitInPlace(ports, delimiter);
         rangeState = rangeEnd = end;
     }
 
     uint16_t PortsParser::GetNextPort(void) noexcept
     {
-        if (states.empty() == true) {
+        if (inputStates.empty() == true) {
             return end;
         }
 
+        // If current observed state is not a range.
         if (rangeEnd == end)
         {
-            const std::string_view nextPortValue = states.at(0);
+            const std::string_view nextPortValue = inputStates.at(0);
             const std::size_t position = nextPortValue.find('-');
 
             try
             {
+                // If a range delimiter '-' not found then a single port value is parsed.
                 if (position == std::string_view::npos)
                 {
                     const uint64_t port = std::stoull(&nextPortValue[0], nullptr, 10);
                     if (port < 65536) {
-                        states.erase(states.cbegin());
+                        inputStates.erase(inputStates.cbegin());
                         return static_cast<uint16_t>(port);
                     }
-                    states.clear();
+                    inputStates.clear();
                     return end;
                 }
 
+                // In this case the port range is parsed and the first port number is returned.
                 const uint64_t portStart = std::stoull(&nextPortValue[0], nullptr, 10);
                 const uint64_t portEnd = std::stoull(&nextPortValue[position + 1], nullptr, 10);
                 if (portStart < portEnd && portEnd < 65536) {
@@ -56,12 +59,13 @@ namespace analyzer::parser
             catch (const std::out_of_range& err) {
                 LOG_ERROR("PortsParser.GetNextPort: Out of range - '", nextPortValue, "' (", err.what(), ").");
             }
-            states.clear();
+            inputStates.clear();
             return end;
         }
 
+        // In this case the next value in the range is returned.
         if (++rangeState == rangeEnd) {
-            states.erase(states.cbegin());
+            inputStates.erase(inputStates.cbegin());
             rangeEnd = end;
         }
         return rangeState;
