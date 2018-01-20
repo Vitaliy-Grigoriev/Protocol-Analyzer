@@ -93,8 +93,8 @@ script:
   - cmake --version
   - ${COMPILER} --version
   - bash build_travis.sh
-  
-  
+
+
 notifications:
   email:
     on_failure: always
