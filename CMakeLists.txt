@@ -16,14 +16,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED   ON)
 set(CMAKE_BUILD_TYPE     $ENV{BUILD_TYPE})
 set(CMAKE_CXX_COMPILER   $ENV{COMPILER})
 
-set(USEFUL_WARNINGS    "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
-set(WARNINGS   "-Wno-missing-prototypes -Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
-set(ADDITIONAL_FLAGS   "-Weverything  -fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
+set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
+set(DISABLE_WARNINGS   "-Wno-missing-prototypes -Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
+set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
 
-set(CMAKE_CXX_FLAGS_DEBUG     "-O0 -g -DDEBUG   ${WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
-set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   ${WARNINGS}")
+
+set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wpedantic")
+string(FIND ${CMAKE_CXX_COMPILER} "clang" POSITION)
+if (${POSITION} GREATER -1)  # Clang compiler only.
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Weverything ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
+else() # Other compilers.
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra")
+endif()
 
 
 # Core libraries.
@@ -52,7 +58,7 @@ add_library(Utilities    STATIC   ${UTILITIES_LIB})
 target_link_libraries(Logging     Common)
 target_link_libraries(Parser      Logging)
 target_link_libraries(Protocol    Logging)
-target_link_libraries(Socket      ssl crypto Logging System)
+target_link_libraries(Socket      ssl crypto pthread Logging System)
 target_link_libraries(Task        pthread Logging)
 target_link_libraries(Utilities   Socket Protocol)
 
