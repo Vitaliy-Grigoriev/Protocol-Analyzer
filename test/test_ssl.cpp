@@ -28,6 +28,7 @@ int32_t main (int32_t size, char** data)
 
     auto request = [] (analyzer::net::SocketSSL* sock, const std::string& domain) noexcept -> bool
     {
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
         if (sock->SetHttp_1_1_OnlyProtocol() == false) {
             std::cerr << "[error] Set HTTP/1.1 protocol only failed..." << std::endl;
             return EXIT_FAILURE;
@@ -36,6 +37,7 @@ int32_t main (int32_t size, char** data)
             std::cerr << "[error] Set secure ciphers failed..." << std::endl;
             return EXIT_FAILURE;
         }
+#endif
 
         if (sock->Connect(domain.c_str()) == false) {
             std::cerr << "[error] Connection fail..." << std::endl;

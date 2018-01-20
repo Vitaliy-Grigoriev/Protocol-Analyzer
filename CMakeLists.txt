@@ -23,12 +23,12 @@ set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefine
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
 
 
-set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wpedantic")
+set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic")
 string(FIND ${CMAKE_CXX_COMPILER} "clang" POSITION)
 if (${POSITION} GREATER -1)  # Clang compiler only.
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Weverything ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
 else() # Other compilers.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra ${ADDITIONAL_FLAGS}")
 endif()
 
 
