@@ -33,11 +33,12 @@ int32_t main (int32_t size, char** data)
             std::cerr << "[error] Set HTTP/1.1 protocol only failed..." << std::endl;
             return EXIT_FAILURE;
         }
+#endif
+
         if (sock->SetOnlySecureCiphers() == false) {
             std::cerr << "[error] Set secure ciphers failed..." << std::endl;
             return EXIT_FAILURE;
         }
-#endif
 
         if (sock->Connect(domain.c_str()) == false) {
             std::cerr << "[error] Connection fail..." << std::endl;
