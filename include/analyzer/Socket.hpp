@@ -410,9 +410,6 @@ namespace analyzer::net
         std::list<std::string> GetCiphersList(void) const noexcept;
         // Use only security ciphers in connection.
         bool SetOnlySecureCiphers(void) noexcept;
-        bool SetHttpProtocols(void);
-        bool SetHttp_1_1_OnlyProtocol(void);
-        bool SetHttp_2_0_OnlyProtocol(void);
 
 #if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
         // Use ALPN protocol TLS extension to change the set of application protocols.
@@ -423,6 +420,10 @@ namespace analyzer::net
 
         // Get selected ALPN protocol by server.
         protocols::http::HTTP_VERSION GetSelectedProtocol(void) const noexcept;
+
+        bool SetHttpProtocols(void) noexcept;
+        bool SetHttp_1_1_OnlyProtocol(void) noexcept;
+        bool SetHttp_2_0_OnlyProtocol(void) noexcept;
 #endif
 
         // Get current timeout of the SSL session.

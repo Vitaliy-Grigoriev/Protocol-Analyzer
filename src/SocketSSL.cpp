@@ -302,30 +302,6 @@ namespace analyzer::net
     }
 
 
-    bool SocketSSL::SetHttp_2_0_OnlyProtocol(void)
-    {
-        const unsigned char proto[] = { 2, 'h', '2' };
-        return SetInternalProtocol(proto, sizeof(proto));
-    }
-
-
-    bool SocketSSL::SetHttp_1_1_OnlyProtocol(void)
-    {
-        const unsigned char proto[] = { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
-        return SetInternalProtocol(proto, sizeof(proto));
-    }
-
-
-    bool SocketSSL::SetHttpProtocols(void)
-    {
-        const unsigned char proto[] = {
-                2, 'h', '2',
-                8, 'h', 't', 't', 'p', '/', '1', '.', '1'
-        };
-        return SetInternalProtocol(proto, sizeof(proto));
-    }
-
-
     void SocketSSL::Shutdown (int32_t how) const
     { // Encryption alert (21).
         if (ssl != nullptr)
@@ -384,6 +360,7 @@ namespace analyzer::net
         return false;
     }
 
+
     // Get selected ALPN protocol by server in string type.
     std::string SocketSSL::GetRawSelectedProtocol(void) const noexcept
     {
@@ -412,6 +389,30 @@ namespace analyzer::net
             return HTTP_VERSION::HTTP1_1;
         }
         return HTTP_VERSION::UNKNOWN;
+    }
+
+
+    bool SocketSSL::SetHttp_2_0_OnlyProtocol(void) noexcept
+    {
+        const unsigned char proto[] = { 2, 'h', '2' };
+        return SetInternalProtocol(proto, sizeof(proto));
+    }
+
+
+    bool SocketSSL::SetHttp_1_1_OnlyProtocol(void) noexcept
+    {
+        const unsigned char proto[] = { 8, 'h', 't', 't', 'p', '/', '1', '.', '1' };
+        return SetInternalProtocol(proto, sizeof(proto));
+    }
+
+
+    bool SocketSSL::SetHttpProtocols(void) noexcept
+    {
+        const unsigned char proto[] = {
+                2, 'h', '2',
+                8, 'h', 't', 't', 'p', '/', '1', '.', '1'
+        };
+        return SetInternalProtocol(proto, sizeof(proto));
     }
 
 #endif
