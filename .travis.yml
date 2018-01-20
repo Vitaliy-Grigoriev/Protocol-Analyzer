@@ -40,14 +40,14 @@ matrix:
       env: COMPILER=clang++-4.0 BUILD_TYPE=Release
 
     - os: linux
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-    env: COMPILER=clang++-4.0 BUILD_TYPE=Debug
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env: COMPILER=clang++-4.0 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -60,14 +60,14 @@ matrix:
       env: COMPILER=clang++-5.0 BUILD_TYPE=Release
 
     - os: linux
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-    env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
 
 
 before_install:
