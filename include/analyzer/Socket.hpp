@@ -11,6 +11,7 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
+#include <openssl/opensslv.h>  // For using OPENSSL_VERSION_NUMBER define.
 
 #include "Log.hpp"   // In this header file also defined "Common.hpp".
 #include "Http.hpp"
@@ -409,17 +410,23 @@ namespace analyzer::net
         std::list<std::string> GetCiphersList(void) const noexcept;
         // Use only security ciphers in connection.
         bool SetOnlySecureCiphers(void) noexcept;
-        // Use ALPN protocol to change the set of application protocols.
-        bool SetInternalProtocol (const unsigned char * /*proto*/, std::size_t /*length*/);
         bool SetHttpProtocols(void);
         bool SetHttp_1_1_OnlyProtocol(void);
         bool SetHttp_2_0_OnlyProtocol(void);
+
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
+        // Use ALPN protocol TLS extension to change the set of application protocols.
+        bool SetInternalProtocol (const unsigned char * /*proto*/, std::size_t /*length*/) noexcept;
+
         // Get selected ALPN protocol by server in string type.
         std::string GetRawSelectedProtocol(void) const noexcept;
-        // Get current timeout of the SSL session.
-        std::size_t GetSessionTimeout(void) const noexcept;
+
         // Get selected ALPN protocol by server.
         protocols::http::HTTP_VERSION GetSelectedProtocol(void) const noexcept;
+#endif
+
+        // Get current timeout of the SSL session.
+        std::size_t GetSessionTimeout(void) const noexcept;
         // Get selected cipher name in ssl connection.
         std::string GetSelectedCipherName(void) const noexcept;
         // Shutdown the connection. (SHUT_RD, SHUT_WR, SHUT_RDWR).

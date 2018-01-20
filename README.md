@@ -43,5 +43,5 @@
 
 * CMake >= 3.8.0 (for C++17 standard support);
 
-* Compiler, supported C++17 ('clang-4.0.1', 'gcc-7.0' or higher).
+* Compiler, supported full C++17 standard ('clang-5.0.0', 'gcc-7.0' or higher).
 

@@ -6,14 +6,15 @@
 #include "../include/analyzer/AnalyzerApi.hpp"
 
 
-int main(void)
+int32_t main (int32_t size, char** data)
 {
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
     const std::string host = "www.google.com";
 
     const auto protocols = analyzer::utility::CheckALPNSupportedProtocols(host);
     if (protocols.empty() == false)
     {
-        std::cout << "Find next protocols on the '" << host << "': " << std::endl;
+        std::cout << "[+] Find next protocols on the '" << host << "': " << std::endl;
         for (auto&& p : protocols) {
             std::cout << p << std::endl;
         }
@@ -22,22 +23,21 @@ int main(void)
 
 
     analyzer::net::SocketSSL sock;
-
-    if (!sock.SetHttpProtocols()) {
-        std::cout << "Set all HTTP protocols failed..." << std::endl;
+    if (sock.SetHttpProtocols() == false) {
+        std::cout << "[error] Set all HTTP protocols failed..." << std::endl;
         return EXIT_FAILURE;
     }
-    if (!sock.SetOnlySecureCiphers()) {
-        std::cout << "Secure ciphers failed..." << std::endl;
+    if (sock.SetOnlySecureCiphers() == false) {
+        std::cout << "[error] Setting only secure ciphers failed..." << std::endl;
         return EXIT_FAILURE;
     }
 
     if (sock.Connect(host.c_str()) == false) {
-        std::cout << "Connection fail..." << std::endl;
+        std::cout << "[error] Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::cout << "Selected:   ";
+    std::cout << "[+] Selected:   ";
     switch (sock.GetSelectedProtocol())
     {
         case analyzer::net::protocols::http::HTTP_VERSION::HTTP1_1:
@@ -50,8 +50,8 @@ int main(void)
             std::cout << "ALPN protocol UNKNOWN." << std::endl;
             break;
     }
-
     sock.Close();
+#endif
     return EXIT_SUCCESS;
 }
 

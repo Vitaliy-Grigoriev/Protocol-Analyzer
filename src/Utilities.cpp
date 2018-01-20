@@ -10,6 +10,8 @@
 
 namespace analyzer::utility
 {
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
+
         std::set<std::string> CheckALPNSupportedProtocols (const std::string& host)
         {
             LOG_TRACE("CheckALPNSupportedProtocols:   Start check...");
@@ -44,6 +46,7 @@ namespace analyzer::utility
             return result;
         }
 
+#endif
 
         std::set<std::string> CheckSupportedTLSProtocols (const std::string& host)
         {

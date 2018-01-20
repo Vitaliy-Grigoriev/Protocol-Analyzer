@@ -76,7 +76,7 @@ namespace analyzer::net
             return false;
         }
 
-#if ( defined(DEBUG) )
+#if defined(DEBUG)
         uint32_t length = 0;
         const unsigned char* sessionID = SSL_SESSION_get_id(GetSessionSSL(), &length);
         if (sessionID != nullptr && length > 0)
@@ -280,41 +280,25 @@ namespace analyzer::net
             if (it.find("SRP") == it.npos && it.find("DH-") == it.npos      &&
                 it.find("RC4") == it.npos && it.find("CAMELLIA") == it.npos &&
                 it.find("MD5") == it.npos && it.find("SEED") == it.npos     &&
-                it.find("DES") == it.npos && it.find("PSK") == it.npos)
+                it.find("DES") == it.npos && it.find("PSK") == it.npos      &&
+                it.find("RSA") == it.npos /* RSA - ROBOT attack. */)
             {
                 secure += it + ';';
             }
         }
 
-        if (secure.empty() || SSL_set_cipher_list(ssl, secure.c_str()) == 0) {
+        if (secure.empty() == true || SSL_set_cipher_list(ssl, secure.c_str()) == 0) {
             LOG_ERROR("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers failed.");
             return false;
         }
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting only secure ciphers is success.");
-#if ( defined(DEBUG) )
+#if defined(DEBUG)
         std::ostringstream buff;
         const auto result = common::text::splitInPlace(secure, ';');
         std::copy(result.begin(), result.end(), std::ostream_iterator<std::string_view>(buff, "\n|-----------------\n|"));
         LOG_TRACE("SocketSSL.SetOnlySecureCiphers [", fd,"]: Setting following ciphers:\n|-----------------\n|", buff.str());
 #endif
         return true;
-    }
-
-
-    bool SocketSSL::SetInternalProtocol (const unsigned char* proto, std::size_t length)
-    {
-        if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
-            LOG_ERROR("SocketSSL.SetInternalProtocol: Socket is invalid.");
-            SSLCloseAfterError();
-            return false;
-        }
-
-        if (SSL_set_alpn_protos(ssl, &proto[0], static_cast<uint32_t>(length)) == 0) {
-            LOG_TRACE("SocketSSL.SetInternalProtocol [", fd,"]: Setting ALPN protocol extension is success.");
-            return true;
-        }
-        LOG_ERROR("SocketSSL.SetInternalProtocol [", fd,"]: In function 'SetInternalProtocol' - ", CheckSSLErrors());
-        return false;
     }
 
 
@@ -380,6 +364,26 @@ namespace analyzer::net
         return (ssl != nullptr && SSL_is_init_finished(ssl) != 0);
     }
 
+
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
+
+    // Use ALPN protocol TLS extension to change the set of application protocols.
+    bool SocketSSL::SetInternalProtocol (const unsigned char* proto, std::size_t length) noexcept
+    {
+        if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
+            LOG_ERROR("SocketSSL.SetInternalProtocol: Socket is invalid.");
+            SSLCloseAfterError();
+            return false;
+        }
+
+        if (SSL_set_alpn_protos(ssl, &proto[0], static_cast<uint32_t>(length)) == 0) {
+            LOG_TRACE("SocketSSL.SetInternalProtocol [", fd,"]: Setting ALPN protocol extension is success.");
+            return true;
+        }
+        LOG_ERROR("SocketSSL.SetInternalProtocol [", fd,"]: In function 'SetInternalProtocol' - ", CheckSSLErrors());
+        return false;
+    }
+
     // Get selected ALPN protocol by server in string type.
     std::string SocketSSL::GetRawSelectedProtocol(void) const noexcept
     {
@@ -394,11 +398,6 @@ namespace analyzer::net
         return std::string();
     }
 
-    // Get current timeout of the SSL session.
-    std::size_t SocketSSL::GetSessionTimeout(void) const noexcept
-    {
-        return static_cast<std::size_t>(SSL_get_timeout(SSL_get_session(ssl)));
-    }
 
     // Get selected ALPN protocol by server.
     protocols::http::HTTP_VERSION SocketSSL::GetSelectedProtocol(void) const noexcept
@@ -414,6 +413,16 @@ namespace analyzer::net
         }
         return HTTP_VERSION::UNKNOWN;
     }
+
+#endif
+
+
+    // Get current timeout of the SSL session.
+    std::size_t SocketSSL::GetSessionTimeout(void) const noexcept
+    {
+        return static_cast<std::size_t>(SSL_get_timeout(SSL_get_session(ssl)));
+    }
+
 
     // Get selected cipher name in ssl connection.
     std::string SocketSSL::GetSelectedCipherName(void) const noexcept

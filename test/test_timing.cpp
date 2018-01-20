@@ -9,7 +9,7 @@
 #include "../include/analyzer/Timer.hpp"
 
 
-int main(void)
+int32_t main (int32_t size, char** data)
 {
     analyzer::diagnostic::Timer timer(true);
     std::this_thread::sleep_for(std::chrono::seconds(2));
