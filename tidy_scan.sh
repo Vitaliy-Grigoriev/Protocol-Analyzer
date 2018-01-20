@@ -2,7 +2,7 @@
 
 if [ "$#" -lt 1 ]
 then
- clang-tidy src/*.cpp -checks=*,-google-default-arguments,-modernize-redundant-void-arg,-llvm-include-order -- -std=c++17 -Iinclude/analizer -I/usr/include
+ clang-tidy src/*.cpp include/analyzer/*.hpp -checks=*,-google-default-arguments,-modernize-redundant-void-arg,-llvm-include-order,-readability-simplify-boolean-expr -- -std=c++17 -Iinclude/analizer -I/usr/include
  exit "0"
 fi
 
@@ -26,7 +26,7 @@ fi
 
 if [ "$1" -eq 4 ]
 then
-clang-tidy src/Common.cpp src/Utilities.cpp src/Timer.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude/analizer -I/usr/include
+clang-tidy src/Common.cpp src/System.cpp src/Mutex.cpp src/Parser.cpp src/Utilities.cpp src/Timer.cpp -checks=*,-clang-analyzer-alpha.*,-google-default-arguments -- -std=c++14 -Iinclude/analizer -I/usr/include
 exit "0"
 fi
 
