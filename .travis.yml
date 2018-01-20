@@ -19,6 +19,15 @@ matrix:
       env: COMPILER=g++-7 BUILD_TYPE=Release
 
     - os: linux
+          addons:
+            apt:
+              sources:
+                - ubuntu-toolchain-r-test
+              packages:
+                - g++-7
+          env: COMPILER=g++-7 BUILD_TYPE=Debug
+
+    - os: linux
       addons:
         apt:
           sources:
@@ -29,6 +38,16 @@ matrix:
       env: COMPILER=clang++-4.0 BUILD_TYPE=Release
 
     - os: linux
+          addons:
+            apt:
+              sources:
+                - ubuntu-toolchain-r-test
+                - llvm-toolchain-trusty-4.0
+              packages:
+                - clang-4.0
+          env: COMPILER=clang++-4.0 BUILD_TYPE=Debug
+
+    - os: linux
       addons:
         apt:
           sources:
@@ -37,6 +56,16 @@ matrix:
           packages:
             - clang-5.0
       env: COMPILER=clang++-5.0 BUILD_TYPE=Release
+
+    - os: linux
+          addons:
+            apt:
+              sources:
+                - ubuntu-toolchain-r-test
+                - llvm-toolchain-trusty-5.0
+              packages:
+                - clang-5.0
+          env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
 
 
 before_install:
@@ -67,4 +96,5 @@ script:
   
 notifications:
   email:
-    on_success: always
+    on_failure: always
+    on_success: never

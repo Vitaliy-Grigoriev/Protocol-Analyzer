@@ -9,14 +9,20 @@
 *.la
 *.a
 
-# Executables
+# Executables files
 *.out
 
-# Logger
+# Logging files
 *.log
 
-#idea
+# idea
 *.idea
+
+# Sourcetrail files
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+compile_commands.json
 
 #Folders
 /bin
