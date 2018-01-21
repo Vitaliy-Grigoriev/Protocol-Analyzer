@@ -1,3 +1,8 @@
+/* =========================================================================== */
+/* Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+/* This file is part of ProtocolAnalyzer open source project under MIT License.
+/* =========================================================================== */
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_API_HPP
 #define PROTOCOL_ANALYZER_API_HPP
@@ -5,6 +10,7 @@
 #define PROTOCOL_ANALYZER_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
 #define PROTOCOL_ANALYZER_VERSION_PATCH 8
+
 
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
 #include "Mutex.hpp"

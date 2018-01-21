@@ -1,3 +1,8 @@
+/* =========================================================================== */
+/* Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+/* This file is part of ProtocolAnalyzer open source project under MIT License.
+/* =========================================================================== */
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_LOG_HPP
 #define PROTOCOL_ANALYZER_LOG_HPP
@@ -12,53 +17,58 @@
 
 
 /**
- * @def GET_ERROR(error)
+ * @def GET_ERROR (error);
  * @brief Marco that return a system error in string format.
- * @param [in] error - The error code number.
- * @return The string that contains a description of the error.
+ * @param [in] error - Error code number.
+ * @return String that contains a description of the error.
  */
 #define GET_ERROR(error) (analyzer::log::StrSysError::Instance())(error)
 
 
 /**
  * @defgroup LOG_FUNCTIONS Global logging defines.
- * @brief This defines present all interfaces for output log with several attributes.
+ * @brief This group of macros defines all interfaces for logging with several attributes.
  *
  * @note In this code is used GNU extension "Named Variadic Macros".
  *
  * @{
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
+
 /**
- * @def LOG_TRACE (args...)
- * @brief Marco that output message to the logfile with TRACE level attribute.
+ * @def LOG_TRACE (args...);
+ * @brief Marco that outputs message to the logfile with TRACE level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_TRACE(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::TRACE, args))
 /**
- * @def LOG_INFO (args...)
- * @brief Marco that output message to the logfile with INFO level attribute.
+ * @def LOG_INFO (args...);
+ * @brief Marco that outputs message to the logfile with INFO level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_INFO(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
 /**
- * @def LOG_WARNING (args...)
- * @brief Marco that output message to the logfile with WARNING level attribute.
+ * @def LOG_WARNING (args...);
+ * @brief Marco that outputs message to the logfile with WARNING level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_WARNING(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::WARNING, args))
 /**
- * @def LOG_ERROR (args...)
- * @brief Marco that output message to the logfile with ERROR level attribute.
+ * @def LOG_ERROR (args...);
+ * @brief Marco that outputs message to the logfile with ERROR level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_ERROR(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::ERROR, args))
 /**
- * @def LOG_FATAL (args...)
- * @brief Marco that output message to the logfile with FATAL level attribute.
+ * @def LOG_FATAL (args...);
+ * @brief Marco that outputs message to the logfile with FATAL level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_FATAL(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::FATAL, args))
+
+#pragma clang diagnostic pop
 
 /**@}*/
 
@@ -84,20 +94,20 @@ namespace analyzer::log
      * @brief This singleton class defined the interface of receipt an system error.
      *
      * @note This singleton class is thread-safe.
-     * @note To use this class, use the macro GET_ERROR(const int32_t ErrorCode).
+     * @note To use this class, use the macro GET_ERROR (int32_t).
      */
     class StrSysError
     {
     protected:
         /**
          * @fn StrSysError::StrSysError(void);
-         * @brief Protect constructor.
+         * @brief Protection constructor.
          */
         StrSysError(void) noexcept;
 
         /**
          * @fn StrSysError::~StrSysError(void);
-         * @brief Protect default destructor.
+         * @brief Protection default destructor.
          */
         ~StrSysError(void) = default;
 
@@ -118,7 +128,7 @@ namespace analyzer::log
          * @fn std::string StrSysError::operator() (int32_t) const noexcept;
          * @brief Operator that returns a system error in string format.
          * @param [in] error - The error code number.
-         * @return The string that contains a description of the error.
+         * @return String that contains a description of the error.
          */
         std::string operator() (int32_t /*error*/) const noexcept;
     };
@@ -160,14 +170,14 @@ namespace analyzer::log
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
          *
-         * @note Default: Standard output (std::cout).
+         * @note Default logging engine: Standard output (std::cout).
          */
         std::ostream& out = std::cout;
         /**
          * @var std::string logFileName;
          * @brief Current name and path of the logfile.
          *
-         * @note Default: "../log/program.log".
+         * @note Default path to logfile: "../log/program_volume1.log".
          */
         std::string logFileName = "../log/program_volume1.log";
         /**
@@ -391,8 +401,8 @@ namespace analyzer::log
      * @brief Function that outputs the data to logfile in hex dump format.
      * @param [in] message - Message in log string.
      * @param [in] data - Data for transfer to hex format.
-     * @param [in] size - The size of input data.
-     * @param [in] hexLineLength - The length of one hex dump string. Default: 16.
+     * @param [in] size - Size of input data.
+     * @param [in] hexLineLength - Length of one hex dump string. Default: 16.
      *
      * @todo Add three flag: is_offset, is_data, is_upper...
      * @todo Add dependency length of the offset from the length of data.

@@ -27,7 +27,7 @@ namespace analyzer::log
     StrSysError& StrSysError::Instance(void) noexcept
     {
         // Since it's a static variable, if the class has already been created, its won't be created again.
-        // It's thread-safe in C++11.
+        // It's thread-safe since C++11.
         static StrSysError instance;
         return instance;
     }
@@ -446,7 +446,8 @@ namespace analyzer::log
                     } else {
                         hex_dump.replace(line + hex_data + 17 + i, 1, 1, '.');
                     }
-                } else
+                }
+                else
                 {
                     if (common::text::isPrintable(*pSource) == true) {
                         hex_dump.replace(line + hex_data + 18 + i, 1, pSource, 1);
