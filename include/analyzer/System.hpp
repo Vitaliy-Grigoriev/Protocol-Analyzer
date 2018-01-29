@@ -1,3 +1,8 @@
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
@@ -6,7 +11,7 @@
 #include <cstring>    // memcpy.
 #include <algorithm>  // std::generate.
 
-// In System library MUST NOT use any another library because it is a core library.
+// In System library MUST NOT use any another framework libraries because it is a core library.
 
 
 namespace analyzer::system
@@ -20,6 +25,7 @@ namespace analyzer::system
       * @return Smart pointer to allocated object of selected type object.
       *
       * @note Return value is marked with the "nodiscard" attribute.
+      * @attention All exceptions that can be thrown from the object constructor must be inherited from STL std::exception.
       */
     template <typename Type, typename... Args>
     [[nodiscard]]
@@ -75,6 +81,7 @@ namespace analyzer::system
       * @return Smart pointer to allocated memory of selected smart pointer type array.
       *
       * @note Return value is marked with the "nodiscard" attribute.
+      * @attention All exceptions that can be thrown from the object constructor must be inherited from STL std::exception.
       */
     template <typename Type, typename... Args>
     [[nodiscard]]
@@ -83,7 +90,7 @@ namespace analyzer::system
         try {
             auto array = std::make_unique<std::unique_ptr<Type>[]>(size);
 
-            auto construct = [&]() noexcept -> auto { return allocMemoryForObject<Type>(std::forward<Args>(args)...); };
+            auto construct = [&]() noexcept -> auto { return std::make_unique<Type>(std::forward<Args>(args)...); };
             std::generate(array.get(), array.get() + size, construct);
             return array;
         }
