@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include "../include/analyzer/Timer.hpp"
 
 
@@ -27,7 +32,14 @@ namespace analyzer::diagnostic
         return *this;
     }
 
-    Timer::TimerCount& Timer::PauseGetCount(void) noexcept
+    void Timer::Reset (bool start) noexcept
+    {
+        count.totalTime = { };
+        count.lastStartTime = { };
+        if (start == true) { Start(); }
+    }
+
+    Timer::TimerCount& Timer::PauseAndGetCount(void) noexcept
     {
         if (count.state == true)
         {
@@ -37,11 +49,14 @@ namespace analyzer::diagnostic
         return count;
     }
 
-    void Timer::Reset (bool start) noexcept
+    const Timer::TimerCount & Timer::UpdateAndGetCount(void) noexcept
     {
-        count.totalTime = { };
-        count.lastStartTime = { };
-        if (start == true) { Start(); }
+        if (count.state == true)
+        {
+            count.totalTime += GetCurrentTime() - count.lastStartTime;
+            count.lastStartTime = GetCurrentTime();
+        }
+        return count;
     }
 
     const Timer::TimerCount& Timer::GetCount(void) const noexcept {
@@ -49,6 +64,9 @@ namespace analyzer::diagnostic
     }
 
 
+    std::size_t Timer::TimerCount::TimeSinceEpoch(void) const noexcept {
+        return static_cast<std::size_t>(totalTime.time_since_epoch().count());
+    }
 
     std::size_t Timer::TimerCount::NanoSeconds(void) const noexcept {
         return GetTime<nano_t>();
@@ -74,7 +92,8 @@ namespace analyzer::diagnostic
         return GetTime<hour_t>();
     }
 
-    Timer::TimerCount:: operator double(void) const noexcept {
+
+    Timer::TimerCount::operator double(void) const noexcept {
         return Seconds();
     }
 
@@ -82,9 +101,84 @@ namespace analyzer::diagnostic
         return MicroSeconds();
     }
 
+
+    Timer::TimerCount Timer::TimerCount::operator+ (const Timer::TimerCount& other) const noexcept
+    {
+        timepoint_t currFullTime = totalTime, otherFullTime = other.totalTime;
+        if (state == true) { currFullTime += GetCurrentTime() - lastStartTime; }
+        if (other.state == true) { otherFullTime += GetCurrentTime() - other.lastStartTime; }
+
+        TimerCount result = { };
+        result.totalTime = currFullTime + otherFullTime.time_since_epoch();
+        return result;
+    }
+
+    Timer::TimerCount Timer::TimerCount::operator- (const Timer::TimerCount& other) const noexcept
+    {
+        timepoint_t currFullTime = totalTime, otherFullTime = other.totalTime;
+        if (state == true) { currFullTime += GetCurrentTime() - lastStartTime; }
+        if (other.state == true) { otherFullTime += GetCurrentTime() - other.lastStartTime; }
+
+        TimerCount result = { };
+        if (currFullTime >= otherFullTime) {
+            result.totalTime = currFullTime - otherFullTime.time_since_epoch();
+        }
+        return result;
+    }
+
+    Timer::TimerCount& Timer::TimerCount::operator+= (const Timer::TimerCount& other) noexcept
+    {
+        totalTime += other.totalTime.time_since_epoch();
+        if (other.state == true) {
+            totalTime += GetCurrentTime() - other.lastStartTime;
+        }
+        return *this;
+    }
+
+    Timer::TimerCount& Timer::TimerCount::operator-= (const Timer::TimerCount& other) noexcept
+    {
+        timepoint_t otherFullTime = other.totalTime;
+        if (other.state == true) {
+            otherFullTime += GetCurrentTime() - other.lastStartTime;
+        }
+
+        if (totalTime >= otherFullTime) {
+            totalTime -= otherFullTime.time_since_epoch();
+        }
+        else { totalTime = { }; }
+        return *this;
+    }
+
+    bool Timer::TimerCount::operator== (const Timer::TimerCount& other) const noexcept
+    {
+        using std::chrono::duration_cast;
+
+        timepoint_t currFullTime = totalTime, otherFullTime = other.totalTime;
+        if (state == true) { currFullTime += GetCurrentTime() - lastStartTime; }
+        if (other.state == true) { otherFullTime += GetCurrentTime() - other.lastStartTime; }
+
+        if (currFullTime > otherFullTime) {
+            return (duration_cast<micro_t>(currFullTime.time_since_epoch()) -
+                            duration_cast<micro_t>(otherFullTime.time_since_epoch()) <= micro_t(100));
+        }
+        return (duration_cast<micro_t>(otherFullTime.time_since_epoch()) -
+                        duration_cast<micro_t>(currFullTime.time_since_epoch()) <= micro_t(100));
+    }
+
+    bool Timer::TimerCount::operator< (const Timer::TimerCount& other) const noexcept
+    {
+        timepoint_t currFullTime = totalTime, otherFullTime = other.totalTime;
+        if (state == true) { currFullTime += GetCurrentTime() - lastStartTime; }
+        if (other.state == true) { otherFullTime += GetCurrentTime() - other.lastStartTime; }
+        return (currFullTime < otherFullTime);
+    }
+
+    bool Timer::TimerCount::operator> (const Timer::TimerCount& other) const noexcept
+    {
+        timepoint_t currFullTime = totalTime, otherFullTime = other.totalTime;
+        if (state == true) { currFullTime += GetCurrentTime() - lastStartTime; }
+        if (other.state == true) { otherFullTime += GetCurrentTime() - other.lastStartTime; }
+        return (currFullTime > otherFullTime);
+    }
+
 }  // namespace diagnostic.
-
-
-
-
-
