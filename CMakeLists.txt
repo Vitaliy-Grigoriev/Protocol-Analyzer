@@ -10,29 +10,43 @@ set(INCLUDES   ${PROJECT_SOURCE_DIR}/include/analyzer)
 set(SOURCES    ${PROJECT_SOURCE_DIR}/src)
 set(TESTS      ${PROJECT_SOURCE_DIR}/test)
 
-
 set(CMAKE_CXX_STANDARD   17)
 set(CMAKE_CXX_STANDARD_REQUIRED   ON)
-set(CMAKE_BUILD_TYPE     $ENV{BUILD_TYPE})
-set(CMAKE_CXX_COMPILER   $ENV{COMPILER})
+
+if (DEFINED  ENV{COMPILER})  # If the custom compiler is defined.
+    message("The compiler is set to '$ENV{COMPILER}'.")
+    set(CMAKE_CXX_COMPILER   "$ENV{COMPILER}")
+else()  # If the custom compiler is not defined.
+    message("The compiler is set to 'g++' by default.")
+    set(CMAKE_CXX_COMPILER   "/usr/bin/g++")
+endif()
+
+if (DEFINED   ENV{BUILD_TYPE})  # If the custom build type is defined.
+    message("The build type is set to '$ENV{BUILD_TYPE}'.")
+    set(CMAKE_BUILD_TYPE   "$ENV{BUILD_TYPE}")
+else()  # If the custom build type is not defined.
+    message("The build type is set to 'Release' by default.")
+    set(CMAKE_BUILD_TYPE   "Release")
+endif()
+
 
 set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
 set(DISABLE_WARNINGS   "-Wno-missing-prototypes -Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
 set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
-
+#-fsanitize=dataflow
 
 set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic")
-string(FIND ${CMAKE_CXX_COMPILER} "clang" POSITION)
-if (${POSITION} GREATER -1)  # Clang compiler only.
+string(FIND  ${CMAKE_CXX_COMPILER}  "clang"  POSITION)
+if (${POSITION}  GREATER  "-1")  # Build flags for Clang compiler only.
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Weverything ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
-else() # Other compilers.
+else()  # Other compilers.
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra ${ADDITIONAL_FLAGS}")
 endif()
 
 
-# Core libraries.
+# Build core framework libraries.
 set(SYSTEM_LIB       ${INCLUDES}/System.hpp ${INCLUDES}/Mutex.hpp    ${SOURCES}/System.cpp ${SOURCES}/Mutex.cpp)
 set(LOGGING_LIB      ${INCLUDES}/Log.hpp                             ${SOURCES}/Log.cpp)
 #set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp ${INCLUDES}/RawDataBufferIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/RawDataBuffer.cpp ${SOURCES}/RawDataBufferIterator.cpp)
@@ -63,7 +77,7 @@ target_link_libraries(Task        pthread Logging)
 target_link_libraries(Utilities   Socket Protocol)
 
 
-# Test suites.
+# Build test suites for framework library.
 set(SSL_TEST                 ${TESTS}/test_ssl.cpp                  ${INCLUDES}/AnalyzerApi.hpp)
 set(SOCKET_TEST              ${TESTS}/test_socket.cpp               ${INCLUDES}/AnalyzerApi.hpp)
 set(COMMON_TEST              ${TESTS}/test_common.cpp               ${INCLUDES}/AnalyzerApi.hpp)
