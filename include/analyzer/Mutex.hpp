@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <pthread.h>
 
-// In System library MUST NOT use any another library because it is a core library.
+// In System library MUST NOT use any another framework libraries because it is a core library.
 
 
 namespace analyzer::system

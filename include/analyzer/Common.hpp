@@ -17,7 +17,7 @@
 #include <string_view>  // std::string_view.
 #include <type_traits>  // std::enable_if, std::is_integral, std::is_unsigned.
 
-// In Common library MUST NOT use any another library because it is a core library.
+// In Common library MUST NOT use any another framework libraries because it is a core library.
 
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
 

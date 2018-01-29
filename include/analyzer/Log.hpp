@@ -1,7 +1,7 @@
-/* =========================================================================== */
-/* Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
-/* This file is part of ProtocolAnalyzer open source project under MIT License.
-/* =========================================================================== */
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
 
 #pragma once
 #ifndef PROTOCOL_ANALYZER_LOG_HPP

@@ -9,7 +9,7 @@
 #include <deque>    // std::deque.
 #include <utility>  // std::move, std::swap.
 
-// In System library MUST NOT use any another library because it is a core library.
+// In Common library MUST NOT use any another framework libraries because it is a core library.
 
 
 namespace analyzer::common::types
