@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include "../include/analyzer/Socket.hpp"
 
 
@@ -88,7 +93,7 @@ namespace analyzer::net
     }
 
 
-    int32_t SocketSSL::Send (const char* data, size_t length)
+    int32_t SocketSSL::Send (const char* data, std::size_t length)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.Send: Socket is invalid.");
@@ -108,7 +113,7 @@ namespace analyzer::net
 
             if (result <= 0)
             {
-                if (BIO_should_retry(bio)) {
+                if (BIO_should_retry(bio) != 0) {
                     if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); return -1; }
                     continue;
                 }
@@ -116,8 +121,8 @@ namespace analyzer::net
                 SSLCloseAfterError(); return -1;
             }
 
-            length -= static_cast<size_t>(result);
-            idx += static_cast<size_t>(result);
+            length -= static_cast<std::size_t>(result);
+            idx += static_cast<std::size_t>(result);
         }
 
         LOG_TRACE("SocketSSL.Send [", fd,"]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
@@ -125,7 +130,7 @@ namespace analyzer::net
     }
 
 
-    int32_t SocketSSL::Recv (char* data, size_t length, bool noWait)
+    int32_t SocketSSL::Recv (char* data, std::size_t length, bool noWait)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL: Socket is invalid.");
@@ -147,7 +152,7 @@ namespace analyzer::net
             if (result == 0) { break; }
             if (result < 0)
             {
-                if (BIO_should_retry(bio))
+                if (BIO_should_retry(bio) != 0)
                 {
                     if (IsReadyForRecv(3000) == false) {
                         if (idx == 0) { SSLCloseAfterError(); return -1; }
@@ -159,8 +164,8 @@ namespace analyzer::net
                 SSLCloseAfterError(); return -1;
             }
 
-            length -= static_cast<size_t>(result);
-            idx += static_cast<size_t>(result);
+            length -= static_cast<std::size_t>(result);
+            idx += static_cast<std::size_t>(result);
             if (noWait == true) { break; }
         }
 
@@ -169,7 +174,7 @@ namespace analyzer::net
     }
 
 
-    int32_t SocketSSL::RecvToEnd (char* data, size_t length)
+    int32_t SocketSSL::RecvToEnd (char* data, std::size_t length)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.RecvToEnd: Socket is invalid.");
@@ -190,13 +195,13 @@ namespace analyzer::net
 
             if (result == 0) { break; }
             if (result < 0) {
-                if (BIO_should_retry(bio)) { continue; }
+                if (BIO_should_retry(bio) != 0) { continue; }
                 LOG_ERROR("SocketSSL.RecvToEnd [", fd,"]: In function 'SSL_read' - ", CheckSSLErrors());
                 CloseAfterError(); return -1;
             }
 
-            length -= static_cast<size_t>(result);
-            idx += static_cast<size_t>(result);
+            length -= static_cast<std::size_t>(result);
+            idx += static_cast<std::size_t>(result);
         }
 
         LOG_TRACE("SocketSSL.RecvToEnd [", fd,"]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
@@ -228,7 +233,7 @@ namespace analyzer::net
             }
             if (result <= 0)
             {
-                if (BIO_should_retry(bio)) {
+                if (BIO_should_retry(bio) != 0) {
                     if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); break; }
                     continue;
                 }
@@ -243,7 +248,7 @@ namespace analyzer::net
     // Set Server Name Indication to TLS extension.
     bool SocketSSL::SetServerNameIndication (const std::string& serverName) const noexcept
     {
-        if (SSL_set_tlsext_host_name(ssl, serverName.c_str()) == 0) {
+        if (SSL_set_tlsext_host_name(ssl, const_cast<char*>(serverName.c_str())) == 0) {
             LOG_ERROR("SocketSSL.SetServerNameIndication [", fd,"]: In function 'SSL_set_tlsext_host_name' - ", CheckSSLErrors());
             return false;
         }
@@ -252,11 +257,14 @@ namespace analyzer::net
     }
 
 
-    std::list<std::string> SocketSSL::GetCiphersList(void) const noexcept
+    std::vector<std::string> SocketSSL::GetCiphersList(void) const noexcept
     {
-        std::list<std::string> result;
+        std::vector<std::string> result;
         STACK_OF(SSL_CIPHER)* ciphers_list = SSL_get_ciphers(ssl);
-        for (int32_t idx = 0; idx < sk_SSL_CIPHER_num(ciphers_list); ++idx)
+        const int32_t size = sk_SSL_CIPHER_num(ciphers_list);
+
+        result.reserve(static_cast<uint32_t>(size));
+        for (int32_t idx = 0; idx < size; ++idx)
         {
             const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers_list, idx);
             result.emplace_back(SSL_CIPHER_get_name(cipher));
@@ -274,7 +282,7 @@ namespace analyzer::net
         }
 
         std::string secure;
-        const std::list<std::string> current = GetCiphersList();
+        const std::vector<std::string> current = GetCiphersList();
         for (auto&& it : current)
         {
             if (it.find("SRP") == it.npos && it.find("DH-") == it.npos      &&
@@ -496,7 +504,13 @@ namespace analyzer::net
         //SSL_CTX_free( ctx[SSL_METHOD_TLS13] );
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+
     // Initialized context.
     SSLContext SocketSSL::context;
+
+#pragma clang diagnostic pop
+
 
 }  // namespace net.

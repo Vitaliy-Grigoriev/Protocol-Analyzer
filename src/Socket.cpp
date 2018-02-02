@@ -283,7 +283,7 @@ namespace analyzer::net
 
 
     // Checks availability socket on read/write.
-    uint16_t Socket::CheckSocketState (const int32_t time) const
+    uint16_t Socket::CheckSocketState (const int32_t time) const noexcept
     {
         struct epoll_event ev = { };
         ev.events = EPOLLIN | EPOLLOUT;
@@ -315,7 +315,7 @@ namespace analyzer::net
 
 
     // Checks availability socket on write.
-    bool Socket::IsReadyForSend (const int32_t time)
+    bool Socket::IsReadyForSend (const int32_t time) noexcept
     {
         event.events = EPOLLOUT;
         if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
@@ -342,7 +342,7 @@ namespace analyzer::net
 
 
     // Checks availability socket on read.
-    bool Socket::IsReadyForRecv (const int32_t time)
+    bool Socket::IsReadyForRecv (const int32_t time) noexcept
     {
         event.events = EPOLLIN;
         if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == SOCKET_ERROR) {
@@ -462,7 +462,7 @@ namespace analyzer::net
     SocketStatePool& SocketStatePool::Instance(void) noexcept
     {
         // Since it's a static variable, if the class has already been created, its won't be created again.
-        // It's thread-safe in C++11.
+        // It's thread-safe since C++11.
         static SocketStatePool instance;
         return instance;
     }

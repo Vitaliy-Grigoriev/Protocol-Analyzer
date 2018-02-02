@@ -1,10 +1,15 @@
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_SOCKET_HPP
 #define PROTOCOL_ANALYZER_SOCKET_HPP
 
-#include <list>
 #include <atomic>
 #include <string>
+#include <vector>
 #include <netdb.h>
 #include <sys/epoll.h>
 
@@ -281,11 +286,11 @@ namespace analyzer::net
 
 
         // Checks availability socket on write.
-        bool IsReadyForSend (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
+        bool IsReadyForSend (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) noexcept;
         // Checks availability socket on read.
-        bool IsReadyForRecv (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT);
+        bool IsReadyForRecv (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) noexcept;
         // Checks availability socket on read/write.
-        uint16_t CheckSocketState (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) const;
+        uint16_t CheckSocketState (int32_t /*time*/ = DEFAULT_TIME_SIGWAIT) const noexcept;
         // Close after error. MUST NOT use virtual methods in constructors so it is not a virtual method.
         void CloseAfterError(void);
 
@@ -305,11 +310,11 @@ namespace analyzer::net
 
 
         // Return Socket descriptor.
-        inline int32_t GetFd(void) const { return fd; }
+        inline int32_t GetFd(void) const noexcept { return fd; }
         // Return Timeout of connection.
-        inline std::chrono::seconds GetTimeout(void) const { return std::chrono::seconds(timeout); }
+        inline std::chrono::seconds GetTimeout(void) const noexcept { return std::chrono::seconds(timeout); }
         // Return Socket connection state.
-        inline bool IsAlive(void) const { return (CheckSocketState(3000) != 0); }
+        inline bool IsAlive(void) const noexcept { return (CheckSocketState(3000) != 0); }
 
 
         // Associates a local address with a socket.
@@ -349,7 +354,6 @@ namespace analyzer::net
         SSLContext (const SSLContext &) = delete;
         SSLContext & operator= (SSLContext &&) = delete;
         SSLContext & operator= (const SSLContext &) = delete;
-
 
         SSLContext(void) noexcept;
         SSL_CTX * Get (std::size_t /*method*/) const noexcept;
@@ -407,7 +411,7 @@ namespace analyzer::net
         // Set Server Name Indication to TLS extension.
         bool SetServerNameIndication (const std::string & /*serverName*/) const noexcept;
         // Get all available clients ciphers.
-        std::list<std::string> GetCiphersList(void) const noexcept;
+        std::vector<std::string> GetCiphersList(void) const noexcept;
         // Use only security ciphers in connection.
         bool SetOnlySecureCiphers(void) noexcept;
 

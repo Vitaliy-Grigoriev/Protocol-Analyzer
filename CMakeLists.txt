@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.8)  # For support C++17 standard.
 project(ProtocolAnalyzer CXX)
 
 set(EXECUTABLE_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/bin/)
@@ -13,6 +13,7 @@ set(TESTS      ${PROJECT_SOURCE_DIR}/test)
 set(CMAKE_CXX_STANDARD   17)
 set(CMAKE_CXX_STANDARD_REQUIRED   ON)
 
+# Choose compiler.
 if (DEFINED  ENV{COMPILER})  # If the custom compiler is defined.
     message("The compiler is set to '$ENV{COMPILER}'.")
     set(CMAKE_CXX_COMPILER   "$ENV{COMPILER}")
@@ -21,6 +22,7 @@ else()  # If the custom compiler is not defined.
     set(CMAKE_CXX_COMPILER   "/usr/bin/g++")
 endif()
 
+# Choose build type.
 if (DEFINED   ENV{BUILD_TYPE})  # If the custom build type is defined.
     message("The build type is set to '$ENV{BUILD_TYPE}'.")
     set(CMAKE_BUILD_TYPE   "$ENV{BUILD_TYPE}")
@@ -30,19 +32,21 @@ else()  # If the custom build type is not defined.
 endif()
 
 
-set(USEFUL_WARNINGS   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-cast-qual")
-set(DISABLE_WARNINGS   "-Wno-missing-prototypes -Wno-variadic-macros -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-exit-time-destructors -Wno-global-constructors -Wno-documentation -Wno-zero-as-null-pointer-constant")
+set(DISABLE_WARNINGS_RELEASE   "-Wno-variadic-macros")
+set(DISABLE_WARNINGS_DEBUG   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-documentation")
+set(DISABLE_WARNINGS   "-Wno-c++98-compat -Wno-missing-prototypes -Wno-variadic-macros -Wno-exit-time-destructors -Wno-zero-as-null-pointer-constant")
 set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
-#set(ADDITIONAL_FLAGS   "-fsanitize=thread  -fsanitize=undefined  -Weverything")
-#set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer  -Weverything")
-#-fsanitize=dataflow
+#set(ADDITIONAL_FLAGS   "-fsanitize=thread")
+#set(ADDITIONAL_FLAGS   "-fsanitize=dataflow")
+#set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer")
 
-set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic")
+# Choose compile flags.
+set(CMAKE_CXX_FLAGS_RELEASE   "-O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS_RELEASE}")
 string(FIND  ${CMAKE_CXX_COMPILER}  "clang"  POSITION)
 if (${POSITION}  GREATER  "-1")  # Build flags for Clang compiler only.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Weverything ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${USEFUL_WARNINGS}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Weverything -Wthread-safety  ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_DEBUG}")
 else()  # Other compilers.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra ${ADDITIONAL_FLAGS}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  -Wno-unknown-pragmas ${DISABLE_WARNINGS}")
 endif()
 
 
@@ -51,7 +55,7 @@ set(SYSTEM_LIB       ${INCLUDES}/System.hpp ${INCLUDES}/Mutex.hpp    ${SOURCES}/
 set(LOGGING_LIB      ${INCLUDES}/Log.hpp                             ${SOURCES}/Log.cpp)
 #set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp ${INCLUDES}/RawDataBufferIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/RawDataBuffer.cpp ${SOURCES}/RawDataBufferIterator.cpp)
 set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp     ${SOURCES}/Common.cpp)
-# Functional libraries.
+# Build functional framework libraries.
 set(TASK_LIB         ${INCLUDES}/Notification.hpp) #${INCLUDES}/Task.hpp ${SOURCES}/Task.cpp   ${SOURCES}/TaskManager.cpp)
 set(PARSER_LIB       ${INCLUDES}/Parser.hpp                          ${SOURCES}/Parser.cpp)
 set(PROTOCOL_LIB     ${INCLUDES}/Protocol.hpp ${INCLUDES}/Http.hpp   ${SOURCES}/Protocol.cpp  ${SOURCES}/Http.cpp)

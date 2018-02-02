@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include <unordered_map>
 
 #include "../include/analyzer/Log.hpp"
@@ -8,11 +13,16 @@
 
 namespace analyzer::log
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+
     /**
       * @var static std::unordered_map<int32_t, std::string> errors;
       * @brief Container that consists of string definitions of linux system errors.
       */
     static std::unordered_map<int32_t, std::string> errors;
+
+#pragma clang diagnostic pop
 
     /**
       * @fn static void SetErrorStrings(void) noexcept;
@@ -35,7 +45,7 @@ namespace analyzer::log
     std::string StrSysError::operator() (const int32_t error) const noexcept
     {
         const auto it = errors.find(error);
-        if (it != errors.end()) { return it->second; }
+        if (it != errors.cend()) { return it->second; }
         return std::string("Unknown error code: " + std::to_string(error) + '.');
     }
 
@@ -221,7 +231,7 @@ namespace analyzer::log
     Logger& Logger::Instance(void) noexcept
     {
         // Since it's a static variable, if the class has already been created, its won't be created again.
-        // It's thread-safe in C++11.
+        // It's thread-safe since C++11.
         static Logger instance;
         return instance;
     }
