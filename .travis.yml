@@ -48,7 +48,7 @@ matrix:
             - clang-5.0
       env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
       
-      - os: linux
+    - os: linux
       addons:
         apt:
           sources:
