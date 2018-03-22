@@ -1,20 +1,86 @@
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 #define PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 
-#include <ostream>
+#include <ostream>  // std::ostream.
+#include <iterator>  // std::iterator_traits.
+#include <type_traits>  // std::enable_if, std::is_same, std::is_trivial, std::is_standard_layout.
 
-// In RawDataBuffer library MUST NOT use any another library because it is a core library.
+//#include "RawDataBufferIterator.hpp"
+
+// In Common library MUST NOT use any another framework libraries because it is a core library.
+
+////////////// DATA ENDIAN TYPE //////////////
+//
+//  Little Endian Model.
+//  |7______0|15______8|23______16|31______24|
+//
+//  Big Endian Model.
+//  |31______24|23______16|15______8|7______0|
+//
+//  Endian Independent Model.
+//  |0______7|8______15|16______23|24______31|
+//
+//////////////////////////////////////////////
 
 
 namespace analyzer::common::types
 {
+    /**
+     * @enum DATA_ENDIAN_TYPE
+     * @brief Endian type of the stored data in RawDataBuffer class.
+     *
+     * @note Default initial type of internal data in RawDataBuffer class the same as system type.
+     */
+    enum DATA_ENDIAN_TYPE : uint16_t
+    {
+        DATA_LITTLE_ENDIAN = 0x1,  // Last byte of binary representation of the multibyte data-type is stored first.
+        DATA_BIG_ENDIAN = 0x2      // First byte of binary representation of the multibyte data-type is stored first.
+    };
+
+    /**
+     * @enum DATA_HANDLING_MODE
+     * @brief Type of the data handling mode in RawDataBuffer class.
+     *
+     * @note Default initial type in RawDataBuffer class is DATA_MODE_DEPENDENT.
+     * @note Data handling mode DATA_MODE_DEPENDENT needs specially for analyze unstructured data.
+     */
+    enum DATA_HANDLING_MODE : uint16_t
+    {
+        DATA_MODE_DEPENDENT = 0x4,   // Any data modification depends on the ending type.
+        DATA_MODE_INDEPENDENT = 0x8  // Any data modification does not depend on the ending type.
+    };
+
+
     /**
      * @class RawDataBuffer RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
      * @brief Main class of analyzer framework that contains binary data and give an interface to work with it.
      */
     class RawDataBuffer
     {
+        //friend class RawDataBufferIterator<8>;
+        //friend class RawDataBufferConstIterator<RawDataBuffer>;
+
+    public:
+        /**
+         * @var static const std::size_t npos;
+         * @brief Variable that indicates about the end of sequence.
+         */
+        static const std::size_t npos = static_cast<std::size_t>(-1);
+
+        using value_type = std::byte;
+
+        //using iterator = RawDataBufferIterator<RawDataBuffer>;
+        //using reverse_iterator = std::reverse_iterator<iterator>;
+
+        //using const_iterator = RawDataBufferConstIterator<RawDataBuffer>;
+        //using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
     private:
         /**
          * @class BitStreamEngine RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
@@ -29,7 +95,7 @@ namespace analyzer::common::types
         private:
             /**
              * @var const RawDataBuffer & storedData;
-             * @brief Const reference of the RawDataBuffer owner class.
+             * @brief Const lvalue reference of the RawDataBuffer owner class.
              */
             const RawDataBuffer & storedData;
 
@@ -43,7 +109,7 @@ namespace analyzer::common::types
             /**
              * @fn explicit BitStreamEngine::BitStreamEngine (const RawDataBuffer &) noexcept;
              * @brief Constructor of nested BitStreamEngine class.
-             * @param [in] owner - Const reference of RawDataBuffer owner class.
+             * @param [in] owner - Const lvalue reference of RawDataBuffer owner class.
              */
             explicit BitStreamEngine (const RawDataBuffer& owner) noexcept
                     : storedData(owner)
@@ -58,16 +124,16 @@ namespace analyzer::common::types
             /**
              * @fn inline std::size_t BitStreamEngine::Length(void) const noexcept;
              * @brief Method that returns the length of stored data in bits.
-             * @return Length of bit sequense of stored data.
+             * @return Length of bit sequence of stored data.
              */
-            inline std::size_t Length(void) const noexcept { return storedData.Size() * 8; }
+            inline std::size_t Length(void) const noexcept { return storedData.length * 8; }
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t, bool) const noexcept;
              * @brief Method that performs direct left bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct left bit shift.
              * @param [in] fillBit - Value of the fill bit after the left shift. Default: false (0).
-             * @return Const reference of BitStreamEngine class.
+             * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftLeft (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
 
@@ -76,23 +142,23 @@ namespace analyzer::common::types
              * @brief Method that performs direct right bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct right bit shift.
              * @param [in] fillBit - Value of the fill bit after the right shift. Default: false (0).
-             * @return Const reference of BitStreamEngine class.
+             * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & ShiftRight (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
              * @brief Method that performs round left bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for round left shift.
-             * @return Const reference of BitStreamEngine class.
+             * @param [in] shift - Bit offset for round left bit shift.
+             * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & RoundShiftLeft (std::size_t /*shift*/) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::RoundShiftRight (std::size_t) const noexcept;
              * @brief Method that performs round right bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for round right shift.
-             * @return Const reference of BitStreamEngine class.
+             * @param [in] shift - Bit offset for round right bit shift.
+             * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
 
@@ -102,26 +168,73 @@ namespace analyzer::common::types
              * @param [in] index - Index of bit in binary sequence.
              * @return Boolean value that indicates about the value of the selected bit.
              *
-             * @warning This method always returns value 'false' if the index out-of-range.
+             * @warning Method always returns value 'false' if the index out-of-range.
              */
             bool Test (std::size_t /*index*/) const noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::Set (std::size_t, bool) const noexcept;
-             * @brief Method that set the bit under the specified index to new value.
-             * @param [in] index - Index of bit in binary sequence.
-             * @param [in] bitValue - New value of selected bit. Default: true (1).
-             * @return Const reference of BitStreamEngine class.
+             * @fn bool BitStreamEngine::All (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns bit sequence characteristic when all bits are set in block of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @return True - if all bits in block of stored data are set, otherwise - false.
              */
-            const BitStreamEngine & Set (std::size_t /*index*/, bool /*bitValue*/ = true) const noexcept;
+            bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn bool BitStreamEngine::Any (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @return True - if any of the bits in block of stored data are set, otherwise - false.
+             */
+            bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn bool BitStreamEngine::None (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @return True - if none of the bits in block of stored data are set, otherwise - false.
+             */
+            bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn std::size_t BitStreamEngine::Count (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns the number of bits that are set in block of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @return Number of bits that are set in block of stored data.
+             *
+             * @note Method returns RawDataBuffer::npos value if an error occurred.
+             */
+            std::size_t Count (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::Set (std::size_t, bool) const noexcept;
+             * @brief Method that sets the bit under the specified index to new value.
+             * @param [in] index - Index of bit in binary sequence.
+             * @param [in] fillBit - New value of selected bit. Default: true (1).
+             * @return Const lvalue reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & Set (std::size_t /*index*/, bool /*fillBit*/ = true) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::Invert (std::size_t) const noexcept;
              * @brief Method that inverts the bit under the specified index.
              * @param [in] index - Index of bit in binary sequence.
-             * @return Const reference of BitStreamEngine class.
+             * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & Invert (std::size_t /*index*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::InvertBlock (std::size_t, std::size_t) const noexcept;
+             * @brief Method that inverts the range of bits under the specified first/last indexes.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be inverted. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be inverted. Default: npos.
+             * @return Const lvalue reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
              * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
@@ -132,23 +245,194 @@ namespace analyzer::common::types
             inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
 
             /**
-             * @fn friend std::ostream & operator<< (std::ostream &, const BitStreamEngine &) noexcept;
+             * @fn friend inline std::ostream & operator<< (std::ostream &, const BitStreamEngine &) noexcept;
              * @brief Operator that outputs internal binary raw data in binary string format.
              * @param [in,out] stream - Reference of the output stream engine.
-             * @param [in] engine - Reference of the BitStreamEngine class.
-             * @return Reference of the inputted STL std::ostream class.
+             * @param [in] engine - Const lvalue reference of the BitStreamEngine class.
+             * @return Lvalue reference of the inputted STL std::ostream class.
+             *
+             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode is DATA_MODE_DEPENDENT.
              */
-            friend std::ostream& operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
+            friend inline std::ostream& operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
             {
-                try {
-                    stream.unsetf(std::ios_base::boolalpha);
-                    for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
-                        stream << engine.Test(idx);
+                try
+                {
+                    if (engine.storedData.IsEmpty() == false)
+                    {
+                        stream.unsetf(std::ios_base::boolalpha);
+                        if (engine.storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                        {
+                            for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
+                                stream << engine.Test(idx);
+                            }
+                            stream << engine.Test(0);
+                        }
+                        else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                        {
+                            for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
+                                stream << engine.Test(idx);
+                            }
+                        }
                     }
                 }
-                catch (std::ios_base::failure& /*err*/) { }
+                catch (const std::ios_base::failure& /*err*/) { }
                 return stream;
             }
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::operator&= (const BitStreamEngine &) const noexcept;
+             * @brief Logical assignment bitwise AND operator that transforms internal binary raw data.
+             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return Const lvalue reference of transformed BitStreamEngine class.
+             */
+            const BitStreamEngine & operator&= (const BitStreamEngine & /*other*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::operator|= (const BitStreamEngine &) const noexcept;
+             * @brief Logical assignment bitwise OR operator that transforms internal binary raw data.
+             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return Const lvalue reference of transformed BitStreamEngine class.
+             */
+            const BitStreamEngine & operator|= (const BitStreamEngine & /*other*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::operator^= (const BitStreamEngine &) const noexcept;
+             * @brief Logical assignment bitwise XOR operator that transforms internal binary raw data.
+             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return Const lvalue reference of transformed BitStreamEngine class.
+             */
+            const BitStreamEngine & operator^= (const BitStreamEngine & /*other*/) const noexcept;
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator& (const BitStreamEngine &, const BitStreamEngine &) noexcept;
+             * @brief Logical bitwise AND operator that transforms internal binary raw data.
+             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
+             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
+            {
+                RawDataBuffer result(left.storedData);
+                if (result.IsEmpty() == false) {
+                    result.BitsTransform() &= right;
+                }
+                return result;
+            }
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator| (const BitStreamEngine &, const BitStreamEngine &) noexcept;
+             * @brief Logical bitwise OR operator that transforms internal binary raw data.
+             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
+             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
+            {
+                RawDataBuffer result(left.storedData);
+                if (result.IsEmpty() == false) {
+                    result.BitsTransform() |= right;
+                }
+                return result;
+            }
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator^ (const BitStreamEngine &, const BitStreamEngine &) noexcept;
+             * @brief Logical bitwise XOR operator that transforms internal binary raw data.
+             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
+             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
+            {
+                RawDataBuffer result(left.storedData);
+                if (result.IsEmpty() == false) {
+                    result.BitsTransform() ^= right;
+                }
+                return result;
+            }
+
+        };
+
+
+        /**
+         * @class ByteStreamEngine RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
+         * @brief Class that operates on a sequence of bytes and offers an interface for working with them.
+         *
+         * @attention This class MUST BE initialized in all constructors of owner class.
+         */
+        class ByteStreamEngine
+        {
+            friend class RawDataBuffer;
+
+        private:
+            /**
+             * @var const RawDataBuffer & storedData;
+             * @brief Const lvalue reference of the RawDataBuffer owner class.
+             */
+            const RawDataBuffer & storedData;
+
+        public:
+            ByteStreamEngine(void) = delete;
+            ByteStreamEngine (ByteStreamEngine &&) = delete;
+            ByteStreamEngine (const ByteStreamEngine &) = delete;
+            ByteStreamEngine & operator= (ByteStreamEngine &&) = delete;
+            ByteStreamEngine & operator= (const ByteStreamEngine &) = delete;
+
+            /**
+             * @fn explicit ByteStreamEngine::ByteStreamEngine (const RawDataBuffer &) noexcept;
+             * @brief Constructor of nested ByteStreamEngine class.
+             * @param [in] owner - Const lvalue reference of RawDataBuffer owner class.
+             */
+            explicit ByteStreamEngine (const RawDataBuffer& owner) noexcept
+                    : storedData(owner)
+            { }
+
+            /**
+             * @fn ByteStreamEngine::~ByteStreamEngine(void) noexcept;
+             * @brief Default destructor.
+             */
+            ~ByteStreamEngine(void) noexcept = default;
+
+            /**
+             * @fn inline std::size_t ByteStreamEngine::Length(void) const noexcept;
+             * @brief Method that returns the length of stored data in bytes.
+             * @return Length of byte sequence of stored data.
+             */
+            inline std::size_t Length(void) const noexcept { return storedData.length; }
+
+            /**
+             * @fn const ByteStreamEngine & ByteStreamEngine::ShiftLeft (std::size_t, std::byte) const noexcept;
+             * @brief Method that performs direct left byte shift by a specified byte offset.
+             * @param [in] shift - Byte offset for direct left byte shift.
+             * @param [in] fillByte - Value of the fill byte after the left shift. Default: 0x00.
+             * @return Const lvalue reference of ByteStreamEngine class.
+             */
+            const ByteStreamEngine & ShiftLeft (std::size_t /*shift*/, std::byte /*fillByte*/ = std::byte(0x00)) const noexcept;
+
+            /**
+             * @fn const ByteStreamEngine & ByteStreamEngine::ShiftRight (std::size_t, std::byte) const noexcept;
+             * @brief Method that performs direct right byte shift by a specified byte offset.
+             * @param [in] shift - Byte offset for direct right byte shift.
+             * @param [in] fillByte - Value of the fill byte after the right shift. Default: 0x00.
+             * @return Const lvalue reference of ByteStreamEngine class.
+             */
+            const ByteStreamEngine & ShiftRight (std::size_t /*shift*/, std::byte /*fillByte*/ = std::byte(0x00)) const noexcept;
+
+            /**
+             * @fn const ByteStreamEngine & ByteStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
+             * @brief Method that performs round left bit shift by a specified byte offset.
+             * @param [in] shift - Byte offset for round left byte shift.
+             * @return Const lvalue reference of ByteStreamEngine class.
+             */
+            const ByteStreamEngine & RoundShiftLeft (std::size_t /*shift*/) const noexcept;
+
+            /**
+             * @fn const ByteStreamEngine & ByteStreamEngine::RoundShiftRight (std::size_t) const noexcept;
+             * @brief Method that performs round right bit shift by a specified byte offset.
+             * @param [in] shift - Byte offset for round right byte shift.
+             * @return Const lvalue reference of ByteStreamEngine class.
+             */
+            const ByteStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
         };
 
     private:
@@ -159,9 +443,19 @@ namespace analyzer::common::types
         std::unique_ptr<std::byte[]> data = nullptr;
         /**
          * @var std::size_t length;
-         * @brief The length of data in bytes.
+         * @brief Length of stored data in bytes.
          */
         std::size_t length = 0;
+        /**
+         * @var DATA_HANDLING_MODE dataMode;
+         * @brief Type of the data handling mode.
+         */
+        DATA_HANDLING_MODE dataMode = DATA_MODE_DEPENDENT;
+        /**
+         * @var DATA_ENDIAN_TYPE dataEndian;
+         * @brief Endian of stored data.
+         */
+        DATA_ENDIAN_TYPE dataEndian = DATA_LITTLE_ENDIAN;
         /**
          * @var BitStreamEngine bitStreamTransform;
          * @brief Engine for working with sequence of bits.
@@ -171,15 +465,42 @@ namespace analyzer::common::types
          * @var ByteStreamEngine byteStreamTransform;
          * @brief Engine for working with sequence of bytes.
          */
-        //ByteStreamEngine byteStreamTransform;
+        ByteStreamEngine byteStreamTransform;
+
+
+        template<typename Type, typename = void>
+        struct is_iterator_type
+        {
+            static constexpr bool value = false;
+        };
+
+        template<typename Type>
+        struct is_iterator_type<Type, typename std::enable_if_t<!std::is_same<typename std::iterator_traits<Type>::value_type, void>::value>>
+        {
+            static constexpr bool value = true;
+        };
+
+        template<typename Type, typename = void>
+        struct is_pod_type
+        {
+            static constexpr bool value = false;
+        };
+
+        template<typename Type>
+        struct is_pod_type<Type, typename std::enable_if_t<std::is_trivial<Type>::value && std::is_standard_layout<Type>::value>>
+        {
+            static constexpr bool value = true;
+        };
 
     public:
         /**
-         * @fn RawDataBuffer::RawDataBuffer(void) noexcept;
+         * @fn explicit RawDataBuffer::RawDataBuffer (DATA_HANDLING_MODE, DATA_ENDIAN_TYPE) noexcept;
+         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT.
+         * @param [in] endian - Endian of stored data. Default: Local System Type.
          * @brief Default constructor.
          */
-        RawDataBuffer(void) noexcept
-                : bitStreamTransform(*this)
+        explicit RawDataBuffer (DATA_HANDLING_MODE mode = DATA_MODE_DEPENDENT, DATA_ENDIAN_TYPE endian = CheckSystemEndian()) noexcept
+                : dataMode(mode), dataEndian(endian), bitStreamTransform(*this), byteStreamTransform(*this)
         { }
 
         /**
@@ -191,7 +512,7 @@ namespace analyzer::common::types
         /**
          * @fn RawDataBuffer::RawDataBuffer (const RawDataBuffer &) noexcept;
          * @brief Copy assignment constructor.
-         * @tparam [in] other - The const reference of copied RawDataBuffer class.
+         * @tparam [in] other - Const lvalue reference of copied RawDataBuffer class.
          *
          * @attention Need to check the size of data after use this constructor because it is 'noexcept'.
          */
@@ -200,23 +521,25 @@ namespace analyzer::common::types
         /**
          * @fn RawDataBuffer::RawDataBuffer (const RawDataBuffer &&) noexcept;
          * @brief Move assignment constructor.
-         * @tparam [in] other - The rvalue reference of moved RawDataBuffer class.
+         * @tparam [in] other - Rvalue reference of moved RawDataBuffer class.
          */
         RawDataBuffer (RawDataBuffer && /*other*/) noexcept;
 
         /**
-         * @fn explicit RawDataBuffer::RawDataBuffer (std::size_t) noexcept;
+         * @fn explicit RawDataBuffer::RawDataBuffer (std::size_t, DATA_HANDLING_MODE, DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor that allocates specified amount of bytes.
          * @param [in] size - Number of bytes for allocate.
+         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT.
+         * @param [in] endian - Endian of stored data. Default: Local System Type.
          *
          * @attention Need to check the size of data after use this method because it is 'noexcept'.
          */
-        explicit RawDataBuffer (std::size_t /*size*/) noexcept;
+        explicit RawDataBuffer (std::size_t /*size*/, DATA_HANDLING_MODE mode = DATA_MODE_DEPENDENT, DATA_ENDIAN_TYPE endian = CheckSystemEndian()) noexcept;
 
         /**
          * @fn RawDataBuffer & RawDataBuffer::operator= (const RawDataBuffer &) noexcept;
          * @brief Copy assignment operator.
-         * @tparam [in] other - The const reference of copied RawDataBuffer class.
+         * @tparam [in] other - Const lvalue reference of copied RawDataBuffer class.
          * @return Reference of the current RawDataBuffer class.
          *
          * @attention Need to check the size of data after use this operator because it is 'noexcept'.
@@ -226,7 +549,7 @@ namespace analyzer::common::types
         /**
          * @fn RawDataBuffer & RawDataBuffer::operator= (RawDataBuffer &&) noexcept;
          * @brief Move assignment operator.
-         * @tparam [in] other - The rvalue reference of moved RawDataBuffer class.
+         * @tparam [in] other - Rvalue reference of moved RawDataBuffer class.
          * @return Reference of the current RawDataBuffer class.
          */
         RawDataBuffer & operator= (RawDataBuffer && /*other*/) noexcept;
@@ -239,10 +562,20 @@ namespace analyzer::common::types
          * @param [in] other - Pointer to the const data of selected type.
          * @param [in] size - The number of elements in the input data of selected type.
          * @return True - if data assignment is successful, otherwise - false.
+         *
+         * @note Input type MUST be a POD type.
          */
         template <typename Type>
         bool AssignData (const Type* other, const std::size_t size) noexcept
         {
+            static_assert(is_pod_type<Type>::value == true, "It is not possible to use not POD type for this function.");
+
+            if (other == nullptr) { return false; }
+            if (data != nullptr) {
+                data.reset(nullptr);
+                length = 0;
+            }
+
             length = size * sizeof(Type);
             data = system::allocMemoryForArray<std::byte>(length, other, length);
             if (data == nullptr) {
@@ -254,18 +587,29 @@ namespace analyzer::common::types
 
         /**
          * @fn template <typename Type>
-         * bool RawDataBuffer::AssignData (const Type *, const Type *) noexcept;
+         * bool RawDataBuffer::AssignData (const Type, const Type) noexcept;
          * @brief Method that assigns data to RawDataBuffer.
          * @tparam [in] Type - Typename of assigned data.
-         * @param [in] begin - Pointer to the first element of const data of selected type.
-         * @param [in] end - Pointer to the element following the last one of const data of selected type.
+         * @param [in] begin - Iterator to the first element of const data of selected type.
+         * @param [in] end - Iterator to the element following the last one of const data of selected type.
          * @return True - if data assignment is successful, otherwise - false.
+         *
+         * @note Input type under iterator MUST be a POD type.
          */
         template <typename Type>
-        bool AssignData (const Type* begin, const Type* end) noexcept
+        bool AssignData (const Type begin, const Type end) noexcept
         {
-            length = std::distance(begin, end) * sizeof(Type);
-            data = system::allocMemoryForArray<std::byte>(length, begin, length);
+            static_assert(is_iterator_type<Type>::value == true &&
+                                  is_pod_type<typename std::iterator_traits<Type>::value_type>::value == true,
+                          "It is not possible to use not Iterator type for this function.");
+
+            if (data != nullptr) {
+                data.reset(nullptr);
+                length = 0;
+            }
+
+            length = std::distance(begin, end) * sizeof(std::iterator_traits<Type>::value_type);
+            data = system::allocMemoryForArray<std::byte>(length, &(*begin), length);
             if (data == nullptr) {
                 length = 0;
                 return false;
@@ -285,7 +629,7 @@ namespace analyzer::common::types
          * @brief Method that returns const reference of the nested ByteStreamEngine class for working with bytes.
          * @return Const reference of the ByteStreamEngine class.
          */
-        //const ByteStreamEngine& BytesTransform(void) const noexcept { return byteStreamTransform; }
+        const ByteStreamEngine& BytesTransform(void) const noexcept { return byteStreamTransform; }
 
         /**
          * @fn inline std::size_t RawDataBuffer::Size(void) const noexcept
@@ -303,14 +647,45 @@ namespace analyzer::common::types
 
         /**
          * @fn inline bool RawDataBuffer::IsEmpty(void) const noexcept;
-         * @brief Method that returns the state of RawDataBuffer.
-         * @return True - if RawDataBuffer class is empty, otherwise - false.
+         * @brief Method that returns the state of RawDataBuffer class.
+         * @return True - if stored data is empty in RawDataBuffer class, otherwise - false.
          */
         inline bool IsEmpty(void) const noexcept { return length == 0; }
 
         /**
+         * @fn inline DATA_HANDLING_MODE RawDataBuffer::DataModeType(void) const noexcept;
+         * @brief Method that returns the data handling mode type of stored data in RawDataBuffer class.
+         * @return DATA_MODE_DEPENDENT(0x04) - if any data modification depends on the endian type, otherwise - DATA_MODE_INDEPENDENT(0x08).
+         */
+        inline DATA_HANDLING_MODE DataModeType(void) const noexcept { return dataMode; }
+
+        /**
+         * @fn inline DATA_ENDIAN_TYPE RawDataBuffer::DataEndianType(void) const noexcept;
+         * @brief Method that returns the endian type of stored data in RawDataBuffer class.
+         * @return DATA_LITTLE_ENDIAN(0x01) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x02).
+         */
+        inline DATA_ENDIAN_TYPE DataEndianType(void) const noexcept { return dataEndian; }
+
+        /**
+         * @fn void RawDataBuffer::SetDataModeType (DATA_HANDLING_MODE) noexcept;
+         * @brief Method that changes handling mode type of stored data in RawDataBuffer class.
+         * @param [in] mode - New data handling mode type.
+         *
+         * @note Changed only the method of processing data. Data representation does not changes.
+         */
+        void SetDataModeType (DATA_HANDLING_MODE mode) noexcept { dataMode = mode; }
+
+        /**
+         * @fn void RawDataBuffer::SetDataEndianType (DATA_ENDIAN_TYPE, bool) noexcept;
+         * @brief Method that changes endian type of stored data in RawDataBuffer class.
+         * @param [in] endian - New data endian type.
+         * @param [in] convert - Flag indicating whether to change the presentation of the stored data or not. Default: true.
+         */
+        void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) noexcept;
+
+        /**
          * @fn explicit operator RawDataBuffer::bool(void) const noexcept;
-         * @brief Operator that returns the state of RawDataBuffer.
+         * @brief Operator that returns the internal state of RawDataBuffer class.
          * @return True - if RawDataBuffer class is not empty, otherwise - false.
          */
         explicit operator bool(void) const noexcept { return length != 0; }
@@ -340,11 +715,18 @@ namespace analyzer::common::types
         void Clear(void) noexcept;
 
         /**
-         * @fn bool RawDataBuffer::CheckSystemEndian(void) const noexcept;
-         * @brief Method that checks the endian on the system.
-         * @return True - if on the system little endian, false - big endian.
+         * @fn DATA_ENDIAN_TYPE RawDataBuffer::CheckSystemEndian(void) noexcept;
+         * @brief Method that checks the endian type on the system.
+         * @return DATA_LITTLE_ENDIAN(0x01) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x02).
          */
-        bool CheckSystemEndian(void) const noexcept;
+        inline static DATA_ENDIAN_TYPE CheckSystemEndian(void) noexcept
+        {
+            union {
+                uint16_t first;
+                uint8_t second[2];
+            } type { 0x0102 };
+            return (type.second[0] == 0x02 ? DATA_LITTLE_ENDIAN : DATA_BIG_ENDIAN);
+        }
 
     };
 

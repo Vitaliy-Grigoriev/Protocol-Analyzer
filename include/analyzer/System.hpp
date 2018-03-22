@@ -44,7 +44,7 @@ namespace analyzer::system
       * std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t, const void *, const std::size_t) noexcept;
       * @brief Function that allocates memory for array of selected type and if needed fills it.
       * @tparam [in] Type - Typename of allocated data.
-      * @param [in] size - Size of selected type array.
+      * @param [in] size - Size of selected type array (Number of elements of selected type).
       * @param [in] data - Pointer to any data for copy. Default: nullptr.
       * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.

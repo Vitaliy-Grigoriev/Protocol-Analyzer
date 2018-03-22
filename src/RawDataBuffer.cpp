@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include "../include/analyzer/Common.hpp"
 #include "../include/analyzer/System.hpp"
 #include "../include/analyzer/RawDataBuffer.hpp"
@@ -8,30 +13,37 @@
 
 namespace analyzer::common::types
 {
+    /* ****************************************************************************************************** */
+    /* ******************************************** RawDataBuffer ******************************************* */
+
     // Copy constructor.
     RawDataBuffer::RawDataBuffer (const RawDataBuffer& other) noexcept
-            : bitStreamTransform(*this)
+            : bitStreamTransform(*this), byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
         if (data != nullptr) {
             length = other.length;
+            dataMode = other.dataMode;
+            dataEndian = other.dataEndian;
         }
     }
 
     // Move assignment constructor.
     RawDataBuffer::RawDataBuffer (RawDataBuffer&& other) noexcept
-            : bitStreamTransform(*this)
+            : bitStreamTransform(*this), byteStreamTransform(*this)
     {
         if (other.data != nullptr) {
             data = std::move(other.data);
             length = other.length;
+            dataMode = other.dataMode;
+            dataEndian = other.dataEndian;
             other.Clear();
         }
     }
 
-    // Allocate constructor.
-    RawDataBuffer::RawDataBuffer (const std::size_t size) noexcept
-            : bitStreamTransform(*this)
+    // Allocated constructor.
+    RawDataBuffer::RawDataBuffer (const std::size_t size, DATA_HANDLING_MODE mode, DATA_ENDIAN_TYPE endian) noexcept
+            : dataMode(mode), dataEndian(endian), bitStreamTransform(*this), byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr) {
@@ -47,6 +59,8 @@ namespace analyzer::common::types
             data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
             if (data != nullptr) {
                 length = other.length;
+                dataMode = other.dataMode;
+                dataEndian = other.dataEndian;
             }
         }
         return *this;
@@ -59,16 +73,26 @@ namespace analyzer::common::types
         {
             data = std::move(other.data);
             length = other.length;
+            dataMode = other.dataMode;
+            dataEndian = other.dataEndian;
             other.Clear();
         }
         return *this;
     }
 
-    // Clear internal data buffer.
-    void RawDataBuffer::Clear(void) noexcept
+    // Method that changes handling mode type of stored data in RawDataBuffer class.
+    void RawDataBuffer::SetDataEndianType (DATA_ENDIAN_TYPE endian, bool convert) noexcept
     {
-        data.reset(nullptr);
-        length = 0;
+        dataEndian = endian;
+        if (convert == true)
+        {
+            for (std::size_t idx = 0; idx < length / 2; ++idx)
+            {
+                data[idx] = data[idx] ^ data[length - idx - 1];
+                data[length - idx - 1] = data[length - idx - 1] ^ data[idx];
+                data[idx] = data[idx] ^ data[length - idx - 1];
+            }
+        }
     }
 
     // Safety getter of internal value.
@@ -77,27 +101,30 @@ namespace analyzer::common::types
         return index < length ? &data[index] : nullptr;
     }
 
-    // Check system endian.
-    bool RawDataBuffer::CheckSystemEndian(void) const noexcept
+    // Clear internal data buffer.
+    void RawDataBuffer::Clear(void) noexcept
     {
-        const uint8_t endianness[2] = { 1, 0 };
-        const uint16_t t = *reinterpret_cast<const uint16_t*>(endianness);
-        return (t & 0x100) == 0;
+        data.reset(nullptr);
+        length = 0;
+        dataMode = DATA_MODE_DEPENDENT;
+        dataEndian = CheckSystemEndian();
     }
 
+    /* ******************************************** RawDataBuffer ******************************************* */
+    /* ****************************************************************************************************** */
 
 
-    /* ***************************************************************************************************** */
-    /* ****************************************** BitStreamEngine ****************************************** */
+    /* ****************************************************************************************************** */
+    /* *********************************************** Support ********************************************** */
 
     /**
-     * @fn static void leftRoundBytesShift (std::byte *, const std::byte *, std::byte *) noexcept;
+     * @fn static void leftRoundBytesShiftBE (std::byte *, const std::byte *, std::byte *) noexcept;
      * @brief Support function that performs left byte round shift to the selected byte.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] newHead - Byte to which the left round shift is performed.
+     * @param [in] newHead - Byte to which the left round byte shift is performed.
      */
-    static void leftRoundBytesShift (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
+    static void leftRoundBytesShiftBE (std::byte* head, const std::byte* end, std::byte* newHead) noexcept
     {
         if (head >= end || newHead <= head || newHead >= end) { return; }
         std::byte* next = newHead;
@@ -114,13 +141,13 @@ namespace analyzer::common::types
     }
 
     /**
-     * @fn static void rightRoundBytesShift (const std::byte *, std::byte *, std::byte *) noexcept;
+     * @fn static void rightRoundBytesShiftBE (const std::byte *, std::byte *, std::byte *) noexcept;
      * @brief Support function that performs right byte round shift to the selected byte.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] newEnd - Byte to which the right round shift is performed.
+     * @param [in] newEnd - Byte to which the right round byte shift is performed.
      */
-    static void rightRoundBytesShift (const std::byte* head, std::byte* end, std::byte* newEnd) noexcept
+    static void rightRoundBytesShiftBE (const std::byte* head, std::byte* end, std::byte* newEnd) noexcept
     {
         if (head >= end || newEnd < head || newEnd >= --end) { return; }
         std::byte* prev = newEnd;
@@ -138,14 +165,14 @@ namespace analyzer::common::types
     }
 
     /**
-     * @fn static void leftDirectBytesShift (std::byte *, const std::byte *, std::byte *, bool) noexcept;
-     * @brief Support function that performs left byte direct shift to the selected byte.
+     * @fn static void leftDirectBytesShiftBE (std::byte *, const std::byte *, std::byte *, const std::byte) noexcept;
+     * @brief Support function that performs left byte direct shift to the selected byte in big-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] newHead - Byte to which the left direct shift is performed.
-     * @param [in] fillBit - Boolean flag that indicates about the value of the offset fill. Default: false (0x00).
+     * @param [in] newHead - Byte to which the left direct byte shift is performed.
+     * @param [in] fillByte - Value of the fill byte after the left byte shift. Default: 0x00.
      */
-    static void leftDirectBytesShift (std::byte* head, const std::byte* end, std::byte* newHead, bool fillBit = false) noexcept
+    static void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, std::byte* newHead, const std::byte fillByte = std::byte(0x00)) noexcept
     {
         if (head >= end || newHead <= head || newHead >= end) { return; }
         std::byte* next = newHead;
@@ -157,18 +184,18 @@ namespace analyzer::common::types
                 newHead = next;
             }
         }
-        memset(head, (fillBit == false ? 0x00 : 0xFF), static_cast<std::size_t>(end - head));
+        memset(head, static_cast<int32_t>(fillByte), static_cast<std::size_t>(end - head));
     }
 
     /**
-     * @fn static void rightDirectBytesShift (std::byte *, std::byte *, std::byte *, bool) noexcept;
-     * @brief Support function that performs right byte direct shift to the selected byte.
+     * @fn static void rightDirectBytesShiftBE (std::byte *, std::byte *, std::byte *, const std::byte) noexcept;
+     * @brief Support function that performs right byte direct shift to the selected byte in big-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] newEnd - Byte to which the right direct shift is performed.
-     * @param [in] fillBit - Boolean flag that indicates about the value of the offset fill. Default: false (0x00).
+     * @param [in] newEnd - Byte to which the right direct byte shift is performed.
+     * @param [in] fillByte - Value of the fill byte after the right byte shift. Default: 0x00.
      */
-    static void rightDirectBytesShift (std::byte* head, std::byte* end, std::byte* newEnd, bool fillBit = false) noexcept
+    static void rightDirectBytesShiftBE (std::byte* head, std::byte* end, std::byte* newEnd, const std::byte fillByte = std::byte(0x00)) noexcept
     {
         if (head >= end || newEnd < head || newEnd >= --end) { return; }
         std::byte* prev = newEnd;
@@ -181,86 +208,155 @@ namespace analyzer::common::types
                 newEnd = prev;
             }
         }
-        memset(head, (fillBit == false ? 0x00 : 0xFF), static_cast<std::size_t>(end - prev));
+        memset(head, static_cast<int32_t>(fillByte), static_cast<std::size_t>(end - prev));
     }
 
     /**
-     * @fn static inline void leftRoundBytesShift (std::byte *, const std::byte *, const std::size_t) noexcept;
-     * @brief Support function that performs left byte round shift by a specified byte offset.
+     * @fn static inline void leftRoundBytesShiftBE (std::byte *, const std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs left byte round shift by a specified byte offset in big-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] shift - Byte offset for round left shift.
+     * @param [in] shift - Byte offset for round left byte shift.
      */
-    static inline void leftRoundBytesShift (std::byte* head, const std::byte* end, const std::size_t shift) noexcept
+    static inline void leftRoundBytesShiftBE (std::byte* head, const std::byte* end, const std::size_t shift) noexcept
     {
-        leftRoundBytesShift(head, end, head + shift);
+        leftRoundBytesShiftBE(head, end, head + shift);
     }
 
     /**
-     * @fn static inline void rightRoundBytesShift (const std::byte *, std::byte *, const std::size_t) noexcept;
-     * @brief Support function that performs right byte round shift by a specified byte offset.
+     * @fn static inline void leftRoundBytesShiftLE (std::byte *, std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs left byte round shift by a specified byte offset in little-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] shift - Byte offset for round right shift.
+     * @param [in] shift - Byte offset for round left byte shift.
      */
-    static inline void rightRoundBytesShift (const std::byte* head, std::byte* end, const std::size_t shift) noexcept
+    static inline void leftRoundBytesShiftLE (std::byte* head, std::byte* end, const std::size_t shift) noexcept
     {
-        rightRoundBytesShift(head, end, end - shift - 1);
+        rightRoundBytesShiftBE(head, end, end - shift - 1);
     }
 
     /**
-     * @fn static inline void leftDirectBytesShift (std::byte *, const std::byte *, const std::size_t, bool) noexcept;
-     * @brief Support function that performs left byte direct shift by a specified byte offset.
+     * @fn static inline void rightRoundBytesShiftBE (const std::byte *, std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs right byte round shift by a specified byte offset in big-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
-     * @param [in] shift - Byte offset for direct left shift.
-     * @param [in] fillBit - Boolean flag that indicates about the value of the offset fill. Default: false (0x00).
+     * @param [in] shift - Byte offset for round right byte shift.
      */
-    static inline void leftDirectBytesShift (std::byte* head, const std::byte* end, const std::size_t shift, bool fillBit = false) noexcept
+    static inline void rightRoundBytesShiftBE (const std::byte* head, std::byte* end, const std::size_t shift) noexcept
     {
-        leftDirectBytesShift(head, end, head + shift, fillBit);
+        rightRoundBytesShiftBE(head, end, end - shift - 1);
     }
 
     /**
-     * @fn static inline void rightDirectBytesShift (std::byte *, std::byte *, const std::size_t, bool) noexcept;
-     * @brief Support function that performs right byte direct shift by a specified byte offset.
+     * @fn static inline void rightRoundBytesShiftLE (std::byte *, const std::byte *, const std::size_t) noexcept;
+     * @brief Support function that performs right byte round shift by a specified byte offset in little-endian format.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence (the element following the last one).
+     * @param [in] shift - Byte offset for round right byte shift.
+     */
+    static inline void rightRoundBytesShiftLE (std::byte* head, const std::byte* end, const std::size_t shift) noexcept
+    {
+        leftRoundBytesShiftBE(head, end, head + shift);
+    }
+
+    /**
+     * @fn static inline void leftDirectBytesShiftBE (std::byte *, const std::byte *, const std::size_t, const std::byte) noexcept;
+     * @brief Support function that performs left byte direct shift by a specified byte offset in big-endian format.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence (the element following the last one).
+     * @param [in] shift - Byte offset for direct left byte shift.
+     * @param [in] fillByte - Value of the fill byte after the left direct byte shift. Default: 0x00.
+     */
+    static inline void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    {
+        leftDirectBytesShiftBE(head, end, head + shift, fillByte);
+    }
+
+    /**
+     * @fn static inline void leftDirectBytesShiftLE (std::byte *, std::byte *, const std::size_t, const std::byte) noexcept;
+     * @brief Support function that performs left byte direct shift by a specified byte offset in little-endian format.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence (the element following the last one).
+     * @param [in] shift - Byte offset for direct left byte shift.
+     * @param [in] fillByte - Value of the fill byte after the left direct byte shift. Default: 0x00.
+     */
+    static inline void leftDirectBytesShiftLE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    {
+        rightDirectBytesShiftBE(head, end, end - shift - 1, fillByte);
+    }
+
+    /**
+     * @fn static inline void rightDirectBytesShiftBE (std::byte *, std::byte *, const std::size_t, const std::byte) noexcept;
+     * @brief Support function that performs right byte direct shift by a specified byte offset in big-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for direct right shift.
-     * @param [in] fillBit - Boolean flag that indicates about the value of the offset fill. Default: false (0x00).
+     * @param [in] fillByte - Value of the fill byte after the right direct byte shift. Default: 0x00.
      */
-    static inline void rightDirectBytesShift (std::byte* head, std::byte* end, const std::size_t shift, bool fillBit = false) noexcept
+    static inline void rightDirectBytesShiftBE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
     {
-        rightDirectBytesShift(head, end, end - shift - 1, fillBit);
+        rightDirectBytesShiftBE(head, end, end - shift - 1, fillByte);
     }
+
+    /**
+     * @fn static inline void rightDirectBytesShiftLE (std::byte *, const std::byte *, const std::size_t, const std::byte) noexcept;
+     * @brief Support function that performs right byte direct shift by a specified byte offset in little-endian format.
+     * @param [in] head - Start position of the byte sequence.
+     * @param [in] end - End position of the byte sequence (the element following the last one).
+     * @param [in] shift - Byte offset for direct right shift.
+     * @param [in] fillByte - Value of the fill byte after the right direct byte shift. Default: 0x00.
+     */
+    static inline void rightDirectBytesShiftLE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    {
+        leftDirectBytesShiftBE(head, end, head + shift, fillByte);
+    }
+
+    /* *********************************************** Support ********************************************** */
+    /* ****************************************************************************************************** */
+
+
+    /* ***************************************************************************************************** */
+    /* ****************************************** BitStreamEngine ****************************************** */
 
     // Method that performs direct left bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftLeft (const std::size_t shift, bool fillBit) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
-            const std::size_t size = Length();
-            if (shift >= size) {
-                memset(storedData.data.get(), (fillBit == false ? 0x00 : 0xFF), storedData.length);
+            const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
+            if (shift >= Length()) {
+                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
                 return *this;
             }
 
-            const std::size_t countOfBytesShift = shift / 8;
+            const std::size_t countOfBytesShift = (shift >> 3);
             if (countOfBytesShift > 0) {
-                leftDirectBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift, fillBit);
+                storedData.BytesTransform().ShiftLeft(countOfBytesShift, fillByte);
             }
 
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                const std::size_t lastIndex = storedData.Size() - 1;
-                for (std::size_t idx = 0; idx < lastIndex; ++idx) {
-                    storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
+                        storedData.data[idx] = (storedData.data[idx - 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                    }
+                    storedData.data[0] <<= tailBits;
+                    if (fillBit == true) {
+                        storedData.data[0] |= (std::byte(0xFF) >> (8 - tailBits));
+                    }
                 }
-
-                storedData.data[lastIndex] <<= tailBits;
-                if (fillBit == true) {
-                    storedData.data[lastIndex] |= (std::byte(0xFF) >> (8 - tailBits));
+                else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                {
+                    const std::size_t lastIndex = storedData.length - 1;
+                    for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                        storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                    }
+                    storedData.data[lastIndex] <<= tailBits;
+                    if (fillBit == true) {
+                        storedData.data[lastIndex] |= (std::byte(0xFF) >> (8 - tailBits));
+                    }
                 }
             }
         }
@@ -270,29 +366,42 @@ namespace analyzer::common::types
     // Method that performs direct right bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftRight (const std::size_t shift, bool fillBit) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
-            const std::size_t size = Length();
-            if (shift >= size) {
-                memset(storedData.data.get(), (fillBit == false ? 0x00 : 0xFF), storedData.length);
+            const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
+            if (shift >= Length()) {
+                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
                 return *this;
             }
 
-            const std::size_t countOfBytesShift = shift / 8;
+            const std::size_t countOfBytesShift = (shift >> 3);
             if (countOfBytesShift > 0) {
-                rightDirectBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift, fillBit);
+                storedData.BytesTransform().ShiftRight(countOfBytesShift, fillByte);
             }
 
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                for (std::size_t idx = storedData.Size() - 1; idx > 0; --idx) {
-                    storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    const std::size_t lastIndex = storedData.length - 1;
+                    for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                        storedData.data[idx] = (storedData.data[idx + 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                    }
+                    storedData.data[lastIndex] >>= tailBits;
+                    if (fillBit == true) {
+                        storedData.data[lastIndex] |= (std::byte(0xFF) << (8 - tailBits));
+                    }
                 }
-
-                storedData.data[0] >>= tailBits;
-                if (fillBit == true) {
-                    storedData.data[0] |= (std::byte(0xFF) << (8 - tailBits));
+                else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                {
+                    for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
+                        storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                    }
+                    storedData.data[0] >>= tailBits;
+                    if (fillBit == true) {
+                        storedData.data[0] |= (std::byte(0xFF) << (8 - tailBits));
+                    }
                 }
             }
         }
@@ -302,28 +411,37 @@ namespace analyzer::common::types
     // Method that performs round left bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
-            const std::size_t size = Length();
-            if (shift >= size) {
-                shift %= size;
+            if (shift >= Length()) {
+                shift %= Length();
             }
 
-            const std::size_t countOfBytesShift = shift / 8;
+            const std::size_t countOfBytesShift = (shift >> 3);
             if (countOfBytesShift > 0) {
-                leftRoundBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift);
+                storedData.BytesTransform().RoundShiftLeft(countOfBytesShift);
             }
 
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                const std::byte first = storedData.data[0];
-                const std::size_t lastIndex = storedData.Size() - 1;
-                for (std::size_t idx = 0; idx < lastIndex; ++idx) {
-                    storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    const std::byte last = storedData.data[storedData.length - 1];
+                    for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
+                        storedData.data[idx] = (storedData.data[idx - 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                    }
+                    storedData.data[0] = (last >> (8 - tailBits) | (storedData.data[0] << tailBits));
                 }
-                storedData.data[lastIndex] <<= tailBits;
-                storedData.data[lastIndex] |= (first >> (8 - tailBits));
+                else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                {
+                    const std::byte first = storedData.data[0];
+                    const std::size_t lastIndex = storedData.length - 1;
+                    for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                        storedData.data[idx] = (storedData.data[idx + 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
+                    }
+                    storedData.data[lastIndex] = (first >> (8 - tailBits) | storedData.data[lastIndex] << tailBits);
+                }
             }
         }
         return *this;
@@ -332,27 +450,37 @@ namespace analyzer::common::types
     // Method that performs round right bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift > 0)
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
-            const std::size_t size = Length();
-            if (shift >= size) {
-                shift %= size;
+            if (shift >= Length()) {
+                shift %= Length();
             }
 
-            const std::size_t countOfBytesShift = shift / 8;
+            const std::size_t countOfBytesShift = (shift >> 3);
             if (countOfBytesShift > 0) {
-                rightRoundBytesShift(storedData.data.get(), storedData.data.get() + storedData.length, countOfBytesShift);
+                storedData.BytesTransform().RoundShiftRight(countOfBytesShift);
             }
 
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                const std::byte last = storedData.data[storedData.Size() - 1];
-                for (std::size_t idx = storedData.Size() - 1; idx > 0; --idx) {
-                    storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    const std::size_t lastIndex = storedData.length - 1;
+                    const std::byte first = storedData.data[lastIndex];
+                    for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                        storedData.data[idx] = (storedData.data[idx + 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                    }
+                    storedData.data[lastIndex] = (first << (8 - tailBits) | storedData.data[lastIndex] >> tailBits);
                 }
-                storedData.data[0] >>= tailBits;
-                storedData.data[0] |= (last << (8 - tailBits));
+                else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                {
+                    const std::byte last = storedData.data[storedData.length - 1];
+                    for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
+                        storedData.data[idx] = (storedData.data[idx - 1] << (8 - tailBits)) | (storedData.data[idx] >> tailBits);
+                    }
+                    storedData.data[0] = (last << (8 - tailBits) | (storedData.data[0] >> tailBits));
+                }
             }
         }
         return *this;
@@ -362,18 +490,108 @@ namespace analyzer::common::types
     bool RawDataBuffer::BitStreamEngine::Test (const std::size_t index) const noexcept
     {
         if (index >= Length()) { return false; }
-        const std::size_t part = index >> 3; // Division by eight (8).
-        const std::byte shift = std::byte(0x80) >> (index % 8);
+
+        std::size_t part = 0;
+        std::byte shift = std::byte(0x01);
+        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+        {
+            part = index >> 3;
+            shift <<= index % 8;
+        }
+        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
+        {
+            part = storedData.length - (index >> 3) - 1;
+            shift <<= index % 8;
+        }
+        else  // If data handling mode is DATA_MODE_INDEPENDENT.
+        {
+            part = index >> 3;
+            shift >>= 8 - (index % 8);
+        }
         return ((storedData.data[part] & shift) != std::byte(0x00));
     }
 
-    // Method that set the bit under the specified index to new value.
-    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Set (const std::size_t index, bool bitValue) const noexcept
+    // Method that returns bit sequence characteristic when all bit are set in block of stored data.
+    bool RawDataBuffer::BitStreamEngine::All (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
+    bool RawDataBuffer::BitStreamEngine::Any (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
+    bool RawDataBuffer::BitStreamEngine::None (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++) == true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::size_t RawDataBuffer::BitStreamEngine::Count (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return npos; }
+
+        std::size_t count = 0;
+        while (first <= last) {
+            count += (Test(first++) == true) ? 1 : 0;
+        }
+        return count;
+    }
+
+    // Method that sets the bit under the specified index to new value.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Set (const std::size_t index, bool fillBit) const noexcept
     {
         if (index >= Length()) { return *this; }
-        const std::size_t part = index >> 3; // Division by eight (8).
-        const std::byte shift = std::byte(0x80) >> (index % 8);
-        if (bitValue == true) {
+
+        std::size_t part = 0;
+        std::byte shift = std::byte(0x01);
+        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+        {
+            part = index >> 3;
+            shift <<= index % 8;
+        }
+        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
+        {
+            part = storedData.length - (index >> 3) - 1;
+            shift <<= index % 8;
+        }
+        else  // If data handling mode is DATA_MODE_INDEPENDENT.
+        {
+            part = index >> 3;
+            shift >>= 8 - (index % 8);
+        }
+
+        if (fillBit == true) {
             storedData.data[part] |= shift;
         }
         else { storedData.data[part] &= ~shift; }
@@ -384,11 +602,157 @@ namespace analyzer::common::types
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Invert (const std::size_t index) const noexcept
     {
         if (index >= Length()) { return *this; }
-        const std::size_t part = index >> 3; // Division by eight (8).
-        const std::byte shift = std::byte(0x80) >> (index % 8);
+
+        std::size_t part = 0;
+        std::byte shift = std::byte(0x01);
+        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+        {
+            part = index >> 3;
+            shift <<= index % 8;
+        }
+        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
+        {
+            part = storedData.length - (index >> 3) - 1;
+            shift <<= index % 8;
+        }
+        else  // If data handling mode is DATA_MODE_INDEPENDENT.
+        {
+            part = index >> 3;
+            shift >>= 8 - (index % 8);
+        }
         storedData.data[part] ^= shift;
         return *this;
     }
 
+    // Method that inverts the range of bits under the specified first/last indexes.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::InvertBlock (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return *this; }
+
+        while (first <= last) {
+            Invert(first++);
+        }
+        return *this;
+    }
+
+
+    // Logical assignment bitwise AND operator that transforms internal binary raw data.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator&= (const RawDataBuffer::BitStreamEngine& other) const noexcept
+    {
+        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        {
+
+        };
+        return *this;
+    }
+
+    // Logical assignment bitwise OR operator that transforms internal binary raw data.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator|= (const RawDataBuffer::BitStreamEngine& other) const noexcept
+    {
+        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        {
+
+        };
+        return *this;
+    }
+
+    // Logical assignment bitwise XOR operator that transforms internal binary raw data.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator^= (const RawDataBuffer::BitStreamEngine& other) const noexcept
+    {
+        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        {
+
+        };
+        return *this;
+    }
+
+    /* ****************************************** BitStreamEngine ****************************************** */
+    /* ***************************************************************************************************** */
+
+
+    /* ****************************************************************************************************** */
+    /* ****************************************** ByteStreamEngine ****************************************** */
+
+    // Method that performs direct left byte shift by a specified byte offset.
+    const RawDataBuffer::ByteStreamEngine& RawDataBuffer::ByteStreamEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) const noexcept
+    {
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        {
+            if (shift >= storedData.length) {
+                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
+                return *this;
+            }
+
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+                leftDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+            }
+            else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                leftDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+            }
+        }
+        return *this;
+    }
+
+    // Method that performs direct right byte shift by a specified byte offset.
+    const RawDataBuffer::ByteStreamEngine& RawDataBuffer::ByteStreamEngine::ShiftRight (const std::size_t shift, const std::byte fillByte) const noexcept
+    {
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        {
+            if (shift >= storedData.length) {
+                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
+                return *this;
+            }
+
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+                rightDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+            }
+            else {   // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                rightDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+            }
+        }
+        return *this;
+    }
+
+    // Method that performs round left bit shift by a specified byte offset.
+    const RawDataBuffer::ByteStreamEngine& RawDataBuffer::ByteStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
+    {
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        {
+            if (shift >= storedData.length) {
+                shift %= storedData.length;
+            }
+
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+                leftRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            }
+            else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                leftRoundBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            }
+        }
+        return *this;
+    }
+
+    // Method that performs round right bit shift by a specified byte offset.
+    const RawDataBuffer::ByteStreamEngine& RawDataBuffer::ByteStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
+    {
+        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        {
+            if (shift >= storedData.length) {
+                shift %= storedData.length;
+            }
+
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+                rightRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            }
+            else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                rightRoundBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            }
+        }
+        return *this;
+    }
+
+    /* ****************************************** ByteStreamEngine ****************************************** */
+    /* ****************************************************************************************************** */
 
 }  // namespace types.
