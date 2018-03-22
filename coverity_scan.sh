@@ -10,6 +10,7 @@ export COMPILER="/usr/bin/clang++"
 export BUILD_TYPE="Debug"
 
 mkdir check && cd check && cmake -j 4 ..
+
 /usr/local/bin/cov-build --dir cov-int make -j 4 && tar czvf project.tgz cov-int && curl \
   --form token=7wpvlRSdjmG7H2W5WL0fHw \
   --form email=Vit.link420@gmail.com \
@@ -17,4 +18,6 @@ mkdir check && cd check && cmake -j 4 ..
   --form version="$1" \
   --form description="$2" \
   https://scan.coverity.com/builds?project=Vitaliy-Grigoriev%2FProtocol-Analyzer && echo "Send packet success."
+
+  cp cov-int/build-log.txt ../coverity-build-log.txt
 cd .. && rm -rf check

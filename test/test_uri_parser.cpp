@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 /*
 http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80/index.html
 http://[1080:0:0:0:8:800:200C:417A]/index.html
@@ -26,7 +31,7 @@ http://code.google.com/events/#&product=browser
 #include "../include/analyzer/AnalyzerApi.hpp"
 
 
-int main(void)
+int32_t main (int32_t size, char** data)
 {
     const std::string ref = "https://www.google.ru::443/first/second?sourceid=chrome&espv=2&ie=UTF-8#newwindow=1&*";
 

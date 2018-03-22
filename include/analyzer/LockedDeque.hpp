@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
 #define PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
@@ -125,7 +130,7 @@ namespace analyzer::common::types
         {
             if (this != &other)
             {
-                try { std::scoped_lock lock{mutex, other.mutex}; }
+                try { std::scoped_lock lock { mutex, other.mutex }; }
                 catch (const std::system_error& /*err*/) {
                     return *this;
                 }
@@ -144,7 +149,7 @@ namespace analyzer::common::types
         {
             if (this != &other)
             {
-                try { std::scoped_lock lock{mutex, other.mutex}; }
+                try { std::scoped_lock lock { mutex, other.mutex }; }
                 catch (const std::system_error& /*err*/) {
                     return *this;
                 }
@@ -247,7 +252,7 @@ namespace analyzer::common::types
          * @fn bool LockedDeque::Move (std::deque<Type> &) noexcept;
          * @brief Method that moves all internal values to outside STL std::deque<Type>.
          * @tparam [out] result - Returned value.
-         * @return True - if at least 1 element has been moved, otherwise - false.
+         * @return True - if at least one element has been moved, otherwise - false.
          */
         bool Move (std::deque<Type>& result) noexcept
         {
