@@ -48,7 +48,7 @@ namespace analyzer::common::types
      * @brief Type of the data handling mode in RawDataBuffer class.
      *
      * @note Default initial type in RawDataBuffer class is DATA_MODE_DEPENDENT.
-     * @note Data handling mode DATA_MODE_DEPENDENT needs specially for analyze unstructured data.
+     * @note Data handling mode DATA_MODE_INDEPENDENT needs specially for analyze unstructured data.
      */
     enum DATA_HANDLING_MODE : uint16_t
     {
@@ -260,7 +260,7 @@ namespace analyzer::common::types
                     if (engine.storedData.IsEmpty() == false)
                     {
                         stream.unsetf(std::ios_base::boolalpha);
-                        if (engine.storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                        if (engine.storedData.DataModeType() == DATA_MODE_DEPENDENT && engine.storedData.DataEndianType() == DATA_LITTLE_ENDIAN)
                         {
                             for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
                                 stream << engine.Test(idx);

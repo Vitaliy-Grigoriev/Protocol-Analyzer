@@ -224,13 +224,13 @@ namespace analyzer::common::types
     }
 
     /**
-     * @fn static inline void leftRoundBytesShiftLE (std::byte *, std::byte *, const std::size_t) noexcept;
+     * @fn static inline void leftRoundBytesShiftLE (const std::byte *, std::byte *, const std::size_t) noexcept;
      * @brief Support function that performs left byte round shift by a specified byte offset in little-endian format.
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for round left byte shift.
      */
-    static inline void leftRoundBytesShiftLE (std::byte* head, std::byte* end, const std::size_t shift) noexcept
+    static inline void leftRoundBytesShiftLE (const std::byte* head, std::byte* end, const std::size_t shift) noexcept
     {
         rightRoundBytesShiftBE(head, end, end - shift - 1);
     }
@@ -506,7 +506,7 @@ namespace analyzer::common::types
         else  // If data handling mode is DATA_MODE_INDEPENDENT.
         {
             part = index >> 3;
-            shift >>= 8 - (index % 8);
+            shift <<= 8 - (index % 8) - 1;
         }
         return ((storedData.data[part] & shift) != std::byte(0x00));
     }
@@ -588,7 +588,7 @@ namespace analyzer::common::types
         else  // If data handling mode is DATA_MODE_INDEPENDENT.
         {
             part = index >> 3;
-            shift >>= 8 - (index % 8);
+            shift <<= 8 - (index % 8) - 1;
         }
 
         if (fillBit == true) {
@@ -618,7 +618,7 @@ namespace analyzer::common::types
         else  // If data handling mode is DATA_MODE_INDEPENDENT.
         {
             part = index >> 3;
-            shift >>= 8 - (index % 8);
+            shift <<= 8 - (index % 8) - 1;
         }
         storedData.data[part] ^= shift;
         return *this;

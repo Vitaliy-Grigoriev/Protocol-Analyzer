@@ -35,6 +35,13 @@ int32_t main (int32_t size, char** data)
     RawDataBuffer buffer;
     const auto& engine = buffer.BitsTransform();
     buffer.AssignData(&value_1, 1);
+    //buffer.SetDataEndianType(analyzer::common::types::DATA_BIG_ENDIAN);
+    buffer.SetDataModeType(analyzer::common::types::DATA_MODE_INDEPENDENT);
+    std::cout << engine << std::endl;
+    std::cout << std::endl;
+
+    //buffer.SetDataEndianType(analyzer::common::types::DATA_LITTLE_ENDIAN);
+    buffer.SetDataModeType(analyzer::common::types::DATA_MODE_DEPENDENT);
     std::bitset<32> raw(value_1);
     std::cout << raw.to_string() << std::endl;
     std::cout << engine << std::endl;
@@ -57,8 +64,15 @@ int32_t main (int32_t size, char** data)
 
     engine.InvertBlock();
     raw.flip();
-    std::cout << raw.to_string() << std::endl;
-    std::cout << engine << std::endl;
+    std::cout << "Count: " << raw.count() << "   " << raw.to_string() << std::endl;
+    std::cout << "Count: " << engine.Count() << "   " << engine << std::endl;
+
+    std::cout << std::endl;
+
+    engine.InvertBlock();
+    raw.flip();
+    std::cout << "Count: " << raw.count() << "   " << raw.to_string() << std::endl;
+    std::cout << "Count: " << engine.Count() << "   " << engine << std::endl;
 
     std::cout << std::endl;
 
