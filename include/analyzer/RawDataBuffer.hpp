@@ -7,6 +7,8 @@
 #ifndef PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 #define PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
 
+#include <map>  // std::pair.
+#include <string>  // std::string.
 #include <ostream>  // std::ostream.
 #include <iterator>  // std::iterator_traits.
 #include <type_traits>  // std::enable_if, std::is_same, std::is_trivial, std::is_standard_layout.
@@ -19,6 +21,9 @@
 //
 //  Little Endian Model.
 //  |7______0|15______8|23______16|31______24|
+//
+//  Middle Endian Model. (PDP-11)
+//  |23______16|31______24|7______0|15______8|
 //
 //  Big Endian Model.
 //  |31______24|23______16|15______8|7______0|
@@ -98,6 +103,14 @@ namespace analyzer::common::types
              * @brief Const lvalue reference of the RawDataBuffer owner class.
              */
             const RawDataBuffer & storedData;
+
+            /**
+             * @fn std::pair<std::size_t, std::byte> GetBitPosition (std::size_t) const noexcept;
+             * @brief Method that returns the correct position of selected bit in stored raw data in any data endian.
+             * @param [in] index - Index of bit in binary sequence.
+             * @return Index of element in array of raw stored data and shift to this bit in selected part.
+             */
+            std::pair<std::size_t, std::byte> GetBitPosition (std::size_t /*index*/) const noexcept;
 
         public:
             BitStreamEngine(void) = delete;
@@ -201,7 +214,7 @@ namespace analyzer::common::types
 
             /**
              * @fn std::size_t BitStreamEngine::Count (std::size_t, std::size_t) const noexcept;
-             * @brief Method that returns the number of bits that are set in block of stored data.
+             * @brief Method that returns the number of bits that are set in the selected interval of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
              * @return Number of bits that are set in block of stored data.
@@ -211,6 +224,32 @@ namespace analyzer::common::types
             std::size_t Count (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
+             * @fn std::size_t BitStreamEngine::GetFirstIndex (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns position of the first set bit in the selected interval of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] isRelative - Boolean flag that indicates about the type of return index. Default: true.
+             * @return Position of the first set bit in the selected interval of stored data.
+             *
+             * @note Method returns RawDataBuffer::npos value if there are no set bits on the specified interval.
+             * @note Method returns RawDataBuffer::npos value if an error occurred.
+             */
+            std::size_t GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
+
+            /**
+             * @fn std::size_t BitStreamEngine::GetLastIndex (std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns position of the last set bit in the selected interval of stored data.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] isRelative - Boolean flag that indicates about the type of return index. Default: true.
+             * @return Position of the last set bit in the selected interval of stored data.
+             *
+             * @note Method returns RawDataBuffer::npos value if there are no set bits on the specified interval.
+             * @note Method returns RawDataBuffer::npos value if an error occurred.
+             */
+            std::size_t GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
+
+            /**
              * @fn const BitStreamEngine & BitStreamEngine::Set (std::size_t, bool) const noexcept;
              * @brief Method that sets the bit under the specified index to new value.
              * @param [in] index - Index of bit in binary sequence.
@@ -218,6 +257,15 @@ namespace analyzer::common::types
              * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & Set (std::size_t /*index*/, bool /*fillBit*/ = true) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::Reverse (std::size_t, std::size_t) const noexcept;
+             * @brief Method that reverses a sequence of bits under the specified first/last indexes.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be reversed. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be reversed. Default: npos.
+             * @return Const lvalue reference of BitStreamEngine class.
+             */
+            const BitStreamEngine & Reverse (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
              * @fn const BitStreamEngine & BitStreamEngine::Invert (std::size_t) const noexcept;
@@ -235,6 +283,31 @@ namespace analyzer::common::types
              * @return Const lvalue reference of BitStreamEngine class.
              */
             const BitStreamEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn std::string BitStreamEngine::ToString (std::size_t, std::size_t) const noexcept;
+             * @brief Method that outputs internal binary raw data in string format.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputed. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputed. Default: npos.
+             * @return STL string object with sequence of the bit character representation of stored data.
+             *
+             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode is DATA_MODE_DEPENDENT.
+             */
+            std::string ToString (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn std::string BitStreamEngine::ToString (std::size_t, std::size_t) const noexcept;
+             * @brief Method that outputs internal binary raw data in short string format.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputted. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputted. Default: npos.
+             * @param [in] compression - Bit sequence compression level. Default: 1.
+             * @return STL string object with sequence of the bit character representation of stored data in short format.
+             *
+             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode is DATA_MODE_DEPENDENT.
+             * @note Use this function only for large bit sequences.
+             * @note Example: 10010011  --1-->  1(0){2}1(0){2}(1){2}  --2-->  (1(0){2}){2}(1){2}.
+             */
+            std::string ToShortString (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, uint16_t /*compression*/ = 1) const noexcept;
 
             /**
              * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
@@ -279,6 +352,7 @@ namespace analyzer::common::types
                 return stream;
             }
 
+
             /**
              * @fn const BitStreamEngine & BitStreamEngine::operator&= (const BitStreamEngine &) const noexcept;
              * @brief Logical assignment bitwise AND operator that transforms internal binary raw data.
@@ -309,6 +383,8 @@ namespace analyzer::common::types
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return New object of transformed RawDataBuffer class.
+             *
+             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
              */
             friend inline RawDataBuffer operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -325,6 +401,8 @@ namespace analyzer::common::types
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return New object of transformed RawDataBuffer class.
+             *
+             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
              */
             friend inline RawDataBuffer operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -341,6 +419,8 @@ namespace analyzer::common::types
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return New object of transformed RawDataBuffer class.
+             *
+             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
              */
             friend inline RawDataBuffer operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -348,6 +428,47 @@ namespace analyzer::common::types
                 if (result.IsEmpty() == false) {
                     result.BitsTransform() ^= right;
                 }
+                return result;
+            }
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator<< (const BitStreamEngine &, const std::size_t) noexcept;
+             * @brief Bitwise left shift operator that performs direct left bit shift by a specified bit offset.
+             * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
+             * @param [in] shift - Bit offset for direct left bit shift as right operand.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator<< (const BitStreamEngine& engine, const std::size_t shift) noexcept
+            {
+                RawDataBuffer result(engine.storedData);
+                result.BitsTransform().ShiftLeft(shift, false);
+                return result;
+            }
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator>> (const BitStreamEngine &, const std::size_t) noexcept;
+             * @brief Bitwise right shift operator that performs direct right bit shift by a specified bit offset.
+             * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
+             * @param [in] shift - Bit offset for direct right bit shift as right operand.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator>> (const BitStreamEngine& engine, const std::size_t shift) noexcept
+            {
+                RawDataBuffer result(engine.storedData);
+                result.BitsTransform().ShiftRight(shift, false);
+                return result;
+            }
+
+            /**
+             * @fn friend inline RawDataBuffer BitStreamEngine::operator~ (const BitStreamEngine &) const noexcept;
+             * @brief Logical bitwise complement operator that inverts each bit in internal binary raw data.
+             * @param [in] engine - Const lvalue reference of the BitStreamEngine class.
+             * @return New object of transformed RawDataBuffer class.
+             */
+            friend inline RawDataBuffer operator~ (const BitStreamEngine& engine) noexcept
+            {
+                RawDataBuffer result(engine.storedData);
+                result.BitsTransform().InvertBlock();
                 return result;
             }
 

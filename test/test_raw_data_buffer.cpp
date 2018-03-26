@@ -35,73 +35,37 @@ int32_t main (int32_t size, char** data)
     RawDataBuffer buffer;
     const auto& engine = buffer.BitsTransform();
     buffer.AssignData(&value_1, 1);
-    //buffer.SetDataEndianType(analyzer::common::types::DATA_BIG_ENDIAN);
     buffer.SetDataModeType(analyzer::common::types::DATA_MODE_INDEPENDENT);
-    std::cout << engine << std::endl;
+    std::cout << "Count 2: " << engine.Count() << "   " << engine << std::endl;
     std::cout << std::endl;
 
-    //buffer.SetDataEndianType(analyzer::common::types::DATA_LITTLE_ENDIAN);
     buffer.SetDataModeType(analyzer::common::types::DATA_MODE_DEPENDENT);
     std::bitset<32> raw(value_1);
-    std::cout << raw.to_string() << std::endl;
-    std::cout << engine << std::endl;
+    std::cout << "Count 1: " << raw.count() << "   " << raw.to_string() << std::endl;
+    std::cout << "Count 2: " << engine.Count() << "   " << engine << std::endl;
 
     std::cout << std::endl;
 
-    engine.Set(31).Set(23).Set(18, false).Set(0);
-    raw.set(31).set(23).set(18, false).set(0);
-    std::cout << raw.to_string() << std::endl;
-    std::cout << engine << std::endl;
+    std::cout << "Count 3: " << engine.Count(11, 18) << "   " << engine.ToString(11, 18) << std::endl;
+    std::cout << "Count 2: " << engine.Count() << "   " << engine.Reverse(11, 18) << std::endl;
+    std::cout << "Count 4: " << engine.Count(11, 18) << "   " << engine.ToString(11, 18) << std::endl;
+    std::cout << "Count 2: " << engine.Count() << "   " << engine.Reverse(11, 18) << std::endl;
 
     std::cout << std::endl;
 
-    engine.ShiftLeft(5).ShiftRight(17);
-    raw <<= 5; raw >>= 17;
-    std::cout << raw.to_string() << std::endl;
-    std::cout << engine << std::endl;
+    std::cout << engine.GetFirstIndex() << std::endl;
+    std::cout << engine.GetLastIndex() << std::endl;
+    std::cout << engine.GetFirstIndex(11, 16) << std::endl;
+    std::cout << engine.GetLastIndex(11, 16) << std::endl;
+    std::cout << engine.GetFirstIndex(11, 16, false) << std::endl;
+    std::cout << engine.GetLastIndex(11, 16, false) << std::endl;
 
     std::cout << std::endl;
 
-    engine.InvertBlock();
-    raw.flip();
-    std::cout << "Count: " << raw.count() << "   " << raw.to_string() << std::endl;
-    std::cout << "Count: " << engine.Count() << "   " << engine << std::endl;
+    RawDataBuffer result = engine << 15;
+    std::cout << "Count 5: " << result.BitsTransform().Count() << "   " << result.BitsTransform() << std::endl;
 
-    std::cout << std::endl;
-
-    engine.InvertBlock();
-    raw.flip();
-    std::cout << "Count: " << raw.count() << "   " << raw.to_string() << std::endl;
-    std::cout << "Count: " << engine.Count() << "   " << engine << std::endl;
-
-    std::cout << std::endl;
-
-    engine.RoundShiftLeft(5);
-    std::cout << engine << std::endl;
-
-    engine.RoundShiftRight(5);
-    std::cout << engine << std::endl;
-
-    std::cout << std::endl;
-
-
-    /*RawDataBuffer buffer;
-    buffer.AssignData<uint32_t>(&value_1, 1);
-    for (std::size_t idx = 0; idx < buffer.BitsTransform().Length(); ++idx) {
-        std::cout << buffer.BitsTransform().Test(idx);
-    }
-    std::cout << std::endl;
-    std::bitset<32> raw(value_1);
-    std::cout << raw.to_string() << std::endl;*/
-
-    /*std::bitset<8> raw_1(0);
-    raw_1.set(1);
-    std::cout << raw_1.to_string() << std::endl;*/
-    /*buffer.AssignData(&value_2, 1);
-    std::cout << buffer.BitsTransform() << std::endl;
-
-    buffer.AssignData(&value_3, 1);
-    std::cout << buffer.BitsTransform() << std::endl;*/
+    //std::cout << engine.ToShortString() << std::endl;
 
     return EXIT_SUCCESS;
 }

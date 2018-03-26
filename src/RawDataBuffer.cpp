@@ -318,6 +318,23 @@ namespace analyzer::common::types
     /* ***************************************************************************************************** */
     /* ****************************************** BitStreamEngine ****************************************** */
 
+    // Method that returns the correct position of selected bit in stored raw data in any data endian.
+    std::pair<std::size_t, std::byte> RawDataBuffer::BitStreamEngine::GetBitPosition (const std::size_t index) const noexcept
+    {
+        if (index >= Length()) { std::pair(0, 0); }
+
+        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+        {
+            return std::pair(index >> 3, std::byte(0x01) << index % 8);
+        }
+        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
+        {
+            return std::pair(storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8);
+        }
+        // If data handling mode is DATA_MODE_INDEPENDENT.
+        return std::pair(index >> 3, std::byte(0x80) >> index % 8);
+    }
+
     // Method that performs direct left bit shift by a specified bit offset.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::ShiftLeft (const std::size_t shift, bool fillBit) const noexcept
     {
@@ -491,23 +508,7 @@ namespace analyzer::common::types
     {
         if (index >= Length()) { return false; }
 
-        std::size_t part = 0;
-        std::byte shift = std::byte(0x01);
-        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
-        {
-            part = index >> 3;
-            shift <<= index % 8;
-        }
-        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
-        {
-            part = storedData.length - (index >> 3) - 1;
-            shift <<= index % 8;
-        }
-        else  // If data handling mode is DATA_MODE_INDEPENDENT.
-        {
-            part = index >> 3;
-            shift <<= 8 - (index % 8) - 1;
-        }
+        const auto [part, shift] = GetBitPosition(index);
         return ((storedData.data[part] & shift) != std::byte(0x00));
     }
 
@@ -556,6 +557,7 @@ namespace analyzer::common::types
         return true;
     }
 
+    // Method that returns the number of bits that are set in the selected interval of stored data.
     std::size_t RawDataBuffer::BitStreamEngine::Count (std::size_t first, std::size_t last) const noexcept
     {
         if (last == npos) { last = Length() - 1; }
@@ -568,33 +570,73 @@ namespace analyzer::common::types
         return count;
     }
 
+    // Method that returns position of the first set bit in the selected interval of stored data.
+    std::size_t RawDataBuffer::BitStreamEngine::GetFirstIndex (const std::size_t first, std::size_t last, bool isRelative) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return npos; }
+
+        std::size_t index = first;
+        while (index <= last)
+        {
+            if (Test(index) == true) {
+                return ((isRelative == true) ? index - first : index);
+            }
+            index++;
+        }
+        return npos;
+    }
+
+    // Method that returns position of the last set bit in the selected interval of stored data.
+    std::size_t RawDataBuffer::BitStreamEngine::GetLastIndex (const std::size_t first, std::size_t last, bool isRelative) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return npos; }
+
+        std::size_t index = last;
+        while (index >= first)
+        {
+            if (Test(index) == true) {
+                return ((isRelative == true) ? index - first : index);
+            }
+            index--;
+        }
+        return npos;
+    }
+
     // Method that sets the bit under the specified index to new value.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Set (const std::size_t index, bool fillBit) const noexcept
     {
         if (index >= Length()) { return *this; }
 
-        std::size_t part = 0;
-        std::byte shift = std::byte(0x01);
-        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
-        {
-            part = index >> 3;
-            shift <<= index % 8;
-        }
-        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
-        {
-            part = storedData.length - (index >> 3) - 1;
-            shift <<= index % 8;
-        }
-        else  // If data handling mode is DATA_MODE_INDEPENDENT.
-        {
-            part = index >> 3;
-            shift <<= 8 - (index % 8) - 1;
-        }
-
+        const auto [part, shift] = GetBitPosition(index);
         if (fillBit == true) {
             storedData.data[part] |= shift;
         }
         else { storedData.data[part] &= ~shift; }
+        return *this;
+    }
+
+    // Method that reverses a sequence of bits under the specified first/last indexes.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::Reverse (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return *this; }
+
+        while (first < last)
+        {
+            const auto [partFirst, shiftFirst] = GetBitPosition(first);
+            const auto [partLast, shiftLast] = GetBitPosition(last);
+
+            if (((storedData.data[partFirst] & shiftFirst) != std::byte(0x00)) !=
+                ((storedData.data[partLast] & shiftLast) != std::byte(0x00)))
+            {
+                storedData.data[partFirst] ^= shiftFirst;
+                storedData.data[partLast] ^= shiftLast;
+            }
+            first++;
+            last--;
+        }
         return *this;
     }
 
@@ -603,23 +645,7 @@ namespace analyzer::common::types
     {
         if (index >= Length()) { return *this; }
 
-        std::size_t part = 0;
-        std::byte shift = std::byte(0x01);
-        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
-        {
-            part = index >> 3;
-            shift <<= index % 8;
-        }
-        else if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
-        {
-            part = storedData.length - (index >> 3) - 1;
-            shift <<= index % 8;
-        }
-        else  // If data handling mode is DATA_MODE_INDEPENDENT.
-        {
-            part = index >> 3;
-            shift <<= 8 - (index % 8) - 1;
-        }
+        const auto [part, shift] = GetBitPosition(index);
         storedData.data[part] ^= shift;
         return *this;
     }
@@ -636,6 +662,108 @@ namespace analyzer::common::types
         return *this;
     }
 
+    // Method that outputs internal binary raw data in string format.
+    std::string RawDataBuffer::BitStreamEngine::ToString (std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return std::string(); }
+
+        std::ostringstream result;
+        if (storedData.IsEmpty() == false)
+        {
+            result.unsetf(std::ios_base::boolalpha);
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+            {
+                while (last >= first && last != 0) {
+                    result << Test(last--);
+                }
+                if (last == 0) { result << Test(0); }
+            }
+            else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+            {
+                while (first <= last) {
+                    result << Test(first++);
+                }
+            }
+        }
+        return result.str();
+    }
+
+    // Method that outputs internal binary raw data in short string format.
+    std::string RawDataBuffer::BitStreamEngine::ToShortString (std::size_t first, std::size_t last, uint16_t compression) const noexcept
+    {
+        if (compression == 0) { return ToString(first, last); }
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return std::string(); }
+
+        std::ostringstream result;
+        if (storedData.IsEmpty() == false)
+        {
+            // Do first compression on fly.
+            result.unsetf(std::ios_base::boolalpha);
+            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+            {
+                std::size_t count = 1;
+                bool lastValue = Test(last--);
+                while (last >= first && last != 0)
+                {
+                    if (Test(last--) == lastValue) {
+                        count++;
+                    }
+                    else
+                    {
+                        if (count == 1) {
+                            result << lastValue;
+                            lastValue = !lastValue;
+                        } else {
+                            result << '(' << lastValue << "){" << count << '}';
+                            count = 1;
+                            lastValue = !lastValue;
+                        }
+                    }
+                }
+                if (last == 0)
+                {
+                    if (Test(last) == lastValue) {
+                        count++;
+                        result << '(' << lastValue << "){" << count << '}';
+                    }
+                    else
+                    {
+                        if (count == 1) {
+                            result << lastValue;
+                        } else {
+                            result << '(' << lastValue << "){" << count << '}';
+                        }
+                        result << !lastValue;
+                    }
+                }
+                else if (last == first - 1)
+                {
+                    if (count == 1) {
+                        result << lastValue;
+                    } else {
+                        result << '(' << lastValue << "){" << count << '}';
+                    }
+                }
+
+                for (std::size_t idx = 2; idx < compression; ++idx)
+                {
+
+                }
+            }
+            else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+            {
+                while (first <= last) {
+                    result << Test(first++);
+                }
+            }
+
+            // Do second compression.
+
+        }
+        return result.str();
+    }
 
     // Logical assignment bitwise AND operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator&= (const RawDataBuffer::BitStreamEngine& other) const noexcept
@@ -666,6 +794,7 @@ namespace analyzer::common::types
         };
         return *this;
     }
+
 
     /* ****************************************** BitStreamEngine ****************************************** */
     /* ***************************************************************************************************** */
