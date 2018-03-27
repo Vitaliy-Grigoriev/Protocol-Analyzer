@@ -55,14 +55,22 @@ namespace analyzer::system
     [[nodiscard]]
     std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const void* data = nullptr, const std::size_t length = 0) noexcept
     {
-        try {
+        try
+        {
             auto memory = std::make_unique<Type[]>(size);
             if (data == nullptr || length == 0) { return memory; }
 
-            if (size * sizeof(Type) <= length) {
-                memcpy(memory.get(), data, size * sizeof(Type));
-            } else {
+            const std::size_t allocatedByteSize = size * sizeof(Type);
+            if (allocatedByteSize == length) {
+                memcpy(memory.get(), data, allocatedByteSize);
+            }
+            else if (allocatedByteSize < length) {
+                memcpy(memory.get(), data, allocatedByteSize);
+                memset(memory.get() + allocatedByteSize, 0, length - allocatedByteSize);
+            }
+            else {  // If copied data size less then allocated data size.
                 memcpy(memory.get(), data, length);
+                memset(memory.get() + length, 0, allocatedByteSize - length);
             }
             return memory;
         }
