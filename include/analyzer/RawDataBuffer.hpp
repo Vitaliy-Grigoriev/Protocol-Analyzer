@@ -109,6 +109,8 @@ namespace analyzer::common::types
              * @brief Method that returns the correct position of selected bit in stored raw data in any data endian.
              * @param [in] index - Index of bit in binary sequence.
              * @return Index of element in array of raw stored data and shift to this bit in selected part.
+             *
+             * @note Method returns index 'npos' if selected index is out of range.
              */
             std::pair<std::size_t, std::byte> GetBitPosition (std::size_t /*index*/) const noexcept;
 
@@ -313,7 +315,7 @@ namespace analyzer::common::types
              * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
              * @brief Operator that returns the value of bit under the specified index.
              * @param [in] index - Index of bit in binary sequence.
-             * @return Boolean value that indicates about the value of the selected bit.
+             * @return Value of the selected bit.
              */
             inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
 
@@ -354,10 +356,26 @@ namespace analyzer::common::types
 
 
             /**
+             * @fn const BitStreamEngine & BitStreamEngine::operator<<= (std::size_t) const noexcept;
+             * @brief Bitwise left shift assignment operator that performs direct left bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct left bit shift as right operand.
+             * @return Const lvalue reference of transformed BitStreamEngine class.
+             */
+            const BitStreamEngine & operator<<= (std::size_t /*shift*/) const noexcept;
+
+            /**
+             * @fn const BitStreamEngine & BitStreamEngine::operator>>= (std::size_t) const noexcept;
+             * @brief Bitwise right shift assignment operator that performs direct right bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct right bit shift as right operand.
+             * @return Const lvalue reference of transformed BitStreamEngine class.
+             */
+            const BitStreamEngine & operator>>= (std::size_t /*shift*/) const noexcept;
+
+            /**
              * @fn const BitStreamEngine & BitStreamEngine::operator&= (const BitStreamEngine &) const noexcept;
              * @brief Logical assignment bitwise AND operator that transforms internal binary raw data.
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed BitStreamEngine class.
+             * @return Const lvalue reference of transformed (by operation AND) BitStreamEngine class.
              */
             const BitStreamEngine & operator&= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -365,7 +383,7 @@ namespace analyzer::common::types
              * @fn const BitStreamEngine & BitStreamEngine::operator|= (const BitStreamEngine &) const noexcept;
              * @brief Logical assignment bitwise OR operator that transforms internal binary raw data.
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed BitStreamEngine class.
+             * @return Const lvalue reference of transformed (by operation OR) BitStreamEngine class.
              */
             const BitStreamEngine & operator|= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -373,7 +391,9 @@ namespace analyzer::common::types
              * @fn const BitStreamEngine & BitStreamEngine::operator^= (const BitStreamEngine &) const noexcept;
              * @brief Logical assignment bitwise XOR operator that transforms internal binary raw data.
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed BitStreamEngine class.
+             * @return Const lvalue reference of transformed (by operation XOR) BitStreamEngine class.
+             *
+             * @note If operands have different raw data length then the result raw data will be the length of the largest among the operands.
              */
             const BitStreamEngine & operator^= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -382,9 +402,10 @@ namespace analyzer::common::types
              * @brief Logical bitwise AND operator that transforms internal binary raw data.
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed (by operation AND) RawDataBuffer class.
              *
-             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
+             * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
              */
             friend inline RawDataBuffer operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -400,9 +421,10 @@ namespace analyzer::common::types
              * @brief Logical bitwise OR operator that transforms internal binary raw data.
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed (by operation OR) RawDataBuffer class.
              *
-             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
+             * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
              */
             friend inline RawDataBuffer operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -418,9 +440,10 @@ namespace analyzer::common::types
              * @brief Logical bitwise XOR operator that transforms internal binary raw data.
              * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed (by operation XOR) RawDataBuffer class.
              *
-             * @note If operands have different endian and mode then returned RawDataBuffer will have endian and mode of the left operand.
+             * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
              */
             friend inline RawDataBuffer operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
@@ -436,7 +459,7 @@ namespace analyzer::common::types
              * @brief Bitwise left shift operator that performs direct left bit shift by a specified bit offset.
              * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] shift - Bit offset for direct left bit shift as right operand.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed RawDataBuffer class.
              */
             friend inline RawDataBuffer operator<< (const BitStreamEngine& engine, const std::size_t shift) noexcept
             {
@@ -450,7 +473,7 @@ namespace analyzer::common::types
              * @brief Bitwise right shift operator that performs direct right bit shift by a specified bit offset.
              * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
              * @param [in] shift - Bit offset for direct right bit shift as right operand.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed RawDataBuffer class.
              */
             friend inline RawDataBuffer operator>> (const BitStreamEngine& engine, const std::size_t shift) noexcept
             {
@@ -463,7 +486,7 @@ namespace analyzer::common::types
              * @fn friend inline RawDataBuffer BitStreamEngine::operator~ (const BitStreamEngine &) const noexcept;
              * @brief Logical bitwise complement operator that inverts each bit in internal binary raw data.
              * @param [in] engine - Const lvalue reference of the BitStreamEngine class.
-             * @return New object of transformed RawDataBuffer class.
+             * @return New temporary object of transformed (by operation NOT) RawDataBuffer class.
              */
             friend inline RawDataBuffer operator~ (const BitStreamEngine& engine) noexcept
             {
@@ -491,6 +514,16 @@ namespace analyzer::common::types
              * @brief Const lvalue reference of the RawDataBuffer owner class.
              */
             const RawDataBuffer & storedData;
+
+            /**
+             * @fn std::size_t GetBytePosition (std::size_t) const noexcept;
+             * @brief Method that returns the correct position of selected byte in stored raw data in any data endian.
+             * @param [in] index - Index of byte in byte sequence.
+             * @return Index of element in array of raw stored data.
+             *
+             * @note Method returns index 'npos' if selected index is out of range.
+             */
+            std::size_t GetBytePosition (std::size_t /*index*/) const noexcept;
 
         public:
             ByteStreamEngine(void) = delete;
@@ -554,19 +587,41 @@ namespace analyzer::common::types
              * @return Const lvalue reference of ByteStreamEngine class.
              */
             const ByteStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
+
+            /**
+             * @fn inline std::byte ByteStreamEngine::operator[] (const std::size_t) const noexcept;
+             * @brief Operator that returns the value of byte under the specified index.
+             * @param [in] index - Index of byte in byte sequence.
+             * @return Value of the selected byte.
+             *
+             * @note Method returns '0x00' if selected index is out of range.
+             */
+            inline std::byte operator[] (const std::size_t index) const noexcept
+            {
+                if (index >= Length()) { return std::byte(0x00); }
+                return storedData.data[GetBytePosition(index)];
+            }
+
+            /**
+             * @fn std::byte * ByteStreamEngine::GetAt (std::size_t) const noexcept;
+             * @brief Method that returns a pointer to the value of byte under the specified index.
+             * @param [in] index - Index of byte in byte sequence.
+             * @return Return a pointer to the value of byte under the specified index or nullptr in an error occurred.
+             */
+            std::byte * GetAt (std::size_t /*index*/) const noexcept;
         };
 
     private:
         /**
-         * @var std::unique_ptr<std::byte[]> data;
+         * @var mutable std::unique_ptr<std::byte[]> data;
          * @brief Internal variable that contains binary raw data.
          */
-        std::unique_ptr<std::byte[]> data = nullptr;
+        mutable std::unique_ptr<std::byte[]> data = nullptr;
         /**
-         * @var std::size_t length;
+         * @var mutable std::size_t length;
          * @brief Length of stored data in bytes.
          */
-        std::size_t length = 0;
+        mutable std::size_t length = 0;
         /**
          * @var DATA_HANDLING_MODE dataMode;
          * @brief Type of the data handling mode.

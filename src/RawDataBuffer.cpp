@@ -48,6 +48,7 @@ namespace analyzer::common::types
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr) {
             length = size;
+            memset(data.get(), 0, length);
         }
     }
 
@@ -83,6 +84,8 @@ namespace analyzer::common::types
     // Method that changes handling mode type of stored data in RawDataBuffer class.
     void RawDataBuffer::SetDataEndianType (DATA_ENDIAN_TYPE endian, bool convert) noexcept
     {
+        if (dataEndian == endian) { return; }
+
         dataEndian = endian;
         if (convert == true)
         {
@@ -321,7 +324,7 @@ namespace analyzer::common::types
     // Method that returns the correct position of selected bit in stored raw data in any data endian.
     std::pair<std::size_t, std::byte> RawDataBuffer::BitStreamEngine::GetBitPosition (const std::size_t index) const noexcept
     {
-        if (index >= Length()) { std::pair(0, 0); }
+        if (index >= Length()) { return std::pair(static_cast<std::size_t>(-1), std::byte(0x00)); }
 
         if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
         {
@@ -765,33 +768,86 @@ namespace analyzer::common::types
         return result.str();
     }
 
+    // Bitwise left shift assignment operator that performs direct left bit shift by a specified bit offset.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator<<= (const std::size_t shift) const noexcept
+    {
+        ShiftLeft(shift, false);
+        return *this;
+    }
+
+    // Bitwise right shift assignment operator that performs direct right bit shift by a specified bit offset.
+    const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator>>= (const std::size_t shift) const noexcept
+    {
+        ShiftRight(shift, false);
+        return *this;
+    }
+
     // Logical assignment bitwise AND operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator&= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
-        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        if (storedData.data != nullptr && storedData.length > 0)
         {
 
-        };
+        }
         return *this;
     }
 
     // Logical assignment bitwise OR operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator|= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
-        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        if (storedData.data != nullptr && storedData.length > 0)
         {
 
-        };
+        }
         return *this;
     }
 
     // Logical assignment bitwise XOR operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator^= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
-        const auto lambda = [] (std::byte* dst, std::size_t size, const std::byte* src) noexcept -> void
+        if (storedData.data != nullptr && storedData.length > 0)
         {
+            const auto& currentByteEngine = storedData.BytesTransform();
+            const auto& otherByteEngine = other.storedData.BytesTransform();
 
-        };
+            if (storedData.length >= other.storedData.length)
+            {
+                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx];
+                }
+            }
+            else  // If right operand has raw data with longer length.
+            {
+                if (storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length, storedData.data.get(), storedData.length);
+                    if (newData != nullptr)
+                    {
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx];
+                        }
+                    }
+                }
+                else  // If data endian type is DATA_BIG_ENDIAN.
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length);
+                    if (newData != nullptr)
+                    {
+                        const std::size_t diff = other.storedData.length - storedData.length;
+                        memset(newData.get(), 0, diff);
+                        memcpy(newData.get() + diff, storedData.data.get(), storedData.length);
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx];
+                        }
+                    }
+                }
+
+            }
+        }
         return *this;
     }
 
@@ -802,6 +858,19 @@ namespace analyzer::common::types
 
     /* ****************************************************************************************************** */
     /* ****************************************** ByteStreamEngine ****************************************** */
+
+    // Method that returns the correct position of selected byte in stored raw data in any data endian.
+    std::size_t RawDataBuffer::ByteStreamEngine::GetBytePosition (const std::size_t index) const noexcept
+    {
+        if (index >= Length()) { return npos; }
+
+        if (storedData.dataEndian == DATA_LITTLE_ENDIAN || storedData.dataMode == DATA_MODE_INDEPENDENT)
+        {
+            return index;
+        }
+        // If data endian type is DATA_BIG_ENDIAN.
+        return storedData.length - index - 1;
+    }
 
     // Method that performs direct left byte shift by a specified byte offset.
     const RawDataBuffer::ByteStreamEngine& RawDataBuffer::ByteStreamEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) const noexcept
@@ -879,6 +948,13 @@ namespace analyzer::common::types
             }
         }
         return *this;
+    }
+
+    // Method that returns a pointer to the value of byte under the specified index.
+    std::byte* RawDataBuffer::ByteStreamEngine::GetAt (const std::size_t index) const noexcept
+    {
+        if (index >= Length()) { return nullptr; }
+        return &storedData.data[GetBytePosition(index)];
     }
 
     /* ****************************************** ByteStreamEngine ****************************************** */
