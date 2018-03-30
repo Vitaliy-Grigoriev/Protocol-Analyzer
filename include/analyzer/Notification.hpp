@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #pragma once
 #ifndef PROTOCOL_ANALYZER_NOTIFICATION_HPP
 #define PROTOCOL_ANALYZER_NOTIFICATION_HPP
@@ -209,7 +214,7 @@ namespace analyzer::task
      * @tparam [in] Type - The internal expected value type.
      */
     template <typename Type>
-    class NotificationInit : public NotificationSubject<Type>, public NotificationObserver<Type>
+    class NotificationInit final : public NotificationSubject<Type>, public NotificationObserver<Type>
     {
     public:
         /**

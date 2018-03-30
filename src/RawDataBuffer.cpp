@@ -6,7 +6,9 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include "../include/analyzer/Common.hpp"
+#include <sstream>  // std::ostringstream.
+#include <cstddef>  // std::byte.
+
 #include "../include/analyzer/System.hpp"
 #include "../include/analyzer/RawDataBuffer.hpp"
 

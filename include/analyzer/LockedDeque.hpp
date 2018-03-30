@@ -91,7 +91,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept;
+         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &&) noexcept;
          * @brief Move assignment constructor with LockedDeque<Type>.
          * @tparam [in] other - The rvalue reference of moved LockedDeque<Type>.
          */
@@ -105,7 +105,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept;
+         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &&) noexcept;
          * @brief Move assignment constructor with STL std::deque<Type>.
          * @tparam [in] other - The rvalue reference of moved STL std::deque<Type>.
          */
