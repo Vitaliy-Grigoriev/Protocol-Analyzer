@@ -42,7 +42,7 @@ namespace analyzer::common::types
     }
 
     // Allocated constructor.
-    RawDataBuffer::RawDataBuffer (const std::size_t size, DATA_HANDLING_MODE mode, DATA_ENDIAN_TYPE endian) noexcept
+    RawDataBuffer::RawDataBuffer (const std::size_t size, const uint16_t mode, const uint16_t endian) noexcept
             : dataMode(mode), dataEndian(endian), bitStreamTransform(*this), byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
@@ -82,7 +82,29 @@ namespace analyzer::common::types
     }
 
     // Method that changes handling mode type of stored data in RawDataBuffer class.
-    void RawDataBuffer::SetDataEndianType (DATA_ENDIAN_TYPE endian, bool convert) noexcept
+    void RawDataBuffer::SetDataModeType (const uint16_t mode) noexcept
+    {
+        if ((mode & DATA_MODE_DEPENDENT) != 0) {
+            dataMode &= ~DATA_MODE_INDEPENDENT;
+            dataMode |= DATA_MODE_DEPENDENT;
+        }
+        else if ((mode & DATA_MODE_INDEPENDENT) != 0) {
+            dataMode &= ~DATA_MODE_DEPENDENT;
+            dataMode |= DATA_MODE_INDEPENDENT;
+        }
+
+        if ((mode & DATA_MODE_SAFE_OPERATOR) != 0) {
+            dataMode &= ~DATA_MODE_UNSAFE_OPERATOR;
+            dataMode |= DATA_MODE_SAFE_OPERATOR;
+        }
+        else if ((mode & DATA_MODE_UNSAFE_OPERATOR) != 0) {
+            dataMode &= ~DATA_MODE_SAFE_OPERATOR;
+            dataMode |= DATA_MODE_UNSAFE_OPERATOR;
+        }
+    }
+
+    // Method that changes handling mode type of stored data in RawDataBuffer class.
+    void RawDataBuffer::SetDataEndianType (const uint16_t endian, bool convert) noexcept
     {
         if (dataEndian == endian) { return; }
 
@@ -109,7 +131,7 @@ namespace analyzer::common::types
     {
         data.reset(nullptr);
         length = 0;
-        dataMode = DATA_MODE_DEPENDENT;
+        dataMode = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR;
         dataEndian = CheckSystemEndian();
     }
 
@@ -326,13 +348,14 @@ namespace analyzer::common::types
     {
         if (index >= Length()) { return std::pair(static_cast<std::size_t>(-1), std::byte(0x00)); }
 
-        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+        if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u)
         {
-            return std::pair(index >> 3, std::byte(0x01) << index % 8);
-        }
-        if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_BIG_ENDIAN)
-        {
-            return std::pair(storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8);
+            if (storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+                return std::pair(index >> 3, std::byte(0x01) << index % 8);
+            }
+            if (storedData.dataEndian == DATA_BIG_ENDIAN) {
+                return std::pair(storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8);
+            }
         }
         // If data handling mode is DATA_MODE_INDEPENDENT.
         return std::pair(index >> 3, std::byte(0x80) >> index % 8);
@@ -357,7 +380,7 @@ namespace analyzer::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN)
                 {
                     for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
                         storedData.data[idx] = (storedData.data[idx - 1] >> (8 - tailBits)) | (storedData.data[idx] << tailBits);
@@ -402,7 +425,7 @@ namespace analyzer::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN)
                 {
                     const std::size_t lastIndex = storedData.length - 1;
                     for (std::size_t idx = 0; idx < lastIndex; ++idx) {
@@ -445,7 +468,7 @@ namespace analyzer::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN)
                 {
                     const std::byte last = storedData.data[storedData.length - 1];
                     for (std::size_t idx = storedData.length - 1; idx != 0; --idx) {
@@ -484,7 +507,7 @@ namespace analyzer::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN)
                 {
                     const std::size_t lastIndex = storedData.length - 1;
                     const std::byte first = storedData.data[lastIndex];
@@ -675,7 +698,7 @@ namespace analyzer::common::types
         if (storedData.IsEmpty() == false)
         {
             result.unsetf(std::ios_base::boolalpha);
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u)
             {
                 while (last >= first && last != 0) {
                     result << Test(last--);
@@ -704,7 +727,7 @@ namespace analyzer::common::types
         {
             // Do first compression on fly.
             result.unsetf(std::ios_base::boolalpha);
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN)
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u)
             {
                 std::size_t count = 1;
                 bool lastValue = Test(last--);
@@ -785,9 +808,59 @@ namespace analyzer::common::types
     // Logical assignment bitwise AND operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator&= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
+        if ((storedData.dataMode & DATA_MODE_INDEPENDENT) != (other.storedData.dataMode & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData.data != nullptr && storedData.length > 0)
         {
+            const auto& currentByteEngine = storedData.BytesTransform();
+            const auto& otherByteEngine = other.storedData.BytesTransform();
 
+            // If left operand (current) has raw data with longer or equal length.
+            if (storedData.length >= other.storedData.length)
+            {
+                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx];
+                }
+                for (std::size_t idx = otherByteEngine.Length(); idx < currentByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) &= std::byte(0x00);
+                }
+            }
+                // If right operand (other) has raw data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
+            else if ((storedData.dataMode & DATA_MODE_SAFE_OPERATOR) != 0u)
+            {
+                for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx];
+                }
+            }
+            else  // If right operand (other) has raw data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
+            {
+                if (storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length, storedData.data.get(), storedData.length);
+                    if (newData != nullptr)
+                    {
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx];
+                        }
+                    }
+                }
+                else  // If data endian type is DATA_BIG_ENDIAN.
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length);
+                    if (newData != nullptr)
+                    {
+                        const std::size_t diff = other.storedData.length - storedData.length;
+                        memset(newData.get(), 0, diff);
+                        memcpy(newData.get() + diff, storedData.data.get(), storedData.length);
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx];
+                        }
+                    }
+                }
+            }
         }
         return *this;
     }
@@ -795,9 +868,56 @@ namespace analyzer::common::types
     // Logical assignment bitwise OR operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator|= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
+        if ((storedData.dataMode & DATA_MODE_INDEPENDENT) != (other.storedData.dataMode & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData.data != nullptr && storedData.length > 0)
         {
+            const auto& currentByteEngine = storedData.BytesTransform();
+            const auto& otherByteEngine = other.storedData.BytesTransform();
 
+            // If left operand (current) has raw data with longer or equal length.
+            if (storedData.length >= other.storedData.length)
+            {
+                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx];
+                }
+            }
+                // If right operand (other) has raw data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
+            else if ((storedData.dataMode & DATA_MODE_SAFE_OPERATOR) != 0u)
+            {
+                for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx];
+                }
+            }
+            else  // If right operand (other) has raw data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
+            {
+                if (storedData.dataEndian == DATA_LITTLE_ENDIAN)
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length, storedData.data.get(), storedData.length);
+                    if (newData != nullptr)
+                    {
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx];
+                        }
+                    }
+                }
+                else  // If data endian type is DATA_BIG_ENDIAN.
+                {
+                    auto newData = system::allocMemoryForArray<std::byte>(other.storedData.length);
+                    if (newData != nullptr)
+                    {
+                        const std::size_t diff = other.storedData.length - storedData.length;
+                        memset(newData.get(), 0, diff);
+                        memcpy(newData.get() + diff, storedData.data.get(), storedData.length);
+                        storedData.data = std::move(newData);
+                        storedData.length = other.storedData.length;
+                        for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                            (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx];
+                        }
+                    }
+                }
+            }
         }
         return *this;
     }
@@ -805,18 +925,27 @@ namespace analyzer::common::types
     // Logical assignment bitwise XOR operator that transforms internal binary raw data.
     const RawDataBuffer::BitStreamEngine& RawDataBuffer::BitStreamEngine::operator^= (const RawDataBuffer::BitStreamEngine& other) const noexcept
     {
+        if ((storedData.dataMode & DATA_MODE_INDEPENDENT) != (other.storedData.dataMode & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData.data != nullptr && storedData.length > 0)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
             const auto& otherByteEngine = other.storedData.BytesTransform();
 
+            // If left operand (current) has raw data with longer or equal length.
             if (storedData.length >= other.storedData.length)
             {
                 for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
                     (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx];
                 }
             }
-            else  // If right operand has raw data with longer length.
+            // If right operand (other) has raw data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
+            else if ((storedData.dataMode & DATA_MODE_SAFE_OPERATOR) != 0u)
+            {
+                for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx];
+                }
+            }
+            else  // If right operand (other) has raw data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
             {
                 if (storedData.dataEndian == DATA_LITTLE_ENDIAN)
                 {
@@ -845,7 +974,6 @@ namespace analyzer::common::types
                         }
                     }
                 }
-
             }
         }
         return *this;
@@ -864,7 +992,7 @@ namespace analyzer::common::types
     {
         if (index >= Length()) { return npos; }
 
-        if (storedData.dataEndian == DATA_LITTLE_ENDIAN || storedData.dataMode == DATA_MODE_INDEPENDENT)
+        if (storedData.dataEndian == DATA_LITTLE_ENDIAN || (storedData.dataMode & DATA_MODE_INDEPENDENT) != 0u)
         {
             return index;
         }
@@ -882,7 +1010,7 @@ namespace analyzer::common::types
                 return *this;
             }
 
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
                 leftDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
@@ -902,7 +1030,7 @@ namespace analyzer::common::types
                 return *this;
             }
 
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
                 rightDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
             else {   // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
@@ -921,7 +1049,7 @@ namespace analyzer::common::types
                 shift %= storedData.length;
             }
 
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
                 leftRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
@@ -940,7 +1068,7 @@ namespace analyzer::common::types
                 shift %= storedData.length;
             }
 
-            if (storedData.dataMode == DATA_MODE_DEPENDENT && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataMode & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndian == DATA_LITTLE_ENDIAN) {
                 rightRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.

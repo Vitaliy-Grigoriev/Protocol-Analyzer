@@ -44,27 +44,30 @@ namespace analyzer::common::types
      */
     enum DATA_ENDIAN_TYPE : uint16_t
     {
-        DATA_LITTLE_ENDIAN = 0x1,  // Last byte of binary representation of the multibyte data-type is stored first.
-        DATA_BIG_ENDIAN = 0x2      // First byte of binary representation of the multibyte data-type is stored first.
+        DATA_LITTLE_ENDIAN = 0x01,  // Last byte of binary representation of the multibyte data-type is stored first.
+        DATA_BIG_ENDIAN = 0x02      // First byte of binary representation of the multibyte data-type is stored first.
     };
 
     /**
      * @enum DATA_HANDLING_MODE
      * @brief Type of the data handling mode in RawDataBuffer class.
      *
-     * @note Default initial type in RawDataBuffer class is DATA_MODE_DEPENDENT.
+     * @note Default initial type in RawDataBuffer class is DATA_MODE_DEPENDENT and DATA_MODE_SAFE_OPERATOR.
      * @note Data handling mode DATA_MODE_INDEPENDENT needs specially for analyze unstructured data.
+     * @note Changed only the method of processing data. Data representation does not changes after change the handling mode.
      */
     enum DATA_HANDLING_MODE : uint16_t
     {
-        DATA_MODE_DEPENDENT = 0x4,   // Any data modification depends on the ending type.
-        DATA_MODE_INDEPENDENT = 0x8  // Any data modification does not depend on the ending type.
+        DATA_MODE_DEPENDENT = 0x01,        // Any data modification depends on the ending type.
+        DATA_MODE_INDEPENDENT = 0x02,      // Any data modification does not depend on the ending type.
+        DATA_MODE_SAFE_OPERATOR = 0x04,    // Any data modification by assign logical operators does not lead to a change the data length.
+        DATA_MODE_UNSAFE_OPERATOR = 0x08,  // Any data modification by assign logical operators leads to a change the data length.
     };
 
 
     /**
      * @class RawDataBuffer RawDataBuffer.hpp "include/analyzer/RawDataBuffer.hpp"
-     * @brief Main class of analyzer framework that contains binary data and give an interface to work with it.
+     * @brief Main class of analyzer framework that contains binary raw data and gives an interface to work with it.
      */
     class RawDataBuffer
     {
@@ -335,14 +338,14 @@ namespace analyzer::common::types
                     if (engine.storedData.IsEmpty() == false)
                     {
                         stream.unsetf(std::ios_base::boolalpha);
-                        if (engine.storedData.DataModeType() == DATA_MODE_DEPENDENT && engine.storedData.DataEndianType() == DATA_LITTLE_ENDIAN)
+                        if ((engine.storedData.DataModeType() & DATA_MODE_DEPENDENT) != 0u)
                         {
                             for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
                                 stream << engine.Test(idx);
                             }
                             stream << engine.Test(0);
                         }
-                        else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode is DATA_MODE_INDEPENDENT.
+                        else  // If data handling mode is DATA_MODE_INDEPENDENT.
                         {
                             for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
                                 stream << engine.Test(idx);
@@ -376,6 +379,11 @@ namespace analyzer::common::types
              * @brief Logical assignment bitwise AND operator that transforms internal binary raw data.
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return Const lvalue reference of transformed (by operation AND) BitStreamEngine class.
+             *
+             * @note If operands have different raw data length then result data will be the length of the lesser among the operands.
+             * @note If data handling mode is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             *
+             * @attention If operands have different endian depended handling mode then no changes will be made.
              */
             const BitStreamEngine & operator&= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -384,6 +392,11 @@ namespace analyzer::common::types
              * @brief Logical assignment bitwise OR operator that transforms internal binary raw data.
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return Const lvalue reference of transformed (by operation OR) BitStreamEngine class.
+             *
+             * @note If operands have different raw data length then result data will be the length of the largest among the operands.
+             * @note If data handling mode is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             *
+             * @attention If operands have different endian depended handling mode then no changes will be made.
              */
             const BitStreamEngine & operator|= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -393,7 +406,10 @@ namespace analyzer::common::types
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return Const lvalue reference of transformed (by operation XOR) BitStreamEngine class.
              *
-             * @note If operands have different raw data length then the result raw data will be the length of the largest among the operands.
+             * @note If operands have different raw data length then result data will be the length of the largest among the operands.
+             * @note If data handling mode is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             *
+             * @attention If operands have different endian depended handling mode then no changes will be made.
              */
             const BitStreamEngine & operator^= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -405,14 +421,18 @@ namespace analyzer::common::types
              * @return New temporary object of transformed (by operation AND) RawDataBuffer class.
              *
              * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length.
+             *
+             * @attention Result RawDataBuffer class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
              */
             friend inline RawDataBuffer operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 RawDataBuffer result(left.storedData);
+                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
                 if (result.IsEmpty() == false) {
                     result.BitsTransform() &= right;
                 }
+                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -424,14 +444,18 @@ namespace analyzer::common::types
              * @return New temporary object of transformed (by operation OR) RawDataBuffer class.
              *
              * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
+             *
+             * @attention Result RawDataBuffer class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
              */
             friend inline RawDataBuffer operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 RawDataBuffer result(left.storedData);
+                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
                 if (result.IsEmpty() == false) {
                     result.BitsTransform() |= right;
                 }
+                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -443,14 +467,18 @@ namespace analyzer::common::types
              * @return New temporary object of transformed (by operation XOR) RawDataBuffer class.
              *
              * @note If operands have different endian and mode then result RawDataBuffer will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a longer length.
+             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
+             *
+             * @attention Result RawDataBuffer class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
              */
             friend inline RawDataBuffer operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 RawDataBuffer result(left.storedData);
+                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
                 if (result.IsEmpty() == false) {
                     result.BitsTransform() ^= right;
                 }
+                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -626,12 +654,12 @@ namespace analyzer::common::types
          * @var DATA_HANDLING_MODE dataMode;
          * @brief Type of the data handling mode.
          */
-        DATA_HANDLING_MODE dataMode = DATA_MODE_DEPENDENT;
+        uint16_t dataMode = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR;
         /**
          * @var DATA_ENDIAN_TYPE dataEndian;
          * @brief Endian of stored data.
          */
-        DATA_ENDIAN_TYPE dataEndian = DATA_LITTLE_ENDIAN;
+        uint16_t dataEndian = DATA_LITTLE_ENDIAN;
         /**
          * @var BitStreamEngine bitStreamTransform;
          * @brief Engine for working with sequence of bits.
@@ -671,11 +699,12 @@ namespace analyzer::common::types
     public:
         /**
          * @fn explicit RawDataBuffer::RawDataBuffer (DATA_HANDLING_MODE, DATA_ENDIAN_TYPE) noexcept;
-         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT.
+         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR.
          * @param [in] endian - Endian of stored data. Default: Local System Type.
          * @brief Default constructor.
          */
-        explicit RawDataBuffer (DATA_HANDLING_MODE mode = DATA_MODE_DEPENDENT, DATA_ENDIAN_TYPE endian = CheckSystemEndian()) noexcept
+        explicit RawDataBuffer (uint16_t mode = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR,
+                                uint16_t endian = CheckSystemEndian()) noexcept
                 : dataMode(mode), dataEndian(endian), bitStreamTransform(*this), byteStreamTransform(*this)
         { }
 
@@ -705,12 +734,14 @@ namespace analyzer::common::types
          * @fn explicit RawDataBuffer::RawDataBuffer (std::size_t, DATA_HANDLING_MODE, DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor that allocates specified amount of bytes.
          * @param [in] size - Number of bytes for allocate.
-         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT.
+         * @param [in] mode - Type of the data handling mode. Default: DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR.
          * @param [in] endian - Endian of stored data. Default: Local System Type.
          *
          * @attention Need to check the size of data after use this method because it is 'noexcept'.
          */
-        explicit RawDataBuffer (std::size_t /*size*/, DATA_HANDLING_MODE mode = DATA_MODE_DEPENDENT, DATA_ENDIAN_TYPE endian = CheckSystemEndian()) noexcept;
+        explicit RawDataBuffer (std::size_t /*size*/,
+                                uint16_t mode = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR,
+                                uint16_t endian = CheckSystemEndian()) noexcept;
 
         /**
          * @fn RawDataBuffer & RawDataBuffer::operator= (const RawDataBuffer &) noexcept;
@@ -747,10 +778,6 @@ namespace analyzer::common::types
             static_assert(is_pod_type<Type>::value == true, "It is not possible to use not POD type for this function.");
 
             if (other == nullptr) { return false; }
-            if (data != nullptr) {
-                data.reset(nullptr);
-                length = 0;
-            }
 
             length = size * sizeof(Type);
             data = system::allocMemoryForArray<std::byte>(length, other, length);
@@ -778,11 +805,6 @@ namespace analyzer::common::types
             static_assert(is_iterator_type<Type>::value == true &&
                                   is_pod_type<typename std::iterator_traits<Type>::value_type>::value == true,
                           "It is not possible to use not Iterator type for this function.");
-
-            if (data != nullptr) {
-                data.reset(nullptr);
-                length = 0;
-            }
 
             length = std::distance(begin, end) * sizeof(std::iterator_traits<Type>::value_type);
             data = system::allocMemoryForArray<std::byte>(length, &(*begin), length);
@@ -831,16 +853,16 @@ namespace analyzer::common::types
         /**
          * @fn inline DATA_HANDLING_MODE RawDataBuffer::DataModeType(void) const noexcept;
          * @brief Method that returns the data handling mode type of stored data in RawDataBuffer class.
-         * @return DATA_MODE_DEPENDENT(0x04) - if any data modification depends on the endian type, otherwise - DATA_MODE_INDEPENDENT(0x08).
+         * @return DATA_MODE_DEPENDENT(0x01) - if any data modification depends on the endian type, otherwise - DATA_MODE_INDEPENDENT(0x08).
          */
-        inline DATA_HANDLING_MODE DataModeType(void) const noexcept { return dataMode; }
+        inline uint16_t DataModeType(void) const noexcept { return dataMode; }
 
         /**
          * @fn inline DATA_ENDIAN_TYPE RawDataBuffer::DataEndianType(void) const noexcept;
          * @brief Method that returns the endian type of stored data in RawDataBuffer class.
          * @return DATA_LITTLE_ENDIAN(0x01) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x02).
          */
-        inline DATA_ENDIAN_TYPE DataEndianType(void) const noexcept { return dataEndian; }
+        inline uint16_t DataEndianType(void) const noexcept { return dataEndian; }
 
         /**
          * @fn void RawDataBuffer::SetDataModeType (DATA_HANDLING_MODE) noexcept;
@@ -848,8 +870,9 @@ namespace analyzer::common::types
          * @param [in] mode - New data handling mode type.
          *
          * @note Changed only the method of processing data. Data representation does not changes.
+         * @note After setting a new mode then the opposite mode will be automatically turned off.
          */
-        void SetDataModeType (DATA_HANDLING_MODE mode) noexcept { dataMode = mode; }
+        void SetDataModeType (uint16_t /*mode*/) noexcept;
 
         /**
          * @fn void RawDataBuffer::SetDataEndianType (DATA_ENDIAN_TYPE, bool) noexcept;
@@ -857,7 +880,7 @@ namespace analyzer::common::types
          * @param [in] endian - New data endian type.
          * @param [in] convert - Flag indicating whether to change the presentation of the stored data or not. Default: true.
          */
-        void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) noexcept;
+        void SetDataEndianType (uint16_t /*endian*/, bool /*convert*/ = true) noexcept;
 
         /**
          * @fn explicit operator RawDataBuffer::bool(void) const noexcept;
