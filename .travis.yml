@@ -8,6 +8,13 @@ branches:
     - master
 
 
+env:
+  global:
+    # COVERITY_SCAN_TOKEN
+    # ** specific to your project **
+    - secure: "7wpvlRSdjmG7H2W5WL0fHw"
+
+
 matrix:
   include:    
     - os: linux
