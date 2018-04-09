@@ -95,6 +95,17 @@ script:
   - bash build_travis.sh
 
 
+addons:
+  coverity_scan:
+    project:
+      name: "Vitaliy-Grigoriev/Protocol-Analyzer"
+      description: "Fuzz testing framework for network protocols."
+      version: 0.0.8
+    notification_email: Vit.link420@gmail.com
+    build_command: "bash build_travis.sh"
+    branch_pattern: coverity_scan
+
+
 notifications:
   email:
     on_failure: always
