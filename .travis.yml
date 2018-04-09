@@ -12,7 +12,7 @@ env:
   global:
     # COVERITY_SCAN_TOKEN
     # ** specific to your project **
-    - secure: "7wpvlRSdjmG7H2W5WL0fHw"
+    - secure: ""
 
 
 matrix:
@@ -73,6 +73,15 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
+        coverity_scan:
+          project:
+            name: "Vitaliy-Grigoriev/Protocol-Analyzer"
+            description: "Fuzz testing framework for network protocols."
+            version: 0.0.8
+          notification_email: Vit.link420@gmail.com
+          build_command_prepend: "cov-configure --comptype clangcxx --compiler clang++-6.0 && cmake ."
+          build_command: "make -j4"
+          branch_pattern: coverity_scan
       env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
 
 
@@ -94,23 +103,18 @@ install:
 
 
 script:
+  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]];
+      then
+        echo "Don't build on coverty_scan branch.";
+        exit 0;
+    fi
+
   - cd ${TRAVIS_BUILD_DIR}
   - pwd
   - uname -a
   - cmake --version
   - ${COMPILER} --version
   - bash build_travis.sh
-
-
-addons:
-  coverity_scan:
-    project:
-      name: "Vitaliy-Grigoriev/Protocol-Analyzer"
-      description: "Fuzz testing framework for network protocols."
-      version: 0.0.8
-    notification_email: Vit.link420@gmail.com
-    build_command: "bash build_travis.sh"
-    branch_pattern: coverity_scan
 
 
 notifications:
