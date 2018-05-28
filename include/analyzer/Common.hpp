@@ -10,12 +10,12 @@
 #include <memory>  // std::unique_ptr.
 #include <iomanip>  // std::setfill, std::setw.
 #include <utility>  // std::get, std::move.
-#include <sstream>  // std::istringstream.
+#include <sstream>  // std::istringstream, std::getline.
 #include <cstddef>  // std::size_t, std::byte.
 #include <cstdint>  // std::int*_t.
-#include <iterator>  // std::back_insert_iterator, std::istreambuf_iterator.
+#include <iterator>  // std::back_insert_iterator, std::istreambuf_iterator, std::iterator_traits.
 #include <string_view>  // std::string_view.
-#include <type_traits>  // std::enable_if, std::is_integral, std::is_unsigned.
+#include <type_traits>  // std::enable_if, std::is_integral, std::is_unsigned, std::is_same, std::is_trivial, std::is_standard_layout.
 
 // In Common library MUST NOT use any another framework libraries because it is a core library.
 
@@ -27,7 +27,7 @@ namespace analyzer::common
     /**
      * @fn template <typename Type>
      * std::enable_if_t<std::is_integral<Type>::value, Type>
-     * GetRandomValue(void) noexcept;
+     * GetRandomValue() noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.
      * @tparam [in] Type - Typename of the integral value for the random generating engine. Default: uint32_t.
      * @return The pseudo-random number of the selected type.
@@ -113,8 +113,8 @@ namespace analyzer::common
 
         /**
          * @fn template <typename Out>
-         * void split (const std::string &, char, std::insert_iterator<Out>) noexcept;
-         * @brief Split string into a vector of strings using the delimiter.
+         * void split (const std::string &, char, std::back_insert_iterator<Out>) noexcept;
+         * @brief Function that splits the input string into substrings separated by the delimiter.
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
          * @tparam [out] result - Back insert iterator of selected type for adding new values.
@@ -240,7 +240,7 @@ namespace analyzer::common
         /**
          * @fn bool checkFileExistence (const std::string_view &) noexcept;
          * @brief Function that checks file existence.
-         * @param [in] path - Path to file.
+         * @param [in] path - Full or relative path to the file.
          * @return True - if file is exist, otherwise - false.
          */
         bool checkFileExistence (std::string_view /*path*/) noexcept;
@@ -337,7 +337,7 @@ namespace analyzer::common
         { }
 
         /**
-         * @fn inline std::size_t Data::Size(void) const noexcept;
+         * @fn inline std::size_t Data::Size() const noexcept;
          * @brief Method that returns size of the internal data.
          * @return Size of the internal data.
          */
@@ -347,7 +347,7 @@ namespace analyzer::common
         }
 
         /**
-         * @fn inline Type * Data::Get(void) const noexcept;
+         * @fn inline Type * Data::Get() const noexcept;
          * @brief Method that returns pointer to the internal data.
          * @return Pointer to the internal data.
          */
@@ -366,6 +366,45 @@ namespace analyzer::common
         {
             return index < length ? &data[index] : nullptr;
         }
+    };
+
+
+
+    template <typename Type, typename = void>
+    struct is_iterator_type
+    {
+        static constexpr bool value = false;
+    };
+
+    /**
+     * @struct template <typename Type>
+     * struct is_iterator_type<Type, typename>;
+     * @brief Structure that checks the variable for belonging to the iterative type.
+     * @tparam [in] Type - Typename of checked data type.
+     */
+    template <typename Type>
+    struct is_iterator_type<Type, typename std::enable_if_t<!std::is_same<typename std::iterator_traits<Type>::value_type, void>::value>>
+    {
+        static constexpr bool value = true;
+    };
+
+
+    template <typename Type, typename = void>
+    struct is_pod_type
+    {
+        static constexpr bool value = false;
+    };
+
+    /**
+     * @struct template <typename Type>
+     * struct is_pod_type<Type, typename>;
+     * @brief Structure that checks the variable for belonging to the POD type.
+     * @tparam [in] Type - Typename of checked data type.
+     */
+    template <typename Type>
+    struct is_pod_type<Type, typename std::enable_if_t<std::is_trivial<Type>::value && std::is_standard_layout<Type>::value>>
+    {
+        static constexpr bool value = true;
     };
 
     //const std::regex FindAllHrefs("href\\s*=\\s*[\"']([^\"']+)[\"']", std::regex::icase);

@@ -33,8 +33,8 @@ endif()
 
 
 set(DISABLE_WARNINGS_RELEASE   "-Wno-variadic-macros")
-set(DISABLE_WARNINGS_DEBUG   "-Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-parameter -Wno-unused-variable -Wno-padded -Wno-documentation")
-set(DISABLE_WARNINGS   "-Wno-c++98-compat -Wno-missing-prototypes -Wno-variadic-macros -Wno-exit-time-destructors -Wno-zero-as-null-pointer-constant")
+set(DISABLE_WARNINGS_DEBUG   "-Wno-unused-result -Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-variable -Wno-padded -Wno-documentation")
+set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-c++98-compat -Wno-missing-prototypes -Wno-variadic-macros -Wno-exit-time-destructors -Wno-zero-as-null-pointer-constant")
 set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread")
 #set(ADDITIONAL_FLAGS   "-fsanitize=dataflow")
@@ -46,15 +46,24 @@ string(FIND  ${CMAKE_CXX_COMPILER}  "clang"  POSITION)
 if (${POSITION}  GREATER  "-1")  # Build flags for Clang compiler only.
     set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Weverything -Wthread-safety  ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_DEBUG}")
 else()  # Other compilers.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  -Wno-unknown-pragmas ${DISABLE_WARNINGS}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS}")
 endif()
 
 
 # Build core framework libraries.
 set(SYSTEM_LIB       ${INCLUDES}/System.hpp ${INCLUDES}/Mutex.hpp    ${SOURCES}/System.cpp ${SOURCES}/Mutex.cpp)
 set(LOGGING_LIB      ${INCLUDES}/Log.hpp                             ${SOURCES}/Log.cpp)
-#set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp ${INCLUDES}/RawDataBufferIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/RawDataBuffer.cpp ${SOURCES}/RawDataBufferIterator.cpp)
-set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/RawDataBuffer.hpp     ${SOURCES}/RawDataBuffer.cpp  ${SOURCES}/Common.cpp)
+#set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/BinaryDataEngine.hpp ${INCLUDES}/BinaryDataEngineIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/BinaryDataEngine.cpp ${SOURCES}/BinaryDataEngineIterator.cpp)
+set(COMMON_LIB
+        ${INCLUDES}/Common.hpp
+        ${INCLUDES}/LockedDeque.hpp
+        ${INCLUDES}/BinaryDataEngine.hpp
+        ${INCLUDES}/BinaryStructuredDataEngine.hpp
+
+        ${SOURCES}/Common.cpp
+        ${SOURCES}/BinaryDataEngine.cpp
+        ${SOURCES}/BinaryStructuredDataEngine.cpp)
+
 # Build functional framework libraries.
 set(TASK_LIB         ${INCLUDES}/Notification.hpp) #${INCLUDES}/Task.hpp ${SOURCES}/Task.cpp   ${SOURCES}/TaskManager.cpp)
 set(PARSER_LIB       ${INCLUDES}/Parser.hpp                          ${SOURCES}/Parser.cpp)
@@ -73,6 +82,7 @@ add_library(Socket       STATIC   ${SOCKET_LIB})
 add_library(Protocol     STATIC   ${PROTOCOL_LIB})
 add_library(Utilities    STATIC   ${UTILITIES_LIB})
 
+target_link_libraries(Common      System)
 target_link_libraries(Logging     Common)
 target_link_libraries(Parser      Logging)
 target_link_libraries(Protocol    Logging)
@@ -110,9 +120,9 @@ add_executable(test_http2_negotiation   ${HTTP2_NEGOTIATION_TEST})
 target_link_libraries(test_ssl                 Utilities)
 target_link_libraries(test_socket              Socket)
 target_link_libraries(test_common              Common)
-target_link_libraries(test_raw_data_buffer     Common System)
+target_link_libraries(test_raw_data_buffer     Common)
 target_link_libraries(test_timing              Diagnostic)
-target_link_libraries(test_anything            Logging Common System Parser)
+target_link_libraries(test_anything            Logging Common Parser)
 target_link_libraries(test_logging             Logging)
 target_link_libraries(test_uri_parser          Protocol)
 target_link_libraries(test_notification        Task System)

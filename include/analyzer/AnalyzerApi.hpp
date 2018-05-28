@@ -9,14 +9,14 @@
 
 #define PROTOCOL_ANALYZER_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
-#define PROTOCOL_ANALYZER_VERSION_PATCH 8
+#define PROTOCOL_ANALYZER_VERSION_PATCH 9
 
 
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
 #include "Mutex.hpp"
 #include "System.hpp"
 #include "LockedDeque.hpp"
-#include "RawDataBuffer.hpp"
+#include "BinaryStructuredDataEngine.hpp"  // In this header file also defined "BinaryDataEngine.hpp".
 #include "Parser.hpp"
 #include "Socket.hpp"
 //#include "Http.hpp"  // In this header file also defined "Protocol.hpp".

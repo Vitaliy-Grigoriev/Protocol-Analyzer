@@ -7,11 +7,12 @@
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
 
-#include <memory>     // std::unique_ptr, std::make_unique.
-#include <cstring>    // memcpy.
+#include <memory>  // std::unique_ptr, std::make_unique.
+#include <utility>  // std::forward
+#include <cstring>  // memcpy.
 #include <algorithm>  // std::generate.
 
-// In System library MUST NOT use any another framework libraries because it is a core library.
+// In System library MUST NOT use any another functional framework libraries because it is a core library.
 
 
 namespace analyzer::system
@@ -44,7 +45,7 @@ namespace analyzer::system
       * std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t, const void *, const std::size_t) noexcept;
       * @brief Function that allocates memory for array of selected type and if needed fills it.
       * @tparam [in] Type - Typename of allocated data.
-      * @param [in] size - Size of selected type array (Number of elements of selected type).
+      * @param [in] count - The number of elements of selected type.
       * @param [in] data - Pointer to any data for copy. Default: nullptr.
       * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.
@@ -53,22 +54,18 @@ namespace analyzer::system
       */
     template <typename Type>
     [[nodiscard]]
-    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t size, const void* data = nullptr, const std::size_t length = 0) noexcept
+    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t count, const void* data = nullptr, const std::size_t length = 0) noexcept
     {
         try
         {
-            auto memory = std::make_unique<Type[]>(size);
+            auto memory = std::make_unique<Type[]>(count);
             if (data == nullptr || length == 0) { return memory; }
 
-            const std::size_t allocatedByteSize = size * sizeof(Type);
-            if (allocatedByteSize == length) {
+            const std::size_t allocatedByteSize = count * sizeof(Type);
+            if (allocatedByteSize <= length) {
                 memcpy(memory.get(), data, allocatedByteSize);
             }
-            else if (allocatedByteSize < length) {
-                memcpy(memory.get(), data, allocatedByteSize);
-                memset(memory.get() + allocatedByteSize, 0, length - allocatedByteSize);
-            }
-            else {  // If copied data size less then allocated data size.
+            else {  // If copied data length less then allocated data size.
                 memcpy(memory.get(), data, length);
                 memset(memory.get() + length, 0, allocatedByteSize - length);
             }
