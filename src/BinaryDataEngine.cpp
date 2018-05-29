@@ -52,7 +52,7 @@ namespace analyzer::common::types
         }
     }
 
-    // Allocated constructor.
+    // Constructor that allocates specified amount of bytes.
     BinaryDataEngine::BinaryDataEngine (const std::size_t size, const uint8_t mode, const DATA_ENDIAN_TYPE endian) noexcept
             : dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
     {
@@ -60,6 +60,16 @@ namespace analyzer::common::types
         if (data != nullptr) {
             length = size;
             memset(data.get(), 0, length);
+        }
+    }
+
+    // Constructor that accepts a pointer to allocated binary data.
+    BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode) noexcept
+            : data(memory), dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
+    {
+        if (data != nullptr) {
+            length = size;
+            SetDataModeType(DATA_MODE_NO_ALLOCATION);
         }
     }
 
@@ -112,6 +122,15 @@ namespace analyzer::common::types
             dataModeType &= ~DATA_MODE_SAFE_OPERATOR;
             dataModeType |= DATA_MODE_UNSAFE_OPERATOR;
         }
+
+        if ((mode & DATA_MODE_ALLOCATION) != 0u) {
+            dataModeType &= ~DATA_MODE_NO_ALLOCATION;
+            dataModeType |= DATA_MODE_ALLOCATION;
+        }
+        else if ((mode & DATA_MODE_NO_ALLOCATION) != 0u) {
+            dataModeType &= ~DATA_MODE_ALLOCATION;
+            dataModeType |= DATA_MODE_NO_ALLOCATION;
+        }
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
@@ -140,10 +159,19 @@ namespace analyzer::common::types
     // Clear internal data buffer.
     void BinaryDataEngine::Clear(void) noexcept
     {
+        if ((dataModeType & DATA_MODE_NO_ALLOCATION) != 0u) {
+            data.release();
+        }
         data.reset(nullptr);
         length = 0;
         dataModeType = DATA_MODE_DEFAULT;
         dataEndianType = system_endian;
+    }
+
+    // Destructor of BinaryDataEngine class.
+    BinaryDataEngine::~BinaryDataEngine(void) noexcept
+    {
+        Clear();
     }
 
     /* ******************************************* BinaryDataEngine ***************************************** */
@@ -364,9 +392,8 @@ namespace analyzer::common::types
             if (storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 return { index >> 3, std::byte(0x01) << index % 8 };
             }
-            if (storedData.dataEndianType == DATA_BIG_ENDIAN) {
-                return { storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8 };
-            }
+            // If data endian type is DATA_BIG_ENDIAN.
+            return { storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8 };
         }
         // If data handling mode type is DATA_MODE_INDEPENDENT.
         return { index >> 3, std::byte(0x80) >> index % 8 };

@@ -23,6 +23,7 @@
 *.srctrldb
 *.srctrlprj
 compile_commands.json
+coverity-build-log.txt
 
 #Folders
 /bin

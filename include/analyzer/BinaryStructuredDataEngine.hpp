@@ -70,9 +70,8 @@ namespace analyzer::common::types
                 if (dataEndianType == DATA_BIG_ENDIAN) {
                     return bitOffset + dataPattern[fieldIndex] * 8 - bitIndex - 1;
                 }
-                else {  // If data endian type is DATA_LITTLE_ENDIAN.
-                    return bitOffset + (bitIndex >> 3) * 8 + 8 - bitIndex % 8 - 1;
-                }
+                // If data endian type is DATA_LITTLE_ENDIAN.
+                return bitOffset + (bitIndex >> 3) * 8 + 8 - bitIndex % 8 - 1;
             }
             return BinaryDataEngine::npos;
         }
@@ -237,9 +236,10 @@ namespace analyzer::common::types
         {
             if (fieldIndex < fieldsCount)
             {
-                const std::size_t byte = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
+                // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
+                const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
                 BinaryDataEngine result(Mode, dataEndianType);
-                if (result.AssignData(data.Data() + byte, data.Data() + byte + dataPattern[fieldIndex]) == true)
+                if (result.AssignData(data.Data() + byteIndex, data.Data() + byteIndex + dataPattern[fieldIndex]) == true)
                 {
                     result.SetDataEndianType((Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
                     return result;
@@ -247,6 +247,14 @@ namespace analyzer::common::types
             }
             return BinaryDataEngine(Mode, Endian);
         }
+
+        /**
+         * @fn BinaryDataEngine BinaryStructuredDataEngine::GetFieldByReference (uint16_t) const noexcept;
+         * @brief Method that returns field value of structured data under selected index by reference.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @return Field value under selected index with referenced data in BinaryDataEngine format.
+         */
+        BinaryDataEngine GetFieldByReference (uint16_t /*fieldIndex*/) const noexcept;
 
         /**
          * @fn template <DATA_HANDLING_MODE Mode>
@@ -304,13 +312,13 @@ namespace analyzer::common::types
 
 
         /**
-         * @fn std::string BinaryStructuredDataEngine::ToString() const noexcept;
-         * @brief Method that outputs internal binary structured data by pattern in string format.
+         * @fn std::string BinaryStructuredDataEngine::ToFormattedString() const noexcept;
+         * @brief Method that outputs internal binary structured data by pattern in formatted string.
          * @return STL string object with sequence of the bit character representation of stored structured data.
          *
          * @note Data is always outputs in DATA_BIG_ENDIAN endian type.
          */
-        std::string ToString(void) const noexcept;
+        std::string ToFormattedString(void) const noexcept;
 
 
 

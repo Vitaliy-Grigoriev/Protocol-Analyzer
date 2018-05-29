@@ -12,8 +12,8 @@
 
 namespace analyzer::common::types
 {
-    /* ****************************************************************************************************** */
-    /* ************************************* BinaryStructuredDataEngine ************************************* */
+    /* ************************************************************************************************************ */
+    /* **************************************** BinaryStructuredDataEngine **************************************** */
 
     // Copy assignment constructor of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine::BinaryStructuredDataEngine (const BinaryStructuredDataEngine& other) noexcept
@@ -67,6 +67,19 @@ namespace analyzer::common::types
         }
     }
 
+    // Method that returns field value of structured data under selected index by reference.
+    BinaryDataEngine BinaryStructuredDataEngine::GetFieldByReference (const uint16_t fieldIndex) const noexcept
+    {
+        if (fieldIndex < fieldsCount)
+        {
+            // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
+            const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
+            BinaryDataEngine result(data.GetAt(byteIndex), dataPattern[fieldIndex], dataEndianType);
+            return result;
+        }
+        return BinaryDataEngine();
+    }
+
     // Method that clears the data.
     void BinaryStructuredDataEngine::Clear(void) noexcept
     {
@@ -77,7 +90,7 @@ namespace analyzer::common::types
     }
 
     // Method that outputs internal binary structured data by pattern in string format.
-    std::string BinaryStructuredDataEngine::ToString(void) const noexcept
+    std::string BinaryStructuredDataEngine::ToFormattedString (void) const noexcept
     {
         std::ostringstream result;
         if (data.IsEmpty() == false)
@@ -162,5 +175,9 @@ namespace analyzer::common::types
         }
         return *this;
     }
+
+    /* **************************************** BinaryStructuredDataEngine **************************************** */
+    /* ************************************************************************************************************ */
+
 
 }  // namespace types.

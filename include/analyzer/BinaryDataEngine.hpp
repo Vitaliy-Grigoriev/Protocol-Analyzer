@@ -68,7 +68,9 @@ namespace analyzer::common::types
         DATA_MODE_INDEPENDENT = 0x02,      // Any data modification does not depend on the ending type.
         DATA_MODE_SAFE_OPERATOR = 0x04,    // Any data modification by assign logical operators does not lead to a change the data length.
         DATA_MODE_UNSAFE_OPERATOR = 0x08,  // Any data modification by assign logical operators leads to a change the data length.
-        DATA_MODE_DEFAULT = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR  // Default data mode which is used in constructors.
+        DATA_MODE_ALLOCATION = 0x10,       // In this mode a new object of BinaryDataEngine class is created and memory allocated. The memory is cleared in the destructor.
+        DATA_MODE_NO_ALLOCATION = 0x20,    // In this mode there is no creation of a new BinaryDataEngine object. The memory is not cleared in the destructor.
+        DATA_MODE_DEFAULT = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION  // Default data mode which is used in constructors.
     };
 
 
@@ -753,9 +755,9 @@ namespace analyzer::common::types
 
         /**
          * @fn BinaryDataEngine::~BinaryDataEngine() noexcept;
-         * @brief Default destructor of BinaryDataEngine class.
+         * @brief Destructor of BinaryDataEngine class.
          */
-        ~BinaryDataEngine(void) noexcept = default;
+        ~BinaryDataEngine(void) noexcept;
 
         /**
          * @fn BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine &) noexcept;
@@ -783,6 +785,19 @@ namespace analyzer::common::types
          * @attention Need to check the size of data after use this method because it is 'noexcept'.
          */
         explicit BinaryDataEngine (std::size_t /*size*/, uint8_t /*mode*/ = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE /*endian*/ = system_endian) noexcept;
+
+        /**
+         * @fn explicit BinaryDataEngine::BinaryDataEngine (std::byte * const, std::size_t, DATA_ENDIAN_TYPE, uint8_t) noexcept;
+         * @brief Constructor that accepts a pointer to allocated binary data.
+         * @param [in] memory - Pointer to allocated data.
+         * @param [in] size - Number of bytes in data.
+         * @param [in] endian - Endian of inputted data. Default: Local System Type.
+         * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
+         */
+        explicit BinaryDataEngine (std::byte * const /*memory*/,
+                                   std::size_t /*size*/,
+                                   DATA_ENDIAN_TYPE /*endian*/ = system_endian,
+                                   uint8_t /*mode*/ = DATA_MODE_DEFAULT) noexcept;
 
         /**
          * @fn BinaryDataEngine & BinaryDataEngine::operator= (const BinaryDataEngine &) noexcept;
