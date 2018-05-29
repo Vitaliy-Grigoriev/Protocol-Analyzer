@@ -855,7 +855,7 @@ namespace analyzer::common::types
                                   is_pod_type<typename std::iterator_traits<Type>::value_type>::value == true,
                           "It is not possible to use not Iterator type for this method.");
 
-            length = std::distance(begin, end) * sizeof(std::iterator_traits<Type>::value_type);
+            length = static_cast<std::size_t>(std::distance(begin, end)) * sizeof(typename std::iterator_traits<Type>::value_type);
             data = system::allocMemoryForArray<std::byte>(length, &(*begin), length);
             if (data == nullptr) {
                 length = 0;

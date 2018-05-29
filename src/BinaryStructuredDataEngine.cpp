@@ -67,21 +67,6 @@ namespace analyzer::common::types
         }
     }
 
-    // Method that sets new bit value to the selected field bit offset of structured data.
-    bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t fieldIndex, const uint16_t offset, const bool value) noexcept
-    {
-        if (fieldIndex >= fieldsCount || offset >= dataPattern[fieldIndex] * 8) {
-            return false;
-        }
-
-        // Calculate common bit offset to start bit in selected field.
-        std::size_t bitOffset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0) * 8);
-        // Calculate common bit offset to selected bit in selected field.
-        bitOffset += offset;
-        data.BitsTransform().Set(bitOffset, value);
-        return true;
-    }
-
     // Method that clears the data.
     void BinaryStructuredDataEngine::Clear(void) noexcept
     {
@@ -98,7 +83,7 @@ namespace analyzer::common::types
         if (data.IsEmpty() == false)
         {
             result.unsetf(std::ios_base::boolalpha);
-            uint16_t patternBlock = 0, bitCount = 0;
+            uint16_t patternBlock = 0, blockBitCount = 0;
 
             result << "\nField 1:   ";
 
@@ -106,12 +91,12 @@ namespace analyzer::common::types
             {
                 for (std::size_t idx = 0; idx < data.BitsTransform().Length(); ++idx)
                 {
-                    if (idx % 8 == 0 && bitCount != 0) { result << ' '; }
+                    if (idx % 8 == 0 && blockBitCount != 0) { result << ' '; }
                     result << data.BitsTransform().Test(idx);
-                    if (++bitCount == dataPattern[patternBlock] * 8) {
+                    if (++blockBitCount == dataPattern[patternBlock] * 8) {
                         if (++patternBlock == fieldsCount) { break; }
                         result << "\nField " << patternBlock + 1 << ":   ";
-                        bitCount = 0;
+                        blockBitCount = 0;
                     }
                 }
             }
@@ -130,12 +115,12 @@ namespace analyzer::common::types
                         // Iterate over all bits in selected byte.
                         for (std::size_t idx = offset; idx < offset + 8; ++idx)
                         {
-                            if (commonBitCount++ % 8 == 0 && bitCount != 0) { result << ' '; }
+                            if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { result << ' '; }
                             result << data.BitsTransform().Test(idx);
-                            if (++bitCount == dataPattern[patternBlock] * 8) {
+                            if (++blockBitCount == dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == fieldsCount) { break; }
                                 result << "\nField " << patternBlock + 1 << ":   ";
-                                bitCount = 0;
+                                blockBitCount = 0;
                             }
                         }
                     }

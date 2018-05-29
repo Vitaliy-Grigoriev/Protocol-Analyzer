@@ -13,7 +13,7 @@
 namespace analyzer::common::types
 {
 // Default structured data mode which is used in constructors.
-#define STRUCTURED_DATA_MODE_DEFAULT   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR)
+#define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR)
 
     /**
      * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
@@ -45,6 +45,38 @@ namespace analyzer::common::types
          */
         DATA_ENDIAN_TYPE dataEndianType = BinaryDataEngine::system_endian;
 
+
+        /**
+         * @fn template <DATA_HANDLING_MODE Mode>
+         * std::size_t BinaryStructuredDataEngine::GetBitOffset (const uint16_t, const uint16_t) const noexcept;
+         * @brief Method that returns bit offset in selected field bit index of structured data.
+         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @param [in] bitIndex - Bit index in selected field of structured data.
+         * @return Bit offset under selected field bit index of structured data.
+         *
+         * @note The resulting bit offset is obtained in DATA_MODE_INDEPENDENT handling mode.
+         * @note Return value is marked with the "nodiscard" attribute.
+         */
+        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        [[nodiscard]]
+        std::size_t GetBitOffset (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
+        {
+            if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
+            {
+                std::size_t bitOffset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0) * 8);
+                if (Mode == DATA_MODE_INDEPENDENT) { return bitOffset + bitIndex; }
+
+                if (dataEndianType == DATA_BIG_ENDIAN) {
+                    return bitOffset + dataPattern[fieldIndex] * 8 - bitIndex - 1;
+                }
+                else {  // If data endian type is DATA_LITTLE_ENDIAN.
+                    return bitOffset + (bitIndex >> 3) * 8 + 8 - bitIndex % 8 - 1;
+                }
+            }
+            return BinaryDataEngine::npos;
+        }
+
     public:
 
         /**
@@ -53,7 +85,7 @@ namespace analyzer::common::types
          * @param [in] endian - Endian of stored structured data. Default: Local System Type.
          */
         explicit BinaryStructuredDataEngine (DATA_ENDIAN_TYPE endian = BinaryDataEngine::system_endian) noexcept
-                : data(BinaryDataEngine(STRUCTURED_DATA_MODE_DEFAULT, DATA_BIG_ENDIAN)), dataEndianType(endian)
+                : data(BinaryDataEngine(STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN)), dataEndianType(endian)
         { }
 
         /**
@@ -101,7 +133,7 @@ namespace analyzer::common::types
             const std::size_t bytes = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
             if (bytes != sizeof(Type)) { return false; }
 
-            data = BinaryDataEngine(bytes, STRUCTURED_DATA_MODE_DEFAULT, DATA_BIG_ENDIAN);
+            data = BinaryDataEngine(bytes, STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN);
             if (data.Data() == nullptr) { return false; }
 
             if (data.AssignData(memory, 1) == false) {
@@ -125,7 +157,6 @@ namespace analyzer::common::types
             return true;
         }
 
-
         /**
          * @fn inline DATA_ENDIAN_TYPE BinaryStructuredDataEngine::DataEndianType() const noexcept;
          * @brief Method that returns the endian type of stored data in BinaryStructuredDataEngine class.
@@ -142,14 +173,14 @@ namespace analyzer::common::types
         void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/) noexcept;
 
         /**
-         * @fn inline std::size_t BinaryStructuredDataEngine::ByteSize() const noexcept
+         * @fn inline std::size_t BinaryStructuredDataEngine::ByteSize() const noexcept;
          * @brief Method that returns the size of structured data in bytes.
          * @return Size of stored structured data in bytes.
          */
         inline std::size_t ByteSize(void) const noexcept { return data.BytesTransform().Length(); }
 
         /**
-         * @fn inline std::size_t BinaryStructuredDataEngine::BitSize() const noexcept
+         * @fn inline std::size_t BinaryStructuredDataEngine::BitSize() const noexcept;
          * @brief Method that returns the size of structured data in bits.
          * @return Size of stored structured data in bits.
          */
@@ -157,48 +188,113 @@ namespace analyzer::common::types
 
         /**
          * @fn template <DATA_ENDIAN_TYPE Endian, typename Type>
-         * bool BinaryStructuredDataEngine::SetField (const uint16_t, const Type) noexcept
+         * bool BinaryStructuredDataEngine::SetField (const uint16_t, const Type) const noexcept;
          * @brief Method that sets new value to the selected field of structured data.
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
-         * @param [in] fieldIndex - Index of field of structured data.
-         * @param [in] value - Value for assignment to selected field of structured data.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @param [in] value - Field value for assignment to selected field of structured data.
          * @return True - if value assignment is successful, otherwise - false.
          *
          * @note Input type MUST be a POD type.
          */
         template <DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, typename Type>
-        bool SetField (const uint16_t fieldIndex, const Type value) noexcept
+        bool SetField (const uint16_t fieldIndex, const Type value) const noexcept
         {
             static_assert(is_pod_type<Type>::value == true, "It is not possible to use not POD type for this method.");
 
-            if (fieldIndex >= fieldsCount || sizeof(Type) != dataPattern[fieldIndex]) {
-                return false;
+            if (fieldIndex < fieldsCount && sizeof(Type) == dataPattern[fieldIndex])
+            {
+                BinaryDataEngine sequence(DATA_MODE_DEFAULT, (Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
+                if (sequence.AssignData<Type>(&value, 1) == false) { return false; }
+                sequence.SetDataEndianType(dataEndianType);
+
+                // Calculate byte offset to start byte in selected field.
+                const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
+
+                // Copy new field value.
+                for (std::size_t idx = 0; idx < dataPattern[fieldIndex]; ++idx) {
+                    *data.GetAt(offset + idx) = *sequence.GetAt(idx);
+                }
+                return true;
             }
-
-            BinaryDataEngine sequence(STRUCTURED_DATA_MODE_DEFAULT, (Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
-            if (sequence.AssignData<Type>(&value, 1) == false) { return false; }
-            sequence.SetDataEndianType(dataEndianType);
-
-            // Calculate byte offset to start byte in selected field.
-            const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
-
-            // Copy new field value.
-            for (std::size_t idx = 0; idx < dataPattern[fieldIndex]; ++idx) {
-                *data.GetAt(offset + idx) = *sequence.GetAt(idx);
-            }
-            return true;
+            return false;
         }
 
         /**
-         * @fn bool BinaryStructuredDataEngine::SetFieldBit (uint16_t fieldIndex, uint16_t offset, bool value) noexcept;
+         * @fn template <DATA_HANDLING_MODE Mode, DATA_ENDIAN_TYPE Endian>
+         * BinaryDataEngine BinaryStructuredDataEngine::GetField (const uint16_t) const noexcept;
+         * @brief Method that returns field value of structured data under selected index.
+         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_DEFAULT.
+         * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @return Field value under selected index in BinaryDataEngine format.
+         *
+         * @attention Need to check the size of data after use this constructor because it is 'noexcept'.
+         */
+        template <DATA_HANDLING_MODE Mode = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN>
+        BinaryDataEngine GetField (const uint16_t fieldIndex) const noexcept
+        {
+            if (fieldIndex < fieldsCount)
+            {
+                const std::size_t byte = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
+                BinaryDataEngine result(Mode, dataEndianType);
+                if (result.AssignData(data.Data() + byte, data.Data() + byte + dataPattern[fieldIndex]) == true)
+                {
+                    result.SetDataEndianType((Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
+                    return result;
+                }
+            }
+            return BinaryDataEngine(Mode, Endian);
+        }
+
+        /**
+         * @fn template <DATA_HANDLING_MODE Mode>
+         * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) const noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
-         * @param [in] fieldIndex - Index of field of structured data.
-         * @param [in] offset - Bit offset in selected field of structured data.
-         * @param [in] value - Value for assignment to selected field bit offset of structured data. Default: true.
+         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @param [in] bitIndex - Bit index in selected field of structured data.
+         * @param [in] value - Bit value for assignment to selected field bit offset of structured data. Default: true.
          * @return True - if value assignment is successful, otherwise - false.
          */
-        bool SetFieldBit (uint16_t fieldIndex, uint16_t offset, bool value = true) noexcept;
+        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        bool SetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex, const bool value = true) const noexcept
+        {
+            if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
+            {
+                const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
+                if (bitOffset != BinaryDataEngine::npos) {
+                    data.BitsTransform().Set(bitOffset, value);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * @fn template <DATA_HANDLING_MODE Mode>
+         * bool BinaryStructuredDataEngine::GetFieldBit (const uint16_t, const uint16_t) const noexcept;
+         * @brief Method that returns bit field value of structured data under selected indexes.
+         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @param [in] bitIndex - Bit index in selected field of structured data.
+         * @return Boolean value that indicates about the value of the selected bit.
+         *
+         * @warning Method always returns value 'false' if the index out-of-range.
+         */
+        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        bool GetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
+        {
+            if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
+            {
+                const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
+                if (bitOffset != BinaryDataEngine::npos) {
+                    return data.BitsTransform().Test(bitOffset);
+                }
+            }
+            return false;
+        }
 
         /**
          * @fn void BinaryStructuredDataEngine::Clear() noexcept;
@@ -252,18 +348,18 @@ namespace analyzer::common::types
                 if (engine.data.IsEmpty() == false)
                 {
                     stream.unsetf(std::ios_base::boolalpha);
-                    uint16_t patternBlock = 0, bitCount = 0;
+                    uint16_t patternBlock = 0, blockBitCount = 0;
 
                     if (engine.DataEndianType() == DATA_BIG_ENDIAN)
                     {
                         for (std::size_t idx = 0; idx < engine.data.BitsTransform().Length(); ++idx)
                         {
-                            if (idx % 8 == 0 && bitCount != 0) { stream << ' '; }
+                            if (idx % 8 == 0 && blockBitCount != 0) { stream << ' '; }
                             stream << engine.data.BitsTransform().Test(idx);
-                            if (++bitCount == engine.dataPattern[patternBlock] * 8) {
+                            if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == engine.fieldsCount) { break; }
                                 stream << "    ";
-                                bitCount = 0;
+                                blockBitCount = 0;
                             }
                         }
                     }
@@ -282,12 +378,12 @@ namespace analyzer::common::types
                                 // Iterate over all bits in selected byte.
                                 for (std::size_t idx = offset; idx < offset + 8; ++idx)
                                 {
-                                    if (commonBitCount++ % 8 == 0 && bitCount != 0) { stream << ' '; }
+                                    if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { stream << ' '; }
                                     stream << engine.data.BitsTransform().Test(idx);
-                                    if (++bitCount == engine.dataPattern[patternBlock] * 8) {
+                                    if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                         if (++patternBlock == engine.fieldsCount) { break; }
                                         stream << "    ";
-                                        bitCount = 0;
+                                        blockBitCount = 0;
                                     }
                                 }
                             }
