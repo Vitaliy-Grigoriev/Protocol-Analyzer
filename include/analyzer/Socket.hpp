@@ -94,13 +94,13 @@ namespace analyzer::net
 
     protected:
         /**
-         * @fn SocketStatePool::SocketStatePool(void) noexcept;
+         * @fn SocketStatePool::SocketStatePool() noexcept;
          * @brief Protect constructor.
          */
         SocketStatePool(void) noexcept;
 
         /**
-         * @fn SocketStatePool::~SocketStatePool(void);
+         * @fn SocketStatePool::~SocketStatePool();
          * @brief Protect default destructor.
          */
         ~SocketStatePool(void) = default;
@@ -173,9 +173,9 @@ namespace analyzer::net
         };
 
         /**
-         * @fn static SocketsStatePool & SocketStatePool::Instance(void) noexcept;
+         * @fn static SocketsStatePool & SocketStatePool::Instance() noexcept;
          * @brief Method that returns the instance of the singleton class.
-         * @return The instance of singleton class.
+         * @return The instance of singleton SocketStatePool class.
          */
         static SocketStatePool & Instance(void) noexcept;
 

@@ -14,7 +14,7 @@ int32_t main (int32_t size, char** data)
     /*uint8_t array[] = { 1, 2, 3, 4, 5 ,6, 7, 8, 9 };
     auto head = reinterpret_cast<std::byte*>(array);
 
-    common::types::RawDataBuffer buffer = { };
+    common::types::BinaryDataEngine buffer = { };
     buffer.AssignData(array, array + sizeof(array));
     std::cout << buffer.Size() << std::endl;
 

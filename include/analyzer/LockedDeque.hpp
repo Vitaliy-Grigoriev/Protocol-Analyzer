@@ -45,7 +45,7 @@ namespace analyzer::common::types
 
     public:
         /**
-         * @fn LockedDeque::LockedDeque(void) noexcept(true/false);
+         * @fn LockedDeque::LockedDeque() noexcept(true/false);
          * @brief Default constructor.
          *
          * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
@@ -53,7 +53,7 @@ namespace analyzer::common::types
         LockedDeque(void) noexcept(std::is_nothrow_default_constructible_v<std::deque<Type>>) = default;
 
         /**
-         * @fn LockedDeque::~LockedDeque(void) noexcept;
+         * @fn LockedDeque::~LockedDeque() noexcept;
          * @brief Default destructor.
          */
         ~LockedDeque(void) noexcept = default;
@@ -159,7 +159,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn std::size_t LockedDeque::Size(void) noexcept;
+         * @fn std::size_t LockedDeque::Size() noexcept;
          * @brief Method that returns the size of deque.
          * @return Size of deque.
          */
@@ -173,7 +173,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn bool LockedDeque::IsEmpty(void) noexcept;
+         * @fn bool LockedDeque::IsEmpty() noexcept;
          * @brief Method that returns the internal state of deque.
          * @return True - if the container size is 0, otherwise - false.
          */
@@ -304,7 +304,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Clear(void) noexcept;
+         * @fn bool LockedDeque::Clear() noexcept;
          * @brief Method that clears the deque.
          * @return True - if clear is successful, otherwise - false.
          */

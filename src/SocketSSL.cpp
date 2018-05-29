@@ -12,7 +12,7 @@
 namespace analyzer::net
 {
     /**
-     * @fn inline static std::string CheckSSLErrors(void) noexcept;
+     * @fn inline static std::string CheckSSLErrors() noexcept;
      * @brief Check SSL library error.
      * @return The SSL library error in string form.
      */

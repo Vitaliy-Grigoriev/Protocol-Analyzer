@@ -61,13 +61,13 @@ namespace analyzer::net::protocols::http
         explicit http (const std::string & /*data*/, HTTP_VERSION /*version*/ = HTTP1_1);
 
         /**
-         * @fn bool ParseHeader(void) final;
+         * @fn bool ParseHeader() final;
          * @brief Parsing the HTTP/1.1 and HTTP/2.0 header.
          */
         bool ParseHeader(void) final;
 
         /**
-         * @fn ~http(void);
+         * @fn ~http();
          * @brief Destructor of http class.
          */
         ~http(void);

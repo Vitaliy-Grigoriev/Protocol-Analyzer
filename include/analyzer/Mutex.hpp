@@ -2,19 +2,19 @@
 #ifndef PROTOCOL_ANALYZER_MUTEX_HPP
 #define PROTOCOL_ANALYZER_MUTEX_HPP
 
-#include <atomic>
+#include <atomic>  // std::atomic_bool.
 #include <chrono>
 #include <cerrno>
-#include <pthread.h>
+#include <pthread.h>  // pthread_mutex_t,
 
-// In System library MUST NOT use any another framework libraries because it is a core library.
+// In System library MUST NOT use any another functional framework libraries because it is a core library.
 
 
 namespace analyzer::system
 {
     /**
      * @class LocalMutex Mutex.hpp "include/analyzer/Mutex.hpp"
-     * @brief This class defined the interface for POSIX-oriented mutex for specific usages.
+     * @brief This class defined the interface for exception-free POSIX-oriented mutex for specific usages.
      */
     class LocalMutex
     {
@@ -42,11 +42,13 @@ namespace analyzer::system
         LocalMutex & operator= (LocalMutex &&) = delete;
         LocalMutex & operator= (const LocalMutex &) = delete;
 
-
+        [[nodiscard]]
         bool Lock(void) noexcept;
 
+        [[nodiscard]]
         bool TryLock(void) noexcept;
 
+        [[nodiscard]]
         bool Unlock(void) noexcept;
 
         template <typename Duration>
@@ -89,9 +91,9 @@ namespace analyzer::system
     private:
         /**
          * @var LocalMutex & mutex;
-         * @brief Stored reference of input LocalMutex class.
+         * @brief Stored lvalue reference of LocalMutex class.
          */
-        LocalMutex& mutex;
+        LocalMutex & mutex;
 
     public:
         LockGuard(void) = delete;
@@ -103,7 +105,7 @@ namespace analyzer::system
         /**
          * @fn explicit LockGuard::LockGuard (LocalMutex &) noexcept;
          * @brief Constructor of LockGuard class.
-         * @param [in] input - The reference of LocalMutex class.
+         * @param [in] input - The lvalue reference of LocalMutex class.
          */
         explicit LockGuard (LocalMutex& input) noexcept
                 : mutex(input)

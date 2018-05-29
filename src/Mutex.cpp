@@ -6,6 +6,7 @@
 
 namespace analyzer::system
 {
+    [[nodiscard]]
     bool LocalMutex::Lock(void) noexcept
     {
         const int32_t result = pthread_mutex_lock(&mutex);
@@ -13,12 +14,14 @@ namespace analyzer::system
         return (result == 0 || result == EDEADLK);
     }
 
+    [[nodiscard]]
     bool LocalMutex::TryLock(void) noexcept
     {
         isAlreadyLocked.store(true, std::memory_order_seq_cst);
         return (pthread_mutex_trylock(&mutex) == 0);
     }
 
+    [[nodiscard]]
     bool LocalMutex::Unlock(void) noexcept
     {
         return (pthread_mutex_unlock(&mutex) == 0);
