@@ -25,7 +25,7 @@ namespace analyzer::log
 #pragma clang diagnostic pop
 
     /**
-      * @fn static void SetErrorStrings(void) noexcept;
+      * @fn static void SetErrorStrings() noexcept;
       * @brief Function that fills the container of the linux system errors.
       */
     static void SetErrorStrings(void) noexcept;

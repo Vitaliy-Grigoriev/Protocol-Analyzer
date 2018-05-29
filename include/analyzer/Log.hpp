@@ -29,13 +29,13 @@
  * @defgroup LOG_FUNCTIONS Global logging defines.
  * @brief This group of macros defines all interfaces for logging with several attributes.
  *
- * @note In this code is used GNU extension "Named Variadic Macros".
+ * @note In this code block is used GNU extension "Named Variadic Macros".
  *
  * @{
  */
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 
 /**
  * @def LOG_TRACE (args...);
@@ -49,6 +49,12 @@
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
 #define LOG_INFO(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
+/**
+ * @def LOG_MAJOR (args...);
+ * @brief Marco that outputs message to the logfile with MAJOR level attribute.
+ * @tparam [in] args - The sequence of parameters for output to the logfile.
+ */
+#define LOG_MAJOR(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::MAJOR, args))
 /**
  * @def LOG_WARNING (args...);
  * @brief Marco that outputs message to the logfile with WARNING level attribute.
@@ -68,7 +74,7 @@
  */
 #define LOG_FATAL(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::FATAL, args))
 
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 /**@}*/
 
@@ -77,15 +83,16 @@ namespace analyzer::log
 {
     /**
      * @enum LEVEL
-     * @brief The level of logging type.
+     * @brief Level type of logging message.
      */
     enum LEVEL : uint16_t
     {
         FATAL = 1,
         ERROR = 2,
         WARNING = 3,
-        INFORMATION = 4,
-        TRACE = 5
+        MAJOR = 4,
+        INFORMATION = 5,
+        TRACE = 6
     };
 
 
@@ -100,13 +107,13 @@ namespace analyzer::log
     {
     protected:
         /**
-         * @fn StrSysError::StrSysError(void);
+         * @fn StrSysError::StrSysError() noexcept;
          * @brief Protection constructor.
          */
         StrSysError(void) noexcept;
 
         /**
-         * @fn StrSysError::~StrSysError(void);
+         * @fn StrSysError::~StrSysError();
          * @brief Protection default destructor.
          */
         ~StrSysError(void) = default;
@@ -118,7 +125,7 @@ namespace analyzer::log
         StrSysError & operator= (const StrSysError &) = delete;
 
         /**
-         * @fn static StrSysError & StrSysError::Instance(void);
+         * @fn static StrSysError & StrSysError::Instance() noexcept;
          * @brief Method that returns the instance of the system error singleton class.
          * @return The instance of singleton class.
          */
@@ -165,14 +172,14 @@ namespace analyzer::log
          * @var mutable std::streambuf * defaultIO;
          * @brief Default IO buffer of std::ostream.
          */
-        mutable std::streambuf* defaultIO = nullptr;
+        mutable std::streambuf * defaultIO = nullptr;
         /**
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
          *
          * @note Default logging engine: Standard output (std::cout).
          */
-        std::ostream& out = std::cout;
+        std::ostream & out = std::cout;
         /**
          * @var std::string logFileName;
          * @brief Current name and path of the logfile.
@@ -203,19 +210,19 @@ namespace analyzer::log
 
     protected:
         /**
-         * @fn Logger::Logger(void) noexcept;
+         * @fn Logger::Logger() noexcept;
          * @brief Protection constructor.
          */
         Logger(void) noexcept;
 
         /**
-         * @fn Logger::~Logger(void) noexcept;
+         * @fn Logger::~Logger() noexcept;
          * @brief Protection destructor.
          */
         ~Logger(void) noexcept;
 
         /**
-         * @fn bool Logger::CheckVolume (std::string &) const noexcept;
+         * @fn bool Logger::CheckVolume (std::string &, bool) const noexcept;
          * @brief Check and add volume to the logfile name.
          * @param [in,out] name - Logfile name.
          * @param [in] onlyCheck - Flag indicating whether to add a volume. Default: false.
@@ -232,7 +239,7 @@ namespace analyzer::log
         bool GetNameWithNextVolume (std::string & /*name*/) const noexcept;
 
         /**
-         * @fn bool Logger::ChangeVolume(void) noexcept;
+         * @fn bool Logger::ChangeVolume() noexcept;
          * @brief Change volume the logfile.
          * @return True - if logfile name is changed successfully, otherwise - false.
          *
@@ -290,9 +297,9 @@ namespace analyzer::log
         Logger & operator= (const Logger &) = delete;
 
         /**
-         * @fn static Logging & Logger::Instance(void);
+         * @fn static Logger & Logger::Instance() noexcept;
          * @brief Method that returns the instance of the program logging singleton class.
-         * @return The instance of singleton class.
+         * @return The instance of singleton Logger class.
          */
         static Logger & Instance(void) noexcept;
 
@@ -326,6 +333,9 @@ namespace analyzer::log
                         break;
                     case LEVEL::INFORMATION:
                         out << "[info] ";
+                        break;
+                    case LEVEL::MAJOR:
+                        out << "[major] ";
                         break;
                     case LEVEL::WARNING:
                         out << "[warning] ";
@@ -388,7 +398,7 @@ namespace analyzer::log
         void SetLogLevel (const volatile LEVEL newLevel) noexcept { levelType = newLevel; }
 
         /**
-         * @fn inline std::size_t Logger::GetLogFileRecordsSize(void) const noexcept;
+         * @fn inline std::size_t Logger::GetLogFileRecordsSize() const noexcept;
          * @brief Method that returns current logfile records.
          * @return Current logfile records.
          */
