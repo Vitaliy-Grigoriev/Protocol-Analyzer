@@ -41,6 +41,7 @@ int32_t main (int32_t size, char** data)
     const uint16_t pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
 
     BinaryStructuredDataEngine buffer1(types::DATA_BIG_ENDIAN);
+    buffer1.CreateTemplate(pattern, 7);
     std::cout << buffer1.AssignData(&tcp, pattern, 7) << std::endl;
     std::cout << buffer1.ToFormattedString() << std::endl;
     std::cout << buffer1.SetField(4, field) << std::endl;

@@ -34,6 +34,7 @@ namespace analyzer::common::types
                 length = other.length;
                 dataModeType = other.dataModeType;
                 dataEndianType = other.dataEndianType;
+                SetDataModeType(DATA_MODE_ALLOCATION);
             }
         }
     }
@@ -59,6 +60,7 @@ namespace analyzer::common::types
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr) {
             length = size;
+            SetDataModeType(DATA_MODE_ALLOCATION);
             memset(data.get(), 0, length);
         }
     }
@@ -83,6 +85,7 @@ namespace analyzer::common::types
                 length = other.length;
                 dataModeType = other.dataModeType;
                 dataEndianType = other.dataEndianType;
+                SetDataModeType(DATA_MODE_ALLOCATION);
             }
         }
         return *this;
@@ -776,15 +779,13 @@ namespace analyzer::common::types
     // Bitwise left shift assignment operator that performs direct left bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator<<= (const std::size_t shift) const noexcept
     {
-        ShiftLeft(shift, false);
-        return *this;
+        return ShiftLeft(shift, false);
     }
 
     // Bitwise right shift assignment operator that performs direct right bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator>>= (const std::size_t shift) const noexcept
     {
-        ShiftRight(shift, false);
-        return *this;
+        return ShiftRight(shift, false);
     }
 
     // Logical assignment bitwise AND operator that transforms internal binary raw data.
@@ -813,7 +814,7 @@ namespace analyzer::common::types
                     (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx];
                 }
             }
-            else  // If right operand (other) has raw data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
+            else  // If right operand (other) has data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
             {
                 if (storedData.dataEndianType == DATA_LITTLE_ENDIAN)
                 {

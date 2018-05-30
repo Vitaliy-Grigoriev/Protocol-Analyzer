@@ -9,7 +9,7 @@
 
 #include <memory>  // std::unique_ptr, std::make_unique.
 #include <utility>  // std::forward
-#include <cstring>  // memcpy.
+#include <cstring>  // memcpy, memset.
 #include <algorithm>  // std::generate.
 
 // In System library MUST NOT use any another functional framework libraries because it is a core library.

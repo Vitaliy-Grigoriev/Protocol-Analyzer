@@ -4,8 +4,8 @@
 // ============================================================================
 
 #pragma once
-#ifndef PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
-#define PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
+#ifndef PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP
+#define PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP
 
 #include <map>  // std::pair.
 #include <ostream>  // std::ostream.
@@ -81,7 +81,7 @@ namespace analyzer::common::types
       */
     static inline DATA_ENDIAN_TYPE CheckSystemEndian(void) noexcept
     {
-        union {
+        const union {
             const uint16_t value;
             const uint8_t data[sizeof(uint16_t)];
         } endian { 0x0102 };
@@ -764,6 +764,8 @@ namespace analyzer::common::types
          * @brief Copy assignment constructor of BinaryDataEngine class.
          * @param [in] other - Const lvalue reference of copied BinaryDataEngine class.
          *
+         * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
+         *
          * @attention Need to check existence of data after use this constructor.
          */
         BinaryDataEngine (const BinaryDataEngine & /*other*/) noexcept;
@@ -782,12 +784,14 @@ namespace analyzer::common::types
          * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
          * @param [in] endian - Endian of stored data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          *
+         * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
+         *
          * @attention Need to check existence of data after use this constructor.
          */
         explicit BinaryDataEngine (std::size_t /*size*/, uint8_t /*mode*/ = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE /*endian*/ = system_endian) noexcept;
 
         /**
-         * @fn explicit BinaryDataEngine::BinaryDataEngine (std::byte * const, std::size_t, DATA_ENDIAN_TYPE, uint8_t, bool) noexcept;
+         * @fn explicit BinaryDataEngine::BinaryDataEngine (std::byte *, std::size_t, DATA_ENDIAN_TYPE, uint8_t, bool) noexcept;
          * @brief Constructor that accepts a pointer to allocated (or static) binary data.
          * @param [in] memory - Pointer to allocated (or static) data.
          * @param [in] size - Number of bytes in data.
@@ -800,8 +804,7 @@ namespace analyzer::common::types
          * @attention Use option 'destruct' only in case when this object was allocated by operator 'new' and has original type 'std::byte'.
          * @attention Need to check existence of data after use this constructor.
          */
-        explicit BinaryDataEngine (std::byte * const /*memory*/,
-                                   std::size_t /*size*/,
+        explicit BinaryDataEngine (std::byte * /*memory*/, std::size_t /*size*/,
                                    DATA_ENDIAN_TYPE /*endian*/ = system_endian,
                                    uint8_t /*mode*/ = DATA_MODE_DEFAULT,
                                    bool /*destruct*/ = false) noexcept;
@@ -811,6 +814,8 @@ namespace analyzer::common::types
          * @brief Copy assignment operator of BinaryDataEngine class.
          * @param [in] other - Const lvalue reference of copied BinaryDataEngine class.
          * @return Lvalue reference of copied BinaryDataEngine class.
+         *
+         * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          *
          * @attention Need to check existence of data after use this operator.
          */
@@ -833,6 +838,7 @@ namespace analyzer::common::types
          * @param [in] count - The number of elements in the input data of selected type.
          * @return True - if data assignment is successful, otherwise - false.
          *
+         * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          * @note Input type MUST be a POD type.
          * @note Return value is marked with the "nodiscard" attribute.
          */
@@ -848,6 +854,7 @@ namespace analyzer::common::types
             {
                 data = system::allocMemoryForArray<std::byte>(bytes, memory, bytes);
                 if (data == nullptr) { return false; }
+                SetDataModeType(DATA_MODE_ALLOCATION);
                 length = bytes;
             }
             else { memcpy(data.get(), memory, length); }
@@ -863,6 +870,7 @@ namespace analyzer::common::types
          * @param [in] end - Iterator to the element following the last one of const data of selected type.
          * @return True - if data assignment is successful, otherwise - false.
          *
+         * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          * @note Input type under iterator MUST be a POD type.
          * @note Return value is marked with the "nodiscard" attribute.
          */
@@ -880,6 +888,7 @@ namespace analyzer::common::types
             {
                 data = system::allocMemoryForArray<std::byte>(bytes, &(*begin), bytes);
                 if (data == nullptr) { return false; }
+                SetDataModeType(DATA_MODE_ALLOCATION);
                 length = bytes;
             }
             else { memcpy(data.get(), &(*begin), length); }
@@ -887,7 +896,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn bool BinaryDataEngine::AssignReference (std::byte * const, std::size_t, bool) noexcept;
+         * @fn bool BinaryDataEngine::AssignReference (std::byte *, std::size_t, bool) noexcept;
          * @brief Method that accepts a pointer to allocated (or static) binary data.
          * @param [in] memory - Pointer to allocated (or static) data.
          * @param [in] size - Number of bytes in data.
@@ -898,7 +907,7 @@ namespace analyzer::common::types
          * @attention Use option 'destruct' only in case when this object was allocated by operator 'new' and has original type 'std::byte'.
          * @attention Need to check existence of data after use this constructor.
          */
-        bool AssignReference (std::byte * const /*memory*/, std::size_t /*size*/, bool /*destruct*/ = false) noexcept;
+        bool AssignReference (std::byte * /*memory*/, std::size_t /*size*/, bool /*destruct*/ = false) noexcept;
 
         /**
          * @fn const BinaryDataEngine::BitStreamEngine & BinaryDataEngine::BitsTransform() const noexcept;
@@ -970,11 +979,11 @@ namespace analyzer::common::types
         void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) noexcept;
 
         /**
-         * @fn explicit operator BinaryDataEngine::bool() const noexcept;
+         * @fn operator BinaryDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryDataEngine class.
          * @return True - if BinaryDataEngine class is not empty, otherwise - false.
          */
-        explicit operator bool(void) const noexcept { return data != nullptr; }
+        operator bool(void) const noexcept { return data != nullptr; }
 
         /**
          * @fn inline const std::byte & BinaryDataEngine::operator[] (std::size_t) const noexcept;
@@ -1010,4 +1019,4 @@ namespace analyzer::common::types
 }  // namespace types.
 
 
-#endif  // PROTOCOL_ANALYZER_RAW_DATA_BUFFER_HPP
+#endif  // PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP

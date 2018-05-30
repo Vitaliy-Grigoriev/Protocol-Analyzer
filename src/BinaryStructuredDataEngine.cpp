@@ -18,13 +18,13 @@ namespace analyzer::common::types
     // Copy assignment constructor of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine::BinaryStructuredDataEngine (const BinaryStructuredDataEngine& other) noexcept
     {
-        if (other.data.Data() != nullptr)
+        if (other.data == true)
         {
             data = other.data;
-            if (data.Data() != nullptr)
+            if (data == true)
             {
                 fieldsCount = other.fieldsCount;
-                dataPattern = system::allocMemoryForArray<uint16_t>(fieldsCount, other.dataPattern.get(), fieldsCount);
+                dataPattern = system::allocMemoryForArray<uint16_t>(fieldsCount, other.dataPattern.get(), fieldsCount * sizeof(uint16_t));
                 dataEndianType = other.dataEndianType;
             }
         }
@@ -33,7 +33,7 @@ namespace analyzer::common::types
     // Move assignment constructor of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine::BinaryStructuredDataEngine (BinaryStructuredDataEngine&& other) noexcept
     {
-        if (other.data.Data() != nullptr)
+        if (other.data == true)
         {
             data = std::move(other.data);
             fieldsCount = other.fieldsCount;
@@ -41,6 +41,24 @@ namespace analyzer::common::types
             dataEndianType = other.dataEndianType;
             other.Clear();
         }
+    }
+
+    // Method that creates empty structured data template.
+    bool BinaryStructuredDataEngine::CreateTemplate (const uint16_t* const pattern, const uint16_t size) noexcept
+    {
+        const std::size_t bytes = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
+        if (bytes == 0) { return false; }
+
+        data = BinaryDataEngine(bytes, STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN);
+        if (data == false) { return false; }
+
+        dataPattern = system::allocMemoryForArray<uint16_t>(size, pattern, size * sizeof(uint16_t));
+        if (dataPattern == nullptr) {
+            Clear();
+            return false;
+        }
+        fieldsCount = size;
+        return true;
     }
 
     // Method that changes endian type of stored data in BinaryStructuredDataEngine class.
@@ -57,7 +75,7 @@ namespace analyzer::common::types
                 continue;
             }
 
-            for (std::size_t jdx = 0; jdx < dataPattern[idx] / 2; ++jdx)
+            for (uint16_t jdx = 0; jdx < dataPattern[idx] / 2; ++jdx)
             {
                 *data.GetAt(block + jdx) ^= *data.GetAt(block + dataPattern[idx] - jdx - 1);
                 *data.GetAt(block + dataPattern[idx] - jdx - 1) ^= *data.GetAt(block + jdx);
@@ -149,13 +167,13 @@ namespace analyzer::common::types
     // Copy assignment operator of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine& BinaryStructuredDataEngine::operator= (const BinaryStructuredDataEngine& other) noexcept
     {
-        if (this != &other && other.data.Data() != nullptr)
+        if (this != &other && other.data == true)
         {
             data = other.data;
-            if (data.Data() != nullptr)
+            if (data == true)
             {
                 fieldsCount = other.fieldsCount;
-                dataPattern = system::allocMemoryForArray<uint16_t>(fieldsCount, other.dataPattern.get(), fieldsCount);
+                dataPattern = system::allocMemoryForArray<uint16_t>(fieldsCount, other.dataPattern.get(), fieldsCount * sizeof(uint16_t));
                 dataEndianType = other.dataEndianType;
             }
         }
@@ -165,7 +183,7 @@ namespace analyzer::common::types
     // Move assignment operator of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine& BinaryStructuredDataEngine::operator= (BinaryStructuredDataEngine&& other) noexcept
     {
-        if (this != &other && other.data.Data() != nullptr)
+        if (this != &other && other.data == true)
         {
             data = std::move(other.data);
             fieldsCount = other.fieldsCount;

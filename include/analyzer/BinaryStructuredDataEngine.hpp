@@ -13,7 +13,7 @@
 namespace analyzer::common::types
 {
 // Default structured data mode which is used in constructors.
-#define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR)
+#define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION)
 
     /**
      * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
@@ -36,7 +36,7 @@ namespace analyzer::common::types
         uint16_t fieldsCount = 0;
         /**
          * @var std::unique_ptr<uint16_t[]> dataPattern;
-         * @brief Array that contains the pattern of stored structure data in bits.
+         * @brief Array that contains the pattern of stored structured data in bits.
          */
         std::unique_ptr<uint16_t[]> dataPattern = nullptr;
         /**
@@ -112,11 +112,11 @@ namespace analyzer::common::types
         /**
          * @fn template <DATA_ENDIAN_TYPE Endian, typename Type>
          * bool BinaryStructuredDataEngine::AssignData (const Type *, const uint16_t * const, const uint16_t) noexcept;
-         * @brief Method that sets the bits of structured data into internal .
+         * @brief Method that assign binary data into internal state of structured data.
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
          * @tparam [in] memory - POD type structure for assignment.
-         * @param [in] pattern - Array that contains the pattern of inputted structure data in bytes.
+         * @param [in] pattern - Array that contains the pattern of inputted structured data in bytes.
          * @param [in] size - Size of the pattern array.
          * @return True - if data assignment is successful, otherwise - false.
          *
@@ -133,7 +133,7 @@ namespace analyzer::common::types
             if (bytes != sizeof(Type)) { return false; }
 
             data = BinaryDataEngine(bytes, STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN);
-            if (data.Data() == nullptr) { return false; }
+            if (data == false) { return false; }
 
             if (data.AssignData(memory, 1) == false) {
                 Clear();
@@ -146,6 +146,7 @@ namespace analyzer::common::types
                 return false;
             }
             fieldsCount = size;
+
             const DATA_ENDIAN_TYPE inputEndian = (Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian;
             if (inputEndian != dataEndianType) {
                 // In this place there is a hack.
@@ -155,6 +156,15 @@ namespace analyzer::common::types
             }
             return true;
         }
+
+        /**
+         * @fn bool BinaryStructuredDataEngine::CreateTemplate (const uint16_t *, uint16_t) noexcept;
+         * @brief Method that creates empty structured data template.
+         * @param [in] pattern - Array that contains the pattern of inputted structured data in bytes.
+         * @param [in] size - Size of the pattern array.
+         * @return True - if creating the data structure template successfully, otherwise - false.
+         */
+        bool CreateTemplate (const uint16_t* /*pattern*/, uint16_t /*size*/) noexcept;
 
         /**
          * @fn inline DATA_ENDIAN_TYPE BinaryStructuredDataEngine::DataEndianType() const noexcept;
