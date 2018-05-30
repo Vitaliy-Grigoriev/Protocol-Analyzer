@@ -61,13 +61,13 @@ namespace analyzer::system
             auto memory = std::make_unique<Type[]>(count);
             if (data == nullptr || length == 0) { return memory; }
 
-            const std::size_t allocatedByteSize = count * sizeof(Type);
-            if (allocatedByteSize <= length) {
-                memcpy(memory.get(), data, allocatedByteSize);
+            const std::size_t allocatedBytes = count * sizeof(Type);
+            if (allocatedBytes <= length) {
+                memcpy(memory.get(), data, allocatedBytes);
             }
             else {  // If copied data length less then allocated data size.
                 memcpy(memory.get(), data, length);
-                memset(memory.get() + length, 0, allocatedByteSize - length);
+                memset(memory.get() + length, 0, allocatedBytes - length);
             }
             return memory;
         }

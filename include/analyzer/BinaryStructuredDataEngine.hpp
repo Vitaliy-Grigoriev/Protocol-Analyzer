@@ -64,14 +64,14 @@ namespace analyzer::common::types
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
             {
-                std::size_t bitOffset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0) * 8);
-                if (Mode == DATA_MODE_INDEPENDENT) { return bitOffset + bitIndex; }
+                const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0)) * 8;
+                if (Mode == DATA_MODE_INDEPENDENT) { return offset + bitIndex; }
 
                 if (dataEndianType == DATA_BIG_ENDIAN) {
-                    return bitOffset + dataPattern[fieldIndex] * 8 - bitIndex - 1;
+                    return offset + dataPattern[fieldIndex] * 8 - bitIndex - 1;
                 }
                 // If data endian type is DATA_LITTLE_ENDIAN.
-                return bitOffset + (bitIndex >> 3) * 8 + 8 - bitIndex % 8 - 1;
+                return offset + (bitIndex >> 3) * 8 - bitIndex % 8 + 7;
             }
             return BinaryDataEngine::npos;
         }
@@ -81,7 +81,7 @@ namespace analyzer::common::types
         /**
          * @fn explicit BinaryStructuredDataEngine::BinaryStructuredDataEngine (DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor of BinaryStructuredDataEngine class.
-         * @param [in] endian - Endian of stored structured data. Default: Local System Type.
+         * @param [in] endian - Endian of stored structured data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          */
         explicit BinaryStructuredDataEngine (DATA_ENDIAN_TYPE endian = BinaryDataEngine::system_endian) noexcept
                 : data(BinaryDataEngine(STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN)), dataEndianType(endian)
@@ -98,7 +98,7 @@ namespace analyzer::common::types
          * @brief Copy assignment constructor of BinaryStructuredDataEngine class.
          * @param [in] other - Const lvalue reference of copied BinaryStructuredDataEngine class.
          *
-         * @attention Need to check the size of data after use this constructor because it is 'noexcept'.
+         * @attention Need to check existence of data after use this constructor.
          */
         BinaryStructuredDataEngine (const BinaryStructuredDataEngine & /*other*/) noexcept;
 
@@ -229,7 +229,7 @@ namespace analyzer::common::types
          * @param [in] fieldIndex - Index of field in structured data.
          * @return Field value under selected index in BinaryDataEngine format.
          *
-         * @attention Need to check the size of data after use this constructor because it is 'noexcept'.
+         * @attention Need to check existence of data after use this method.
          */
         template <DATA_HANDLING_MODE Mode = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN>
         BinaryDataEngine GetField (const uint16_t fieldIndex) const noexcept
@@ -253,6 +253,8 @@ namespace analyzer::common::types
          * @brief Method that returns field value of structured data under selected index by reference.
          * @param [in] fieldIndex - Index of field in structured data.
          * @return Field value under selected index with referenced data in BinaryDataEngine format.
+         *
+         * @attention Need to check existence of data after use this method.
          */
         BinaryDataEngine GetFieldByReference (uint16_t /*fieldIndex*/) const noexcept;
 
@@ -328,7 +330,7 @@ namespace analyzer::common::types
          * @param [in] other - Const lvalue reference of copied BinaryStructuredDataEngine class.
          * @return Lvalue reference of copied BinaryStructuredDataEngine class.
          *
-         * @attention Need to check the size of data after use this operator because it is 'noexcept'.
+         * @attention Need to check existence of data after use this operator.
          */
         BinaryStructuredDataEngine & operator= (const BinaryStructuredDataEngine & /*other*/) noexcept;
 

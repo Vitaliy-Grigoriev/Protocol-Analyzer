@@ -18,12 +18,6 @@ using analyzer::common::types::BinaryStructuredDataEngine;
 
 int32_t main (int32_t size, char** data)
 {
-    /*const uint16_t value = 0xAEAE;
-    BinaryDataEngine buffer(std::size_t(4), types::DATA_MODE_DEPENDENT);
-    std::cout << buffer.BitsTransform() << std::endl;
-    std::cout << buffer.BitsTransform().SetBitSequence<types::DATA_MODE_DEPENDENT, types::DATA_BIG_ENDIAN>(value, 16) << std::endl;
-    std::cout << buffer.BitsTransform() << std::endl;*/
-
 #pragma pack(push, 1)
     struct Data
     {
@@ -36,6 +30,12 @@ int32_t main (int32_t size, char** data)
         uint16_t UrgentPointer;
     } tcp { 0xFFFFFFFF, 0x00000000, 0x05, 0xFF, 0x1FE0, 0xAAAA, 0x0000 };
 #pragma pack(pop)
+
+    BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
+    buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
+    buffer.AssignReference(reinterpret_cast<std::byte*>(&tcp), sizeof(tcp));
+    std::cout << buffer.BitsTransform() << std::endl;
+
 
     const uint16_t field = 0x00FF;
     const uint16_t pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };

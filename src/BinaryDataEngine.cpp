@@ -64,12 +64,12 @@ namespace analyzer::common::types
     }
 
     // Constructor that accepts a pointer to allocated binary data.
-    BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode) noexcept
+    BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode, bool destruct) noexcept
             : data(memory), dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
     {
         if (data != nullptr) {
             length = size;
-            SetDataModeType(DATA_MODE_NO_ALLOCATION);
+            if (destruct == false) { SetDataModeType(DATA_MODE_NO_ALLOCATION); }
         }
     }
 
@@ -100,6 +100,18 @@ namespace analyzer::common::types
             other.Clear();
         }
         return *this;
+    }
+
+    // Method that accepts a pointer to allocated binary data.
+    bool BinaryDataEngine::AssignReference (std::byte* const memory, const std::size_t size, const bool destruct) noexcept
+    {
+        data.reset(memory);
+        if (data != nullptr) {
+            length = size;
+            if (destruct == false) { SetDataModeType(DATA_MODE_NO_ALLOCATION); }
+            return true;
+        }
+        return false;
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
