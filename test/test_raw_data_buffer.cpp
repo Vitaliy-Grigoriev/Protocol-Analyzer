@@ -23,27 +23,31 @@ int32_t main (int32_t size, char** data)
     {
         uint32_t SequenceNumber;
         uint32_t AcknowledgmentNumber;
-        uint8_t Offset_Reserved;
-        uint8_t TcpFlags;
+        uint8_t Offset_Reserved_NS;
+        uint8_t CWR_ECE_TcpFlags;
         uint16_t WindowSize;
         uint16_t Checksum;
         uint16_t UrgentPointer;
-    } tcp { 0xFFFFFFFF, 0x00000000, 0x05, 0xFF, 0x1FE0, 0xAAAA, 0x0000 };
+    } tcp { 0x00000000, 0x00000000, 0x00, 0x00, 0x1FE0, 0xAAAA, 0x0000 };
 #pragma pack(pop)
 
-    BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
+    /*BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
     buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
     buffer.AssignReference(reinterpret_cast<std::byte*>(&tcp), sizeof(tcp));
-    std::cout << buffer.BitsTransform() << std::endl;
+    std::cout << buffer.BitsTransform() << std::endl;*/
 
 
     const uint16_t field = 0x00FF;
-    const uint16_t pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
+    const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
+    const uint16_t bit_pattern[9] = { 32, 32, 4, 3, 3, 6, 16, 16, 16 };
+
 
     BinaryStructuredDataEngine buffer1(types::DATA_BIG_ENDIAN);
-    buffer1.CreateTemplate(pattern, 7);
-    std::cout << buffer1.AssignData(&tcp, pattern, 7) << std::endl;
+    buffer1.CreateTemplate(byte_pattern, 7);
+    std::cout << buffer1.AssignData(&tcp, byte_pattern, 7) << std::endl;
     std::cout << buffer1.ToFormattedString() << std::endl;
+    std::cout << buffer1.GetNonemptyFieldIndex(bit_pattern, 9) << std::endl;
+
     std::cout << buffer1.SetField(4, field) << std::endl;
     std::cout << buffer1.ToFormattedString() << std::endl;
     buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 0, false);

@@ -98,6 +98,36 @@ namespace analyzer::common::types
         return BinaryDataEngine();
     }
 
+    // Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
+    std::size_t BinaryStructuredDataEngine::GetNonemptyFieldIndex (const uint16_t* const pattern, const uint16_t size) const noexcept
+    {
+        std::size_t offset = 0;  // Current bit offset.
+        if (pattern != nullptr && size != 0)
+        {
+            const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
+            if (bitCount != data.BitsTransform().Length()) { return BinaryDataEngine::npos; }
+
+            for (std::size_t field = 0; field < size; ++field)
+            {
+                if (data.BitsTransform().Any(offset, offset + pattern[field] - 1) == true) {
+                    return field;
+                }
+                offset += pattern[field];
+            }
+        }
+        else if (dataPattern != nullptr)  // In this case the internal byte-pattern is used.
+        {
+            for (std::size_t field = 0; field < fieldsCount; ++field)
+            {
+                if (data.BitsTransform().Any(offset, offset + dataPattern[field] * 8 - 1) == true) {
+                    return field;
+                }
+                offset += dataPattern[field] * 8;
+            }
+        }
+        return BinaryDataEngine::npos;
+    }
+
     // Method that clears the data.
     void BinaryStructuredDataEngine::Clear(void) noexcept
     {

@@ -27,6 +27,8 @@ namespace analyzer::common::types
         /**
          * @var BinaryDataEngine data;
          * @brief Variable that stores binary structured data.
+         *
+         * @note This variable is always represents in STRUCTURED_DATA_HANDLING_MODE mode.
          */
         BinaryDataEngine data;
         /**
@@ -116,7 +118,7 @@ namespace analyzer::common::types
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
          * @tparam [in] memory - POD type structure for assignment.
-         * @param [in] pattern - Array that contains the pattern of inputted structured data in bytes.
+         * @param [in] pattern - Array that contains the byte-pattern of inputted structured data.
          * @param [in] size - Size of the pattern array.
          * @return True - if data assignment is successful, otherwise - false.
          *
@@ -160,8 +162,8 @@ namespace analyzer::common::types
         /**
          * @fn bool BinaryStructuredDataEngine::CreateTemplate (const uint16_t *, uint16_t) noexcept;
          * @brief Method that creates empty structured data template.
-         * @param [in] pattern - Array that contains the pattern of inputted structured data in bytes.
-         * @param [in] size - Size of the pattern array.
+         * @param [in] pattern - Array that contains the byte-pattern of inputted structured data.
+         * @param [in] size - Size of the byte-pattern array.
          * @return True - if creating the data structure template successfully, otherwise - false.
          */
         bool CreateTemplate (const uint16_t* /*pattern*/, uint16_t /*size*/) noexcept;
@@ -317,11 +319,24 @@ namespace analyzer::common::types
         }
 
         /**
+         * @fn std::size_t BinaryStructuredDataEngine::GetNonemptyFieldIndex (const uint16_t *, uint16_t) const noexcept;
+         * @brief Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
+         * @param [in] pattern - Array that contains the bit-pattern of data. Default: nullptr.
+         * @param [in] size - Size of the bit-pattern array. Default: 0.
+         * @return Index of first binary nonempty field, otherwise - BinaryDataEngine::npos.
+         *
+         * @note Method returns BinaryDataEngine::npos value if an error occurred.
+         * @note If a specific pattern is not passed into the method then will be used internal byte-pattern.
+         *
+         * @warning This method is always used DATA_MODE_INDEPENDENT data handling mode.
+         */
+        std::size_t GetNonemptyFieldIndex (const uint16_t * /*pattern*/ = nullptr, uint16_t /*size*/ = 0) const noexcept;
+
+        /**
          * @fn void BinaryStructuredDataEngine::Clear() noexcept;
          * @brief Method that clears the data.
          */
         void Clear(void) noexcept;
-
 
         /**
          * @fn std::string BinaryStructuredDataEngine::ToFormattedString() const noexcept;
