@@ -75,10 +75,10 @@ namespace analyzer::common::types
 
 
     /**
-      * @fn static inline DATA_ENDIAN_TYPE CheckSystemEndian() noexcept;
-      * @brief Method that checks the endian type on the system.
-      * @return DATA_LITTLE_ENDIAN(0x02) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x01).
-      */
+     * @fn static inline DATA_ENDIAN_TYPE CheckSystemEndian() noexcept;
+     * @brief Method that checks the endian type on the system.
+     * @return DATA_LITTLE_ENDIAN(0x02) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x01).
+     */
     static inline DATA_ENDIAN_TYPE CheckSystemEndian(void) noexcept
     {
         const union {
@@ -109,7 +109,7 @@ namespace analyzer::common::types
 
         /**
          * @var static const DATA_ENDIAN_TYPE system_endian;
-         * @brief Variable that stores the system endian.
+         * @brief Variable that stores system endian.
          */
         static const DATA_ENDIAN_TYPE system_endian;
 
@@ -355,6 +355,40 @@ namespace analyzer::common::types
             const BitStreamEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
+             * @fn template <typename, DATA_ENDIAN_TYPE Endian>
+             * Type Convert (std::size_t, std::size_t) const noexcept;
+             * @brief Method that converts interval of stored binary data into user type.
+             * @tparam [in] Type - Typename of variable to which stored data will be converted.
+             * @tparam [in] Size - Number of bytes in output data (Used only if Type is a compound variable).
+             * @tparam [in] Endian - Endian of output data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be copied. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be copied. Default: npos.
+             * @return Variable of selected type that consist of the bit sequence in the selected interval of stored data.
+             *
+             * @attention If output real data size (in case struct/class) less then sizeof(Type) then must specify their size.
+             */
+            template <typename Type, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, std::size_t Size = sizeof(Type)>
+            Type Convert (std::size_t first = 0, std::size_t last = npos) const noexcept
+            {
+                static_assert(is_supports_binary_operations<Type>::value == true &&
+                              std::is_default_constructible<Type>::value == true,
+                              "It is not possible for this method to use type without binary operators and default constructor.");
+
+                if (last == npos) { last = Length() - 1; }
+                if (first > last || last >= Length()) { return Type(); }
+                if (last - first + 1 > Size * 8) { return Type(); }
+
+                Type result = { };
+                BinaryDataEngine wrapper(reinterpret_cast<std::byte*>(&result), Size, (Endian == DATA_SYSTEM_ENDIAN) ? system_endian : Endian);
+
+                std::size_t position = 0;
+                while (first <= last) {
+                    wrapper.BitsTransform().Set(position++, Test(first++));
+                }
+                return result;
+            }
+
+            /**
              * @fn const BitStreamEngine & BitStreamEngine::XorBlock (const BinaryDataEngine &, std::size_t, std::size_t) const noexcept;
              * @brief Method that applies the operation XOR to the range of bits under the specified first/last indexes.
              * @param [in] other - Const lvalue reference of the BinaryDataEngine class.
@@ -367,8 +401,8 @@ namespace analyzer::common::types
             /**
              * @fn std::string BitStreamEngine::ToString (std::size_t, std::size_t) const noexcept;
              * @brief Method that outputs internal binary data in string format.
-             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputed. Default: 0.
-             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputed. Default: npos.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputted. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputted. Default: npos.
              * @return STL string object with sequence of the bit character representation of stored data.
              *
              * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.

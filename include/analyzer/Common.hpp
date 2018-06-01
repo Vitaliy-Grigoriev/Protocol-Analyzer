@@ -370,6 +370,31 @@ namespace analyzer::common
 
 
 
+    template <typename Type, typename = std::void_t<>, typename = void, typename = void, typename = void, typename = void, typename = void>
+    struct is_supports_binary_operations : std::false_type { };
+
+    /**
+     * @struct template <typename Type>
+     * struct is_supports_binary_operations<Type, typename, typename, typename, typename, typename, typename>;
+     * @brief Structure that checks that variable has binary operators.
+     * @tparam [in] Type - Typename of checked data type.
+     * @return True - if variable has binary operators, otherwise - false.
+     */
+    template <typename Type>
+    struct is_supports_binary_operations<Type,
+            std::void_t <decltype(std::declval<Type>() << std::declval<std::size_t>()),
+                    decltype(std::declval<Type>() >> std::declval<std::size_t>()),
+                    decltype(std::declval<Type>() ^ std::declval<Type>()),
+                    decltype(std::declval<Type>() & std::declval<Type>()),
+                    decltype(std::declval<Type>() | std::declval<Type>())>,
+            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() << std::declval<std::size_t>()), Type>::value>,
+            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() >> std::declval<std::size_t>()), Type>::value>,
+            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() ^ std::declval<Type>()), Type>::value>,
+            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() & std::declval<Type>()), Type>::value>,
+            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() | std::declval<Type>()), Type>::value>>
+        : std::true_type { };
+
+
     template <typename Type, typename = void>
     struct is_iterator_type
     {

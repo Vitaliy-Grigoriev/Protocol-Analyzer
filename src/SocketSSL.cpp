@@ -130,7 +130,7 @@ namespace analyzer::net
     }
 
 
-    int32_t SocketSSL::Recv (char* data, std::size_t length, bool noWait)
+    int32_t SocketSSL::Recv (char* data, std::size_t length, const bool noWait)
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL: Socket is invalid.");

@@ -28,15 +28,16 @@ int32_t main (int32_t size, char** data)
         uint16_t WindowSize;
         uint16_t Checksum;
         uint16_t UrgentPointer;
-    } tcp { 0x00000000, 0x00000000, 0x00, 0x00, 0x1FE0, 0xAAAA, 0x0000 };
+    } tcp { 0x00000000, 0x00000000, 0x50, 0x00, 0x1FE0, 0xAAAA, 0x0000 };
 #pragma pack(pop)
 
-    /*BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
-    buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
+    BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
+    //buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
     buffer.AssignReference(reinterpret_cast<std::byte*>(&tcp), sizeof(tcp));
-    std::cout << buffer.BitsTransform() << std::endl;*/
+    uint32_t value = buffer.BitsTransform().Convert<uint32_t>(1000, 1100);
+    std::cout << value << std::endl;
 
-
+    return EXIT_FAILURE;
     const uint16_t field = 0x00FF;
     const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
     const uint16_t bit_pattern[9] = { 32, 32, 4, 3, 3, 6, 16, 16, 16 };
@@ -46,6 +47,12 @@ int32_t main (int32_t size, char** data)
     buffer1.CreateTemplate(byte_pattern, 7);
     std::cout << buffer1.AssignData(&tcp, byte_pattern, 7) << std::endl;
     std::cout << buffer1.ToFormattedString() << std::endl;
+    std::cout << buffer1.SetFieldBit<types::DATA_MODE_INDEPENDENT>(2, 0, true) << std::endl;
+    std::cout << buffer1.SetFieldBit<types::DATA_MODE_INDEPENDENT>(2, 1, false) << std::endl;
+    std::cout << buffer1.SetFieldBit<types::DATA_MODE_INDEPENDENT>(2, 2, true) << std::endl;
+    std::cout << buffer1.SetFieldBit<types::DATA_MODE_INDEPENDENT>(2, 3, false) << std::endl;
+    std::cout << buffer1.ToFormattedString() << std::endl;
+    return EXIT_SUCCESS;
     std::cout << buffer1.GetNonemptyFieldIndex(bit_pattern, 9) << std::endl;
 
     std::cout << buffer1.SetField(4, field) << std::endl;

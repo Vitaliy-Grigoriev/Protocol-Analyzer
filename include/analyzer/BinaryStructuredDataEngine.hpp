@@ -49,7 +49,7 @@ namespace analyzer::common::types
 
 
         /**
-         * @fn template <DATA_HANDLING_MODE Mode>
+         * @fn template <uint8_t Mode>
          * std::size_t BinaryStructuredDataEngine::GetBitOffset (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit offset in selected field bit index of structured data.
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
@@ -60,7 +60,7 @@ namespace analyzer::common::types
          * @note The resulting bit offset is obtained in DATA_MODE_INDEPENDENT handling mode.
          * @note Return value is marked with the "nodiscard" attribute.
          */
-        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        template <uint8_t Mode = DATA_MODE_INDEPENDENT>
         [[nodiscard]]
         std::size_t GetBitOffset (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
         {
@@ -233,7 +233,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn template <DATA_HANDLING_MODE Mode, DATA_ENDIAN_TYPE Endian>
+         * @fn template <uint8_t Mode, DATA_ENDIAN_TYPE Endian>
          * BinaryDataEngine BinaryStructuredDataEngine::GetField (const uint16_t) const noexcept;
          * @brief Method that returns field value of structured data under selected index.
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_DEFAULT.
@@ -243,7 +243,7 @@ namespace analyzer::common::types
          *
          * @attention Need to check existence of data after use this method.
          */
-        template <DATA_HANDLING_MODE Mode = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN>
+        template <uint8_t Mode = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN>
         BinaryDataEngine GetField (const uint16_t fieldIndex) const noexcept
         {
             if (fieldIndex < fieldsCount)
@@ -271,7 +271,7 @@ namespace analyzer::common::types
         BinaryDataEngine GetFieldByReference (uint16_t /*fieldIndex*/) const noexcept;
 
         /**
-         * @fn template <DATA_HANDLING_MODE Mode>
+         * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) const noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
@@ -280,7 +280,7 @@ namespace analyzer::common::types
          * @param [in] value - Bit value for assignment to selected field bit offset of structured data. Default: true.
          * @return True - if value assignment is successful, otherwise - false.
          */
-        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        template <uint8_t Mode = DATA_MODE_INDEPENDENT>
         bool SetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex, const bool value = true) const noexcept
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
@@ -295,7 +295,7 @@ namespace analyzer::common::types
         }
 
         /**
-         * @fn template <DATA_HANDLING_MODE Mode>
+         * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::GetFieldBit (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit field value of structured data under selected indexes.
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
@@ -305,7 +305,7 @@ namespace analyzer::common::types
          *
          * @warning Method always returns value 'false' if the index out-of-range.
          */
-        template <DATA_HANDLING_MODE Mode = DATA_MODE_INDEPENDENT>
+        template <uint8_t Mode = DATA_MODE_INDEPENDENT>
         bool GetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
@@ -348,6 +348,12 @@ namespace analyzer::common::types
         std::string ToFormattedString(void) const noexcept;
 
 
+        /**
+         * @fn operator BinaryStructuredDataEngine::bool() const noexcept;
+         * @brief Operator that returns the internal state of BinaryStructuredDataEngine class.
+         * @return True - if BinaryStructuredDataEngine class is not empty, otherwise - false.
+         */
+        operator bool(void) const noexcept { return data != false; }
 
         /**
          * @fn BinaryStructuredDataEngine & BinaryStructuredDataEngine::operator= (const BinaryStructuredDataEngine &) noexcept;

@@ -18,8 +18,8 @@ namespace analyzer::common::types
     /* ****************************************************************************************************** */
     /* ****************************************** BinaryDataEngine ****************************************** */
 
-    // Variable that indicates about the system endian.
-    const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();
+    // Variable that stores system endian.
+    inline const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();
 
 
     // Copy constructor.
@@ -149,7 +149,7 @@ namespace analyzer::common::types
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
-    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, bool convert) noexcept
+    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, const bool convert) noexcept
     {
         if (dataEndianType == endian) { return; }
         dataEndianType = endian;
@@ -415,7 +415,7 @@ namespace analyzer::common::types
     }
 
     // Method that performs direct left bit shift by a specified bit offset.
-    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftLeft (const std::size_t shift, bool fillBit) const noexcept
+    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftLeft (const std::size_t shift, const  bool fillBit) const noexcept
     {
         if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
@@ -460,7 +460,7 @@ namespace analyzer::common::types
     }
 
     // Method that performs direct right bit shift by a specified bit offset.
-    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftRight (const std::size_t shift, bool fillBit) const noexcept
+    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftRight (const std::size_t shift, const bool fillBit) const noexcept
     {
         if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
         {
@@ -650,7 +650,7 @@ namespace analyzer::common::types
     }
 
     // Method that returns position of the first set bit in the selected interval of stored data.
-    std::size_t BinaryDataEngine::BitStreamEngine::GetFirstIndex (const std::size_t first, std::size_t last, bool isRelative) const noexcept
+    std::size_t BinaryDataEngine::BitStreamEngine::GetFirstIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
     {
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return npos; }
@@ -667,7 +667,7 @@ namespace analyzer::common::types
     }
 
     // Method that returns position of the last set bit in the selected interval of stored data.
-    std::size_t BinaryDataEngine::BitStreamEngine::GetLastIndex (const std::size_t first, std::size_t last, bool isRelative) const noexcept
+    std::size_t BinaryDataEngine::BitStreamEngine::GetLastIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
     {
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return npos; }
@@ -684,7 +684,7 @@ namespace analyzer::common::types
     }
 
     // Method that sets the bit under the specified index to new value.
-    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::Set (const std::size_t index, bool fillBit) const noexcept
+    const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::Set (const std::size_t index, const bool fillBit) const noexcept
     {
         if (index >= Length()) { return *this; }
 

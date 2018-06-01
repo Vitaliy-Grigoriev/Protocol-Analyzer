@@ -89,7 +89,7 @@ namespace analyzer::log
         }
     }
 
-    bool Logger::CheckVolume (std::string& name, bool onlyCheck) const noexcept
+    bool Logger::CheckVolume (std::string& name, const bool onlyCheck) const noexcept
     {
         try
         {
