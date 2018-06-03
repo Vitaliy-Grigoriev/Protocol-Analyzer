@@ -15,8 +15,8 @@
 
 namespace analyzer::common::types
 {
-    /* ****************************************************************************************************** */
-    /* ****************************************** BinaryDataEngine ****************************************** */
+    /* ******************************************************************************************************* */
+    /* ******************************************* BinaryDataEngine ****************************************** */
 
     // Variable that stores system endian.
     inline const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();
@@ -26,7 +26,7 @@ namespace analyzer::common::types
     BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine& other) noexcept
             : bitStreamTransform(*this), byteStreamTransform(*this)
     {
-        if (other.data != nullptr)
+        if (other == true)
         {
             data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
             if (data != nullptr)
@@ -43,7 +43,7 @@ namespace analyzer::common::types
     BinaryDataEngine::BinaryDataEngine (BinaryDataEngine&& other) noexcept
             : bitStreamTransform(*this), byteStreamTransform(*this)
     {
-        if (other.data != nullptr)
+        if (other == true)
         {
             data = std::move(other.data);
             length = other.length;
@@ -78,7 +78,7 @@ namespace analyzer::common::types
     // Copy assignment operator of BinaryDataEngine class.
     BinaryDataEngine& BinaryDataEngine::operator= (const BinaryDataEngine& other) noexcept
     {
-        if (this != &other && other.data != nullptr)
+        if (this != &other && other == true)
         {
             data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
             if (data != nullptr) {
@@ -94,7 +94,7 @@ namespace analyzer::common::types
     // Move assignment operator of BinaryDataEngine class.
     BinaryDataEngine& BinaryDataEngine::operator= (BinaryDataEngine&& other) noexcept
     {
-        if (this != &other && other.data != nullptr)
+        if (this != &other && other == true)
         {
             data = std::move(other.data);
             length = other.length;
@@ -390,12 +390,12 @@ namespace analyzer::common::types
         leftDirectBytesShiftBE(head, end, head + shift, fillByte);
     }
 
-    /* *********************************************** Support ********************************************** */
-    /* ****************************************************************************************************** */
+    /* *********************************************** Support *********************************************** */
+    /* ******************************************************************************************************* */
 
 
-    /* ****************************************************************************************************** */
-    /* ******************************************* BitStreamEngine ****************************************** */
+    /* ******************************************************************************************************* */
+    /* ******************************************* BitStreamEngine ******************************************* */
 
     // Method that returns the correct position of selected bit in stored raw data in any data endian.
     std::pair<std::size_t, std::byte> BinaryDataEngine::BitStreamEngine::GetBitPosition (const std::size_t index) const noexcept
@@ -417,7 +417,7 @@ namespace analyzer::common::types
     // Method that performs direct left bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftLeft (const std::size_t shift, const  bool fillBit) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
             if (shift >= Length()) {
@@ -462,7 +462,7 @@ namespace analyzer::common::types
     // Method that performs direct right bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::ShiftRight (const std::size_t shift, const bool fillBit) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
             if (shift >= Length()) {
@@ -507,7 +507,7 @@ namespace analyzer::common::types
     // Method that performs round left bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= Length()) {
                 shift %= Length();
@@ -546,7 +546,7 @@ namespace analyzer::common::types
     // Method that performs round right bit shift by a specified bit offset.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= Length()) {
                 shift %= Length();
@@ -792,7 +792,7 @@ namespace analyzer::common::types
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator&= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
         if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
-        if (storedData.data != nullptr && storedData.length > 0)
+        if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
             const auto& otherByteEngine = other.storedData.BytesTransform();
@@ -852,7 +852,7 @@ namespace analyzer::common::types
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator|= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
         if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
-        if (storedData.data != nullptr && storedData.length > 0)
+        if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
             const auto& otherByteEngine = other.storedData.BytesTransform();
@@ -909,7 +909,7 @@ namespace analyzer::common::types
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator^= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
         if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
-        if (storedData.data != nullptr && storedData.length > 0)
+        if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
             const auto& otherByteEngine = other.storedData.BytesTransform();
@@ -963,12 +963,12 @@ namespace analyzer::common::types
     }
 
 
-    /* ******************************************* BitStreamEngine ****************************************** */
-    /* ****************************************************************************************************** */
+    /* ******************************************** BitStreamEngine ****************************************** */
+    /* ******************************************************************************************************* */
 
 
-    /* ****************************************************************************************************** */
-    /* ****************************************** ByteStreamEngine ****************************************** */
+    /* ******************************************************************************************************* */
+    /* ******************************************* ByteStreamEngine ****************************************** */
 
     // Method that returns the correct position of selected byte in stored raw data in any data endian.
     std::size_t BinaryDataEngine::ByteStreamEngine::GetBytePosition (const std::size_t index) const noexcept
@@ -986,7 +986,7 @@ namespace analyzer::common::types
     // Method that performs direct left byte shift by a specified byte offset.
     const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= storedData.length) {
                 memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
@@ -1006,7 +1006,7 @@ namespace analyzer::common::types
     // Method that performs direct right byte shift by a specified byte offset.
     const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::ShiftRight (const std::size_t shift, const std::byte fillByte) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= storedData.length) {
                 memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
@@ -1026,7 +1026,7 @@ namespace analyzer::common::types
     // Method that performs round left bit shift by a specified byte offset.
     const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= storedData.length) {
                 shift %= storedData.length;
@@ -1045,7 +1045,7 @@ namespace analyzer::common::types
     // Method that performs round right bit shift by a specified byte offset.
     const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
     {
-        if (storedData.data != nullptr && storedData.length > 0 && shift != 0)
+        if (storedData == true && shift != 0)
         {
             if (shift >= storedData.length) {
                 shift %= storedData.length;
@@ -1068,7 +1068,7 @@ namespace analyzer::common::types
         return &storedData.data[GetBytePosition(index)];
     }
 
-    /* ****************************************** ByteStreamEngine ****************************************** */
-    /* ****************************************************************************************************** */
+    /* ******************************************* ByteStreamEngine ****************************************** */
+    /* ******************************************************************************************************* */
 
 }  // namespace types.

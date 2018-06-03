@@ -4,14 +4,14 @@
 // ============================================================================
 
 #pragma once
-#ifndef PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP
-#define PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP
+#ifndef PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
+#define PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
 
 #include <map>  // std::pair.
 #include <ostream>  // std::ostream.
 
 #include "System.hpp"  // system::allocMemoryForArray.
-#include "Common.hpp"  // common::is_pod_type, common::is_iterator_type.
+#include "Common.hpp"  // common::is_pod_type, common::is_iterator_type, common::is_supports_binary_operations, std::is_default_constructible.
 
 //#include "BinaryDataEngineIterator.hpp"
 
@@ -168,7 +168,7 @@ namespace analyzer::common::types
 
             /**
              * @fn BitStreamEngine::~BitStreamEngine() noexcept;
-             * @brief Default destructor.
+             * @brief Default destructor of nested BitStreamEngine class.
              */
             ~BitStreamEngine(void) noexcept = default;
 
@@ -365,7 +365,7 @@ namespace analyzer::common::types
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be copied. Default: npos.
              * @return Variable of selected type that consist of the bit sequence in the selected interval of stored data.
              *
-             * @attention If output real data size (in case struct/class) less then sizeof(Type) then must specify their size.
+             * @attention If output real data size (in case struct/class) less then sizeof(Type) then MUST specify their size.
              */
             template <typename Type, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, std::size_t Size = sizeof(Type)>
             Type Convert (std::size_t first = 0, std::size_t last = npos) const noexcept
@@ -675,7 +675,7 @@ namespace analyzer::common::types
 
             /**
              * @fn ByteStreamEngine::~ByteStreamEngine() noexcept;
-             * @brief Default destructor.
+             * @brief Default destructor of nested ByteStreamEngine class.
              */
             ~ByteStreamEngine(void) noexcept = default;
 
@@ -1017,7 +1017,7 @@ namespace analyzer::common::types
          * @brief Operator that returns the internal state of BinaryDataEngine class.
          * @return True - if BinaryDataEngine class is not empty, otherwise - false.
          */
-        operator bool(void) const noexcept { return data != nullptr; }
+        operator bool(void) const noexcept { return (data != nullptr && length > 0); }
 
         /**
          * @fn inline const std::byte & BinaryDataEngine::operator[] (std::size_t) const noexcept;
@@ -1037,7 +1037,7 @@ namespace analyzer::common::types
          * @param [in] index - Index of byte in byte sequence of stored data.
          * @return Return a pointer to an element by selected index or nullptr in an error occurred.
          *
-         * @note This method does not consider the type of endian in which stored data are presented.
+         * @note This method does not consider the endian type in which stored data are presented.
          */
         std::byte * GetAt (std::size_t /*index*/) const noexcept;
 
@@ -1053,4 +1053,4 @@ namespace analyzer::common::types
 }  // namespace types.
 
 
-#endif  // PROTOCOL_ANALYZER_BINARY_DATA_BUFFER_HPP
+#endif  // PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP

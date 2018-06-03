@@ -12,8 +12,14 @@
 
 namespace analyzer::common::types
 {
-// Default structured data mode which is used in constructors.
+/**
+ * @def STRUCTURED_DATA_HANDLING_MODE;
+ * @brief Marco that include a default settings for structured data handling mode in BinaryStructuredDataEngine class.
+ *
+ * @note This data handling mode does not changed in BinaryStructuredDataEngine class.
+ */
 #define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION)
+
 
     /**
      * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
@@ -204,7 +210,7 @@ namespace analyzer::common::types
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
          * @param [in] fieldIndex - Index of field in structured data.
-         * @param [in] value - Field value for assignment to selected field of structured data.
+         * @param [in] value - Field value for assignment to selected field of structured data in specified data endian type.
          * @return True - if value assignment is successful, otherwise - false.
          *
          * @note Input type MUST be a POD type.
@@ -218,7 +224,7 @@ namespace analyzer::common::types
             {
                 BinaryDataEngine sequence(DATA_MODE_DEFAULT, (Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
                 if (sequence.AssignData<Type>(&value, 1) == false) { return false; }
-                sequence.SetDataEndianType(dataEndianType);
+                sequence.SetDataEndianType(dataEndianType);  // Change data endian type to internal endian format.
 
                 // Calculate byte offset to start byte in selected field.
                 const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0));
@@ -239,7 +245,7 @@ namespace analyzer::common::types
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_DEFAULT.
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @param [in] fieldIndex - Index of field in structured data.
-         * @return Field value under selected index in BinaryDataEngine format.
+         * @return Field value under selected index in BinaryDataEngine format in specified data handling and endian types.
          *
          * @attention Need to check existence of data after use this method.
          */
@@ -253,6 +259,7 @@ namespace analyzer::common::types
                 BinaryDataEngine result(Mode, dataEndianType);
                 if (result.AssignData(data.Data() + byteIndex, data.Data() + byteIndex + dataPattern[fieldIndex]) == true)
                 {
+                    // Change data endian type to specified output endian format.
                     result.SetDataEndianType((Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
                     return result;
                 }
@@ -266,6 +273,8 @@ namespace analyzer::common::types
          * @param [in] fieldIndex - Index of field in structured data.
          * @return Field value under selected index with referenced data in BinaryDataEngine format.
          *
+         * @note The field reference value is always returns in internal data endian type and DATA_MODE_DEFAULT data handling mode.
+         *
          * @attention Need to check existence of data after use this method.
          */
         BinaryDataEngine GetFieldByReference (uint16_t /*fieldIndex*/) const noexcept;
@@ -274,7 +283,7 @@ namespace analyzer::common::types
          * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) const noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
-         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
+         * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_INDEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @param [in] value - Bit value for assignment to selected field bit offset of structured data. Default: true.
@@ -298,7 +307,7 @@ namespace analyzer::common::types
          * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::GetFieldBit (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit field value of structured data under selected indexes.
-         * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
+         * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_INDEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @return Boolean value that indicates about the value of the selected bit.

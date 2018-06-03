@@ -95,7 +95,7 @@ namespace analyzer::common::types
             BinaryDataEngine result(data.GetAt(byteIndex), dataPattern[fieldIndex], dataEndianType);
             return result;
         }
-        return BinaryDataEngine();
+        return BinaryDataEngine(DATA_MODE_DEFAULT, dataEndianType);
     }
 
     // Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
