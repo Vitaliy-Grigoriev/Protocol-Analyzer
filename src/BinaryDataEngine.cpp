@@ -22,7 +22,7 @@ namespace analyzer::common::types
     inline const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();
 
 
-    // Copy constructor.
+    // Copy constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine& other) noexcept
             : bitStreamTransform(*this), byteStreamTransform(*this)
     {
@@ -39,7 +39,7 @@ namespace analyzer::common::types
         }
     }
 
-    // Move assignment constructor.
+    // Move assignment constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (BinaryDataEngine&& other) noexcept
             : bitStreamTransform(*this), byteStreamTransform(*this)
     {
@@ -145,6 +145,15 @@ namespace analyzer::common::types
         else if ((mode & DATA_MODE_NO_ALLOCATION) != 0u) {
             dataModeType &= ~DATA_MODE_ALLOCATION;
             dataModeType |= DATA_MODE_NO_ALLOCATION;
+        }
+
+        if ((mode & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0u) {
+            dataModeType &= ~DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER;
+            dataModeType |= DATA_MODE_OPERATOR_ALIGN_LOW_ORDER;
+        }
+        else if ((mode & DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER) != 0u) {
+            dataModeType &= ~DATA_MODE_OPERATOR_ALIGN_LOW_ORDER;
+            dataModeType |= DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER;
         }
     }
 
@@ -791,7 +800,6 @@ namespace analyzer::common::types
     // Logical assignment bitwise AND operator that transforms internal binary raw data.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator&= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
-        if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
@@ -851,7 +859,6 @@ namespace analyzer::common::types
     // Logical assignment bitwise OR operator that transforms internal binary raw data.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator|= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
-        if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();
@@ -908,7 +915,6 @@ namespace analyzer::common::types
     // Logical assignment bitwise XOR operator that transforms internal binary raw data.
     const BinaryDataEngine::BitStreamEngine& BinaryDataEngine::BitStreamEngine::operator^= (const BinaryDataEngine::BitStreamEngine& other) const noexcept
     {
-        if ((storedData.dataModeType & DATA_MODE_INDEPENDENT) != (other.storedData.dataModeType & DATA_MODE_INDEPENDENT)) { return *this; }
         if (storedData == true)
         {
             const auto& currentByteEngine = storedData.BytesTransform();

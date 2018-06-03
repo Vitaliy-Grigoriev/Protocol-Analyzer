@@ -18,7 +18,7 @@ namespace analyzer::common::types
  *
  * @note This data handling mode does not changed in BinaryStructuredDataEngine class.
  */
-#define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION)
+#define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION | DATA_MODE_OPERATOR_ALIGN_LOW_ORDER)
 
 
     /**
@@ -358,11 +358,11 @@ namespace analyzer::common::types
 
 
         /**
-         * @fn operator BinaryStructuredDataEngine::bool() const noexcept;
+         * @fn inline operator BinaryStructuredDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryStructuredDataEngine class.
          * @return True - if BinaryStructuredDataEngine class is not empty, otherwise - false.
          */
-        operator bool(void) const noexcept { return data != false; }
+        inline operator bool(void) const noexcept { return data == true; }
 
         /**
          * @fn BinaryStructuredDataEngine & BinaryStructuredDataEngine::operator= (const BinaryStructuredDataEngine &) noexcept;

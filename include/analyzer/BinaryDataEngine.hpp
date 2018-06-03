@@ -70,7 +70,9 @@ namespace analyzer::common::types
         DATA_MODE_UNSAFE_OPERATOR = 0x08,  // Any data modification by assign logical operators leads to a change the data length.
         DATA_MODE_ALLOCATION = 0x10,       // In this mode a new object of BinaryDataEngine class is created and memory allocated. The memory is cleared in the destructor.
         DATA_MODE_NO_ALLOCATION = 0x20,    // In this mode there is no creation of a new BinaryDataEngine object. The memory is not cleared in the destructor.
-        DATA_MODE_DEFAULT = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION  // Default data mode which is used in constructors.
+        DATA_MODE_OPERATOR_ALIGN_LOW_ORDER = 0x40,  // Any data modification by assign logical operators goes in order from low to high.
+        DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER = 0x80,  // Any data modification by assign logical operators goes in order from hugh to low.
+        DATA_MODE_DEFAULT = DATA_MODE_DEPENDENT | DATA_MODE_SAFE_OPERATOR | DATA_MODE_ALLOCATION | DATA_MODE_OPERATOR_ALIGN_LOW_ORDER  // Default data mode which is used in constructors.
     };
 
 
@@ -81,11 +83,8 @@ namespace analyzer::common::types
      */
     static inline DATA_ENDIAN_TYPE CheckSystemEndian(void) noexcept
     {
-        const union {
-            const uint16_t value;
-            const uint8_t data[sizeof(uint16_t)];
-        } endian { 0x0102 };
-        return static_cast<DATA_ENDIAN_TYPE>(endian.data[0]);
+        const uint16_t value = 0x0102;
+        return static_cast<DATA_ENDIAN_TYPE>(static_cast<const uint8_t&>(value));
     }
 
 
@@ -487,7 +486,7 @@ namespace analyzer::common::types
              * @note If operands have different raw data length then result data will be the length of the lesser among the operands.
              * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
              *
-             * @attention If operands have different endian depended handling mode then no changes will be made.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             const BitStreamEngine & operator&= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -500,7 +499,7 @@ namespace analyzer::common::types
              * @note If operands have different raw data length then result data will be the length of the largest among the operands.
              * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
              *
-             * @attention If operands have different endian depended handling mode then no changes will be made.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             const BitStreamEngine & operator|= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -510,10 +509,10 @@ namespace analyzer::common::types
              * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
              * @return Const lvalue reference of transformed (by operation XOR) BitStreamEngine class.
              *
-             * @note If operands have different raw data length then result data will be the length of the largest among the operands.
-             * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             * @note If operands have different data length then result data will be the length of the largest among the operands.
+             * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the length of result data will be preserved.
              *
-             * @attention If operands have different endian depended handling mode then no changes will be made.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             const BitStreamEngine & operator^= (const BitStreamEngine & /*other*/) const noexcept;
 
@@ -527,16 +526,15 @@ namespace analyzer::common::types
              * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
              * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length.
              *
-             * @attention Result BinaryDataEngine class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
+             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             friend inline BinaryDataEngine operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 BinaryDataEngine result(left.storedData);
-                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
-                if (result.IsEmpty() == false) {
+                if (result == true) {
                     result.BitsTransform() &= right;
                 }
-                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -550,16 +548,15 @@ namespace analyzer::common::types
              * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
              * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
              *
-             * @attention Result BinaryDataEngine class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
+             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             friend inline BinaryDataEngine operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 BinaryDataEngine result(left.storedData);
-                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
-                if (result.IsEmpty() == false) {
+                if (result == true) {
                     result.BitsTransform() |= right;
                 }
-                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -573,16 +570,15 @@ namespace analyzer::common::types
              * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
              * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
              *
-             * @attention Result BinaryDataEngine class always processing in DATA_MODE_UNSAFE_OPERATOR mode.
+             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
             friend inline BinaryDataEngine operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
             {
                 BinaryDataEngine result(left.storedData);
-                result.SetDataModeType(types::DATA_MODE_UNSAFE_OPERATOR);
-                if (result.IsEmpty() == false) {
+                if (result == true) {
                     result.BitsTransform() ^= right;
                 }
-                result.SetDataModeType(left.storedData.DataModeType());
                 return result;
             }
 
@@ -736,9 +732,11 @@ namespace analyzer::common::types
 
             /**
              * @fn std::byte * ByteStreamEngine::GetAt (std::size_t) const noexcept;
-             * @brief Method that returns a pointer to the value of byte under the specified index.
+             * @brief Method that returns a pointer to the value of byte under the specified endian-oriented byte index.
              * @param [in] index - Index of byte in byte sequence.
              * @return Return a pointer to the value of byte under the specified index or nullptr in an error occurred.
+             *
+             * @note This method considers the endian type in which binary stored data are presented.
              */
             std::byte * GetAt (std::size_t /*index*/) const noexcept;
         };
@@ -981,6 +979,13 @@ namespace analyzer::common::types
         inline bool IsEmpty(void) const noexcept { return length == 0; }
 
         /**
+         * @fn inline bool BinaryDataEngine::IsInitialized() const noexcept;
+         * @brief Method that returns the initialize state of stored data in BinaryDataEngine class.
+         * @return True - if stored data is initialized, otherwise - false.
+         */
+        inline bool IsInitialized(void) const noexcept { return data != nullptr; }
+
+        /**
          * @fn inline uint8_t BinaryDataEngine::DataModeType() const noexcept;
          * @brief Method that returns the data handling mode type of stored data in BinaryDataEngine class.
          * @return The set of enabled modes of DATA_HANDLING_MODE enum.
@@ -1013,11 +1018,39 @@ namespace analyzer::common::types
         void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) noexcept;
 
         /**
-         * @fn operator BinaryDataEngine::bool() const noexcept;
+         * @fn inline bool BinaryDataEngine::IsDependentDataMode() const noexcept;
+         * @brief Method that returns the data dependent mode type.
+         * @return True - if the data handling mode consist of the DATA_MODE_DEPENDENT flag, otherwise - false.
+         */
+        inline bool IsDependentDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_DEPENDENT) != 0u); }
+
+        /**
+         * @fn inline bool BinaryDataEngine::IsSafeOperatorDataMode() const noexcept;
+         * @brief Method that returns the binary operators behavior type when transformed the stored data.
+         * @return True - if the data handling mode consist of the DATA_MODE_SAFE_OPERATOR flag, otherwise - false.
+         */
+        inline bool IsSafeOperatorDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_SAFE_OPERATOR) != 0u); }
+
+        /**
+         * @fn inline bool BinaryDataEngine::IsAllocationDataMode() const noexcept;
+         * @brief Method that returns the data allocation mode type.
+         * @return True - if the data handling mode consist of the DATA_MODE_ALLOCATION flag, otherwise - false.
+         */
+        inline bool IsAllocationDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_ALLOCATION) != 0u); }
+
+        /**
+         * @fn inline bool BinaryDataEngine::IsOperatorAlignLowOrderDataMode() const noexcept;
+         * @brief Method that returns the binary operators behavior type when transformed the stored data.
+         * @return True - if the data handling mode consist of the DATA_MODE_OPERATOR_ALIGN_LOW_ORDER flag, otherwise - false.
+         */
+        inline bool IsOperatorAlignLowOrderDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0u); }
+
+        /**
+         * @fn inline operator BinaryDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryDataEngine class.
          * @return True - if BinaryDataEngine class is not empty, otherwise - false.
          */
-        operator bool(void) const noexcept { return (data != nullptr && length > 0); }
+        inline operator bool(void) const noexcept { return (data != nullptr && length != 0); }
 
         /**
          * @fn inline const std::byte & BinaryDataEngine::operator[] (std::size_t) const noexcept;
