@@ -12,8 +12,17 @@
 
 namespace analyzer::common::types
 {
-    /* ************************************************************************************************************ */
-    /* **************************************** BinaryStructuredDataEngine **************************************** */
+    // Constructor of BinaryStructuredDataEngine class with prepared structured data.
+    BinaryStructuredDataEngine::BinaryStructuredDataEngine (BinaryDataEngine& input, const uint16_t* pattern, const uint16_t size, const DATA_ENDIAN_TYPE endian) noexcept
+            : data(std::move(input)), dataEndianType(endian)
+    {
+        if (size != 0)
+        {
+            dataPattern = system::allocMemoryForArray<uint16_t>(size, pattern, size * sizeof(uint16_t));
+            if (dataPattern == nullptr) { Clear(); }
+            fieldsCount = size;
+        }
+    }
 
     // Copy assignment constructor of BinaryStructuredDataEngine class.
     BinaryStructuredDataEngine::BinaryStructuredDataEngine (const BinaryStructuredDataEngine& other) noexcept
@@ -99,15 +108,21 @@ namespace analyzer::common::types
     }
 
     // Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
-    std::size_t BinaryStructuredDataEngine::GetNonemptyFieldIndex (const uint16_t* const pattern, const uint16_t size) const noexcept
+    std::optional<uint16_t> BinaryStructuredDataEngine::GetNonemptyFieldIndex (const uint16_t start, const uint16_t* const pattern, const uint16_t size) const noexcept
     {
+        if (start >= size) { return std::nullopt; }
         std::size_t offset = 0;  // Current bit offset.
+
         if (pattern != nullptr && size != 0)
         {
             const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
-            if (bitCount != data.BitsTransform().Length()) { return BinaryDataEngine::npos; }
+            if (bitCount != data.BitsTransform().Length()) { return std::nullopt; }
 
-            for (std::size_t field = 0; field < size; ++field)
+            if (start != 0) {
+                offset = static_cast<std::size_t>(std::accumulate(pattern, pattern + start, 0));
+            }
+
+            for (uint16_t field = start; field < size; ++field)
             {
                 if (data.BitsTransform().Any(offset, offset + pattern[field] - 1) == true) {
                     return field;
@@ -117,7 +132,11 @@ namespace analyzer::common::types
         }
         else if (dataPattern != nullptr)  // In this case the internal byte-pattern is used.
         {
-            for (std::size_t field = 0; field < fieldsCount; ++field)
+            if (start != 0) {
+                offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + start, 0) * 8);
+            }
+
+            for (uint16_t field = start; field < fieldsCount; ++field)
             {
                 if (data.BitsTransform().Any(offset, offset + dataPattern[field] * 8 - 1) == true) {
                     return field;
@@ -125,13 +144,30 @@ namespace analyzer::common::types
                 offset += dataPattern[field] * 8;
             }
         }
-        return BinaryDataEngine::npos;
+        return std::numeric_limits<uint16_t>::max();
     }
 
-    // Method that clears the data.
+    // Method that returns the internal byte-pattern with length from the specified position.
+    std::pair<uint16_t, const uint16_t*> BinaryStructuredDataEngine::GetPattern (const uint16_t fieldIndex) const noexcept
+    {
+        if (fieldIndex < fieldsCount) {
+            return { fieldsCount - fieldIndex, &dataPattern[fieldIndex] };
+        }
+        return { 0, nullptr };
+    }
+
+    // Method that clears the internal binary structured data.
     void BinaryStructuredDataEngine::Clear(void) noexcept
     {
         data.Clear();
+        fieldsCount = 0;
+        dataPattern.reset(nullptr);
+    }
+
+    // Method that resets the internal state of BinaryStructuredDataEngine class to default state.
+    void BinaryStructuredDataEngine::Reset(void) noexcept
+    {
+        data.Reset();
         fieldsCount = 0;
         dataPattern.reset(nullptr);
         dataEndianType = BinaryDataEngine::system_endian;
@@ -223,9 +259,6 @@ namespace analyzer::common::types
         }
         return *this;
     }
-
-    /* **************************************** BinaryStructuredDataEngine **************************************** */
-    /* ************************************************************************************************************ */
 
 
 }  // namespace types.

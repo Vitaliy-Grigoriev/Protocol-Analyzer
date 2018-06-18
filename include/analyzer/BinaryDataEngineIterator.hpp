@@ -16,7 +16,7 @@ namespace analyzer::common::types
 
     /**
      * @class BitReferenceContainer BinaryDataEngineIterator.hpp "include/analyzer/BinaryDataEngineIterator.hpp"
-     * @brief Class that contains referenced binary raw data and gives an interface to work with it.
+     * @brief Class that contains referenced binary data and gives an interface to work with it.
      */
     class BitReferenceContainer
     {
@@ -28,12 +28,12 @@ namespace analyzer::common::types
         const BinaryDataEngine & storedData;
         /**
          * @var std::size_t startBitPosition;
-         * @brief Start bit position in BinaryDataEngine raw data.
+         * @brief Start bit position in BinaryDataEngine data.
          */
         std::size_t startBitPosition = 0;
         /**
          * @var std::size_t endPosition;
-         * @brief Length of the bit sequence in BinaryDataEngine raw data.
+         * @brief Length of the bit sequence in BinaryDataEngine data.
          */
         std::size_t sequenceLength = 0;
 
@@ -48,8 +48,8 @@ namespace analyzer::common::types
          * @fn explicit BitReferenceContainer::BitReferenceContainer (const BinaryDataEngine &, const std::size_t, const std::size_t) noexcept;
          * @brief Constructor of BitReferenceContainer class.
          * @param [in] owner - Const lvalue reference of BinaryDataEngine owner class.
-         * @param [in] start - Start bit position in BinaryDataEngine raw data. Default: 0.
-         * @param [in] length - Length of the bit sequence in BinaryDataEngine raw data. Default: 1.
+         * @param [in] start - Start bit position in BinaryDataEngine data. Default: 0.
+         * @param [in] length - Length of the bit sequence in BinaryDataEngine data. Default: 1.
          */
         explicit BitReferenceContainer (const BinaryDataEngine& owner, const std::size_t position = 0, const std::size_t length = 1) noexcept
                 : storedData(owner), startBitPosition(position), size(length)
@@ -64,8 +64,8 @@ namespace analyzer::common::types
         /**
          * @fn inline void BitReferenceContainer::SetRange (const std::size_t, const std::size_t) noexcept;
          * @brief Method that sets new range of bits in BinaryDataEngine class.
-         * @param [in] start - Start bit position in BinaryDataEngine raw data.
-         * @param [in] length - Length of the bit sequence in BinaryDataEngine raw data. Default: 0.
+         * @param [in] start - Start bit position in BinaryDataEngine data.
+         * @param [in] length - Length of the bit sequence in BinaryDataEngine data. Default: 0.
          *
          * @note If input length equals zero then
          */

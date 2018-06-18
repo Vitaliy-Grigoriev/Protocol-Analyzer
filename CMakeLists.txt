@@ -61,6 +61,8 @@ set(COMMON_LIB
         ${INCLUDES}/BinaryStructuredDataEngine.hpp
 
         ${SOURCES}/Common.cpp
+        ${SOURCES}/BitStreamEngine.cpp
+        ${SOURCES}/ByteStreamEngine.cpp
         ${SOURCES}/BinaryDataEngine.cpp
         ${SOURCES}/BinaryStructuredDataEngine.cpp)
 
