@@ -30,10 +30,10 @@ namespace analyzer::net::protocols::http
 
 
     /**
-     * @class http Http.hpp "include/analyzer/Http.hpp"
+     * @class http   Http.hpp   "include/analyzer/Http.hpp"
      * @brief HTTP/1.1 and HTTP/2.0 implementations.
      */
-    class http : virtual public Protocol {
+    class http : public Protocol {
     private:
 
 
@@ -46,8 +46,8 @@ namespace analyzer::net::protocols::http
         /**
          * @fn http (void *, const std::size_t, HTTP_VERSION = HTTP1_1);
          * @brief Constructor of HTTP protocol class.
-         * @param [in] data - The raw data from the socket.
-         * @param [in] length - The size of the raw data in bytes.
+         * @param [in] data - The data from the socket.
+         * @param [in] length - The size of the data in bytes.
          * @param [in] HTTP_VERSION - The version of the considered protocol.
          */
         http (const void * /*data*/, std::size_t /*length*/, HTTP_VERSION /*version*/ = HTTP1_1);
@@ -55,7 +55,7 @@ namespace analyzer::net::protocols::http
         /**
          * @fn explicit http (const std::string &, HTTP_VERSION);
          * @brief Constructor of HTTP protocol class.
-         * @param [in] data - The raw data from the socket.
+         * @param [in] data - The data from the socket.
          * @param [in] HTTP_VERSION - The version of the considered protocol.
          */
         explicit http (const std::string & /*data*/, HTTP_VERSION /*version*/ = HTTP1_1);

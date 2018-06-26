@@ -219,7 +219,7 @@ namespace analyzer::common::types
     {
         if (index >= Length()) { return npos; }
 
-        if (storedData.dataEndianType == DATA_LITTLE_ENDIAN || (storedData.dataModeType & DATA_MODE_INDEPENDENT) != 0u)
+        if (storedData.dataEndianType == DATA_LITTLE_ENDIAN || (storedData.dataModeType & DATA_MODE_INDEPENDENT) != 0U)
         {
             return index;
         }
@@ -237,7 +237,7 @@ namespace analyzer::common::types
                 return *this;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 leftDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
@@ -257,7 +257,7 @@ namespace analyzer::common::types
                 return *this;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 rightDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
             else {   // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
@@ -276,7 +276,7 @@ namespace analyzer::common::types
                 shift %= storedData.length;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 leftRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
@@ -295,7 +295,7 @@ namespace analyzer::common::types
                 shift %= storedData.length;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0u && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 rightRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.

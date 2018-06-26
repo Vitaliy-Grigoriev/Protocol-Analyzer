@@ -437,7 +437,7 @@ namespace analyzer::common::types
                     if (engine.storedData.IsEmpty() == false)
                     {
                         stream.unsetf(std::ios_base::boolalpha);
-                        if ((engine.storedData.DataModeType() & DATA_MODE_DEPENDENT) != 0u)
+                        if ((engine.storedData.DataModeType() & DATA_MODE_DEPENDENT) != 0U)
                         {
                             for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
                                 stream << engine.Test(idx);
@@ -1020,28 +1020,28 @@ namespace analyzer::common::types
          * @brief Method that returns the data dependent mode type.
          * @return True - if the data handling mode consist of the DATA_MODE_DEPENDENT flag, otherwise - false.
          */
-        inline bool IsDependentDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_DEPENDENT) != 0u); }
+        inline bool IsDependentDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_DEPENDENT) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsSafeOperatorDataMode() const noexcept;
          * @brief Method that returns the binary operators behavior type when transformed the stored data.
          * @return True - if the data handling mode consist of the DATA_MODE_SAFE_OPERATOR flag, otherwise - false.
          */
-        inline bool IsSafeOperatorDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_SAFE_OPERATOR) != 0u); }
+        inline bool IsSafeOperatorDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_SAFE_OPERATOR) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsAllocationDataMode() const noexcept;
          * @brief Method that returns the data allocation mode type.
          * @return True - if the data handling mode consist of the DATA_MODE_ALLOCATION flag, otherwise - false.
          */
-        inline bool IsAllocationDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_ALLOCATION) != 0u); }
+        inline bool IsAllocationDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_ALLOCATION) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsOperatorAlignLowOrderDataMode() const noexcept;
          * @brief Method that returns the binary operators behavior type when transformed the stored data.
          * @return True - if the data handling mode consist of the DATA_MODE_OPERATOR_ALIGN_LOW_ORDER flag, otherwise - false.
          */
-        inline bool IsOperatorAlignLowOrderDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0u); }
+        inline bool IsOperatorAlignLowOrderDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0U); }
 
         /**
          * @fn std::byte * BinaryDataEngine::GetAt (std::size_t) const noexcept;

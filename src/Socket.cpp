@@ -296,12 +296,12 @@ namespace analyzer::net
         const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
-            if ((events.events & EPOLLIN) != 0u && (events.events & EPOLLOUT) != 0u) {
+            if ((events.events & EPOLLIN) != 0U && (events.events & EPOLLOUT) != 0U) {
                 return 3;
             }
-            if ((events.events & EPOLLIN) != 0u) { return 1; }
-            if ((events.events & EPOLLOUT) != 0u) { return 2; }
-            if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
+            if ((events.events & EPOLLIN) != 0U) { return 1; }
+            if ((events.events & EPOLLOUT) != 0U) { return 2; }
+            if (((events.events & EPOLLERR) != 0U) || ((events.events & EPOLLHUP) != 0U)) {
                 LOG_ERROR("Socket.CheckSocketState [", fd, "]: Function 'epoll_wait' return error event: ", uint32_t(events.events), '.');
             }
             else {
@@ -327,8 +327,8 @@ namespace analyzer::net
         const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
-            if ((events.events & EPOLLOUT) != 0u) { return true; }
-            if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
+            if ((events.events & EPOLLOUT) != 0U) { return true; }
+            if (((events.events & EPOLLERR) != 0U) || ((events.events & EPOLLHUP) != 0U)) {
                 LOG_ERROR("Socket.IsReadyForSend [", fd, "]: Function 'epoll_wait (s)' return error event: ", uint32_t(events.events), '.');
             }
             else {
@@ -354,8 +354,8 @@ namespace analyzer::net
         const int32_t wfd = epoll_wait(epfd, &events, 1, time);
         if (wfd == 1)
         {
-            if ((events.events & EPOLLIN) != 0u) { return true; }
-            if (((events.events & EPOLLERR) != 0u) || ((events.events & EPOLLHUP) != 0u)) {
+            if ((events.events & EPOLLIN) != 0U) { return true; }
+            if (((events.events & EPOLLERR) != 0U) || ((events.events & EPOLLHUP) != 0U)) {
                 LOG_ERROR("Socket.IsReadyForRecv [", fd, "]: Function 'epoll_wait (r)' return error event: ", uint32_t(events.events), '.');
             }
             else {

@@ -247,11 +247,9 @@ namespace analyzer::log
 
         const std::size_t lastLimit = recordsLimit;
         recordsLimit = size;
-        if (currentRecords >= recordsLimit) {
-            if (ChangeVolume() == false) {
-                recordsLimit = lastLimit;
-                return false;
-            }
+        if (currentRecords >= recordsLimit && ChangeVolume() == false) {
+            recordsLimit = lastLimit;
+            return false;
         }
         return true;
     }
@@ -411,7 +409,7 @@ namespace analyzer::log
         const std::size_t last_chunk = size % hexLineLength;
         const std::size_t mean_length = hexLineLength / 2;
 
-        auto pSource = static_cast<const char*>(data);
+        const char* pSource = static_cast<const char*>(data);
         const std::size_t hex_lines = full_chunks + (last_chunk == 0 ? 0 : 1) + 2;
         const std::size_t hex_dump_line_length = 11 + 4 * hexLineLength + 8;
         const std::size_t hex_dump_size = hex_dump_line_length * hex_lines + 1;

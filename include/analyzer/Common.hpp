@@ -87,7 +87,7 @@ namespace analyzer::common
          * @return Trimmed string.
          */
         static inline std::string trimLeftCopy (std::string str) noexcept {
-            return trimLeft(str);;
+            return trimLeft(str);
         }
 
         /**

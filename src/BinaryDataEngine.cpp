@@ -115,38 +115,38 @@ namespace analyzer::common::types
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
     void BinaryDataEngine::SetDataModeType (const uint8_t mode) noexcept
     {
-        if ((mode & DATA_MODE_DEPENDENT) != 0u) {
+        if ((mode & DATA_MODE_DEPENDENT) != 0U) {
             dataModeType &= ~DATA_MODE_INDEPENDENT;
             dataModeType |= DATA_MODE_DEPENDENT;
         }
-        else if ((mode & DATA_MODE_INDEPENDENT) != 0u) {
+        else if ((mode & DATA_MODE_INDEPENDENT) != 0U) {
             dataModeType &= ~DATA_MODE_DEPENDENT;
             dataModeType |= DATA_MODE_INDEPENDENT;
         }
 
-        if ((mode & DATA_MODE_SAFE_OPERATOR) != 0u) {
+        if ((mode & DATA_MODE_SAFE_OPERATOR) != 0U) {
             dataModeType &= ~DATA_MODE_UNSAFE_OPERATOR;
             dataModeType |= DATA_MODE_SAFE_OPERATOR;
         }
-        else if ((mode & DATA_MODE_UNSAFE_OPERATOR) != 0u) {
+        else if ((mode & DATA_MODE_UNSAFE_OPERATOR) != 0U) {
             dataModeType &= ~DATA_MODE_SAFE_OPERATOR;
             dataModeType |= DATA_MODE_UNSAFE_OPERATOR;
         }
 
-        if ((mode & DATA_MODE_ALLOCATION) != 0u) {
+        if ((mode & DATA_MODE_ALLOCATION) != 0U) {
             dataModeType &= ~DATA_MODE_NO_ALLOCATION;
             dataModeType |= DATA_MODE_ALLOCATION;
         }
-        else if ((mode & DATA_MODE_NO_ALLOCATION) != 0u) {
+        else if ((mode & DATA_MODE_NO_ALLOCATION) != 0U) {
             dataModeType &= ~DATA_MODE_ALLOCATION;
             dataModeType |= DATA_MODE_NO_ALLOCATION;
         }
 
-        if ((mode & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0u) {
+        if ((mode & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0U) {
             dataModeType &= ~DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER;
             dataModeType |= DATA_MODE_OPERATOR_ALIGN_LOW_ORDER;
         }
-        else if ((mode & DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER) != 0u) {
+        else if ((mode & DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER) != 0U) {
             dataModeType &= ~DATA_MODE_OPERATOR_ALIGN_LOW_ORDER;
             dataModeType |= DATA_MODE_OPERATOR_ALIGN_HIGH_ORDER;
         }
@@ -178,7 +178,7 @@ namespace analyzer::common::types
     // Method that clears the internal binary data.
     void BinaryDataEngine::Clear(void) noexcept
     {
-        if ((dataModeType & DATA_MODE_NO_ALLOCATION) != 0u) {
+        if ((dataModeType & DATA_MODE_NO_ALLOCATION) != 0U) {
             [[maybe_unused]] auto unused = data.release();
         }
         data.reset(nullptr);

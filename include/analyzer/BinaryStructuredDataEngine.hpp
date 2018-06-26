@@ -297,7 +297,7 @@ namespace analyzer::common::types
                           std::is_default_constructible<Type>::value == true,
                           "It is not possible for this method to use type without binary operators and default constructor.");
 
-            if (fieldIndex < fieldsCount && bitIndex + length < dataPattern[fieldIndex] * 8 && length <= sizeof(Type))
+            if (fieldIndex < fieldsCount && bitIndex + length - 1 < dataPattern[fieldIndex] * 8 && length <= sizeof(Type) * 8)
             {
                 Type result = { };
                 for (uint16_t idx = 0; idx < length; ++idx)

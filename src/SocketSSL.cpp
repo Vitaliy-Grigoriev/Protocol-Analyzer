@@ -29,21 +29,22 @@ namespace analyzer::net
     {
         if (method >= NUMBER_OF_CTX) {
             LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: SSL input protocol type is invalid.");
-            Socket::CloseAfterError(); return;
+            Socket::CloseAfterError();
+            return;
         }
 
         ssl = SSL_new(context.Get(method));
         if (ssl == nullptr) {
             LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'SSL_new' - ", CheckSSLErrors());
-            SSLCloseAfterError(); return;
+            SSLCloseAfterError();
+            return;
         }
 
-        if (ciphers != nullptr)
+        if (ciphers != nullptr && SSL_set_cipher_list(ssl, ciphers) == 0)
         {
-            if (SSL_set_cipher_list(ssl, ciphers) == 0) {
-                LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'SSL_set_cipher_list' - ", CheckSSLErrors());
-                SSLCloseAfterError(); return;
-            }
+            LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'SSL_set_cipher_list' - ", CheckSSLErrors());
+            SSLCloseAfterError();
+            return;
         }
 
         // All errors processing OpenSSL library.
@@ -53,7 +54,8 @@ namespace analyzer::net
         bio = BIO_new_socket(fd, BIO_NOCLOSE);
         if (bio == nullptr) {
             LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'BIO_new_socket' - ", CheckSSLErrors());
-            SSLCloseAfterError(); return;
+            SSLCloseAfterError();
+            return;
         }
 
         // Set non-blocking mode for bio.

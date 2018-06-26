@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include <fstream>  // std::ifstream.
 #include <stdexcept>  // std::exception, std::out_of_range.
 #include <algorithm>  // std::find_if, std::count.
@@ -80,8 +85,8 @@ namespace analyzer::common
 
         void replaceNonPrintableToSymbol (void* data, const std::size_t size, const char symbol) noexcept
         {
-            auto current = reinterpret_cast<unsigned char*>(data);
-            auto end = reinterpret_cast<unsigned char*>(data) + size;
+            auto* current = reinterpret_cast<unsigned char*>(data);
+            const auto* const end = reinterpret_cast<const unsigned char*>(data) + size;
             while (current != end) {
                 if (isPrintable(symbol) == true) {
                     *current = charToUChar(symbol);

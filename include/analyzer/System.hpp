@@ -95,7 +95,7 @@ namespace analyzer::system
         try {
             auto array = std::make_unique<std::unique_ptr<Type>[]>(size);
 
-            auto construct = [&]() noexcept -> auto { return std::make_unique<Type>(std::forward<Args>(args)...); };
+            auto construct = [&]() noexcept { return std::make_unique<Type>(std::forward<Args>(args)...); };
             std::generate(array.get(), array.get() + size, construct);
             return array;
         }
