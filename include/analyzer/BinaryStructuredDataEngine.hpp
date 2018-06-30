@@ -147,7 +147,6 @@ namespace analyzer::common::types
         bool AssignData (const Type* memory, const uint16_t* const pattern, const uint16_t size) noexcept
         {
             static_assert(is_pod_type<Type>::value == true, "It is not possible to use not POD type for this method.");
-
             if (memory == nullptr) { return false; }
 
             const std::size_t bytes = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
@@ -185,7 +184,7 @@ namespace analyzer::common::types
          * @param [in] size - Size of the byte-pattern array.
          * @return True - if creating the data structure template successfully, otherwise - false.
          */
-        bool CreateTemplate (const uint16_t* /*pattern*/, uint16_t /*size*/) noexcept;
+        bool CreateTemplate (const uint16_t * /*pattern*/, uint16_t /*size*/) noexcept;
 
         /**
          * @fn inline DATA_ENDIAN_TYPE BinaryStructuredDataEngine::DataEndianType() const noexcept;

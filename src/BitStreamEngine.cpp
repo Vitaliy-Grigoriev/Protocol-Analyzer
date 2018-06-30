@@ -16,8 +16,6 @@ namespace analyzer::common::types
     // Method that returns the correct position of selected bit in stored data in any data endian.
     std::pair<std::size_t, std::byte> BinaryDataEngine::BitStreamEngine::GetBitPosition (const std::size_t index) const noexcept
     {
-        if (index >= Length()) { return { npos, std::byte(0x00) }; }
-
         if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U)
         {
             if (storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
@@ -28,6 +26,13 @@ namespace analyzer::common::types
         }
         // If data handling mode type is DATA_MODE_INDEPENDENT.
         return { index >> 3, std::byte(0x80) >> index % 8 };
+    }
+
+    // Method that returns bit value under the specified index.
+    bool BinaryDataEngine::BitStreamEngine::GetBitValue (const std::size_t index) const noexcept
+    {
+        const auto [part, shift] = GetBitPosition(index);
+        return ((storedData.data[part] & shift) != std::byte(0x00));
     }
 
     // Method that performs direct left bit shift by a specified bit offset.
@@ -201,10 +206,7 @@ namespace analyzer::common::types
     // Method that checks the bit under the specified index.
     bool BinaryDataEngine::BitStreamEngine::Test (const std::size_t index) const noexcept
     {
-        if (index >= Length()) { return false; }
-
-        const auto [part, shift] = GetBitPosition(index);
-        return ((storedData.data[part] & shift) != std::byte(0x00));
+        return (index < Length() && GetBitValue(index));
     }
 
     // Method that returns bit sequence characteristic when all bit are set in block of stored data.
@@ -213,9 +215,23 @@ namespace analyzer::common::types
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
+        const std::size_t size = last - first + 1;
+        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
+        if (first % 8 == 0 && size >= 8)
+        {
+            for (std::size_t idx = 0; idx < size / 8; ++idx)
+            {
+                if (storedData.data[GetBitPosition(first).first] != std::byte(0xFF)) {
+                    return false;
+                }
+                first += 8;
+            }
+        }
+
+        // Rest part of bit sequence or this code block is used if the byte-optimization did not work.
         while (first <= last)
         {
-            if (Test(first++) == false) {
+            if (GetBitValue(first++) == false) {
                 return false;
             }
         }
@@ -228,9 +244,23 @@ namespace analyzer::common::types
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
+        const std::size_t size = last - first + 1;
+        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
+        if (first % 8 == 0 && size >= 8)
+        {
+            for (std::size_t idx = 0; idx < size / 8; ++idx)
+            {
+                if (storedData.data[GetBitPosition(first).first] != std::byte(0x00)) {
+                    return true;
+                }
+                first += 8;
+            }
+        }
+
+        // Rest part of bit sequence or this code block is used if the byte-optimization did not work.
         while (first <= last)
         {
-            if (Test(first++) == true) {
+            if (GetBitValue(first++) == true) {
                 return true;
             }
         }
@@ -243,9 +273,23 @@ namespace analyzer::common::types
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
+        const std::size_t size = last - first + 1;
+        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
+        if (first % 8 == 0 && size >= 8)
+        {
+            for (std::size_t idx = 0; idx < size / 8; ++idx)
+            {
+                if (storedData.data[GetBitPosition(first).first] != std::byte(0x00)) {
+                    return false;
+                }
+                first += 8;
+            }
+        }
+
+        // Rest part of bit sequence or this code block is used if the byte-optimization did not work.
         while (first <= last)
         {
-            if (Test(first++) == true) {
+            if (GetBitValue(first++) == true) {
                 return false;
             }
         }
@@ -260,7 +304,7 @@ namespace analyzer::common::types
 
         std::size_t count = 0;
         while (first <= last) {
-            count += (Test(first++) == true) ? 1 : 0;
+            count += (GetBitValue(first++) == true) ? 1 : 0;
         }
         return count;
     }
@@ -274,7 +318,7 @@ namespace analyzer::common::types
         std::size_t index = first;
         while (index <= last)
         {
-            if (Test(index) == true) {
+            if (GetBitValue(index) == true) {
                 return ((isRelative == true) ? index - first : index);
             }
             index++;
@@ -291,7 +335,7 @@ namespace analyzer::common::types
         std::size_t index = last;
         while (index >= first)
         {
-            if (Test(index) == true) {
+            if (GetBitValue(index) == true) {
                 return ((isRelative == true) ? index - first : index);
             }
             index--;
@@ -371,14 +415,14 @@ namespace analyzer::common::types
             {
                 while (last >= first && last != 0) {
                     if (last % 8 == 0) { result << ' '; }
-                    result << Test(last--);
+                    result << GetBitValue(last--);
                 }
-                if (last == 0) { result << Test(0); }
+                if (last == 0) { result << GetBitValue(0); }
             }
             else  // If data handling mode type is DATA_MODE_INDEPENDENT.
             {
                 while (first <= last) {
-                    result << Test(first++);
+                    result << GetBitValue(first++);
                     if (first % 8 == 0 && first != 0) { result << ' '; }
                 }
             }

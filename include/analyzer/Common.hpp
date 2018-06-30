@@ -15,7 +15,7 @@
 #include <cstdint>  // std::int*_t.
 #include <iterator>  // std::back_insert_iterator, std::istreambuf_iterator, std::iterator_traits.
 #include <string_view>  // std::string_view.
-#include <type_traits>  // std::enable_if, std::is_integral, std::is_unsigned, std::is_same, std::is_trivial, std::is_standard_layout.
+#include <type_traits>  // std::is_convertible, std::enable_if, std::is_integral, std::is_unsigned, std::is_same, std::is_trivial, std::is_standard_layout.
 
 // In Common library MUST NOT use any another framework libraries because it is a core library.
 
@@ -190,12 +190,14 @@ namespace analyzer::common
         }
 
         /**
-         * @fn unsigned char charToUChar (char) noexcept;
+         * @fn static inline unsigned char charToUChar (const char) noexcept;
          * @brief Function that converts one value of char type to unsigned char type.
-         * @param [in] symbol - One value in char type.
-         * @return One value in unsigned char type.
+         * @param [in] symbol - Value of char type.
+         * @return Unsigned char type value.
          */
-        unsigned char charToUChar (char /*symbol*/) noexcept;
+        static inline unsigned char charToUChar (const char symbol) noexcept {
+            return static_cast<unsigned char>(symbol);
+        }
 
         /**
          * @fn static inline bool isPrintable (const char) noexcept;
@@ -387,8 +389,8 @@ namespace analyzer::common
                     decltype(std::declval<Type>() ^ std::declval<Type>()),
                     decltype(std::declval<Type>() & std::declval<Type>()),
                     decltype(std::declval<Type>() | std::declval<Type>())>,
-            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() << std::declval<std::size_t>()), Type>::value>,
-            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() >> std::declval<std::size_t>()), Type>::value>,
+            typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() << std::declval<std::size_t>()), Type>::value>,
+            typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() >> std::declval<std::size_t>()), Type>::value>,
             typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() ^ std::declval<Type>()), Type>::value>,
             typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() & std::declval<Type>()), Type>::value>,
             typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() | std::declval<Type>()), Type>::value>>

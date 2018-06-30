@@ -9,12 +9,13 @@
 #include <bitset>
 #include <iostream>
 
+#include "../include/analyzer/Timer.hpp"
 #include "../include/analyzer/AnalyzerApi.hpp"
 
 namespace types = analyzer::common::types;
 using analyzer::common::types::BinaryDataEngine;
 using analyzer::common::types::BinaryStructuredDataEngine;
-
+using timer = analyzer::diagnostic::Timer;
 
 int32_t main (int32_t size, char** data)
 {
@@ -28,10 +29,8 @@ int32_t main (int32_t size, char** data)
         uint16_t WindowSize;
         uint16_t Checksum;
         uint16_t UrgentPointer;
-    } tcp { 0x00000000, 0x00000000, 0x37, 0x00, 0x1FE0, 0xAAAA, 0x0000 };
+    } tcp { 0x00000000, 0x00000000, 0x0C, 0x00, 0x00FF, 0xAAAA, 0x0000 };
 #pragma pack(pop)
-
-    std::cout << types::CheckSystemEndian() << std::endl;
 
     /*BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
     //buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
@@ -42,21 +41,67 @@ int32_t main (int32_t size, char** data)
     //return EXIT_FAILURE;
     const uint16_t field = 0x00FF;
     const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
-    const uint16_t bit_pattern[9] = { 32, 32, 4, 3, 3, 6, 16, 16, 16 };
+    const uint16_t bit_pattern[10] = { 32, 32, 4, 3, 3, 6, 9, 7, 16, 16 };
 
 
     BinaryStructuredDataEngine buffer1(types::DATA_BIG_ENDIAN);
-    buffer1.CreateTemplate(byte_pattern, 7);
-    std::cout << buffer1.AssignData(&tcp, byte_pattern, 7) << std::endl;
-    std::cout << buffer1.ToFormattedString() << std::endl << std::endl;
+    buffer1.AssignData(&tcp, byte_pattern, 7);
+    //std::cout << buffer1.ToFormattedString() << std::endl << std::endl;
     //std::cout << uint16_t(buffer1.GetSubField<uint32_t>(2, 4, 3)) << std::endl;
 
-    std::cout << buffer1.GetNonemptyFieldIndex(0, bit_pattern, 9).value() << std::endl;
-    std::cout << buffer1.GetNonemptyFieldIndex(1, bit_pattern, 9).value() << std::endl;
-    std::cout << buffer1.GetNonemptyFieldIndex(2, bit_pattern, 9).value() << std::endl;
-    std::cout << buffer1.GetNonemptyFieldIndex(3, bit_pattern, 9).value() << std::endl;
-    std::cout << buffer1.GetNonemptyFieldIndex(4, bit_pattern, 9).value() << std::endl;
-    return EXIT_FAILURE;
+    /*std::cout << '-' << buffer1.GetNonemptyFieldIndex(0, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(1, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(2, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(3, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(4, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(5, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(6, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(7, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(8, bit_pattern, 10).value() << std::endl;
+    std::cout << '-' << buffer1.GetNonemptyFieldIndex(9, bit_pattern, 10).value() << std::endl;*/
+
+    timer Timer(true);
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(0, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100 << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(1, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100 << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(2, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(3, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(4, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(5, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(6, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(7, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(8, bit_pattern, 10).value();
+    }
+    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer1.GetNonemptyFieldIndex(9, bit_pattern, 10).value();
+    }
+    std::cout << Timer.PauseAndGetCount().MicroSeconds() / 100  << std::endl;
+    return EXIT_SUCCESS;
 
     std::cout << buffer1.SetField(4, field) << std::endl;
     std::cout << buffer1.ToFormattedString() << std::endl;

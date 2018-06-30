@@ -147,12 +147,22 @@ namespace analyzer::common::types
             /**
              * @fn std::pair<std::size_t, std::byte> BitStreamEngine::GetBitPosition (std::size_t) const noexcept;
              * @brief Method that returns the correct position of selected bit in stored binary data in any data endian.
-             * @param [in] index - Index of bit in binary sequence of stored binary data.
-             * @return Index of element in array of raw stored data and shift to this bit in selected part.
+             * @param [in] index - Index of bit in stored binary data.
+             * @return Index of element in array of binary stored data and shift to this bit in selected part.
              *
-             * @note Method returns index 'npos' if selected index is out-of-range.
+             * @attention Before using this method, MUST be checked that the index does not out-of-range.
              */
             std::pair<std::size_t, std::byte> GetBitPosition (std::size_t /*index*/) const noexcept;
+
+            /**
+             * @fn bool BitStreamEngine::GetBitValue (std::size_t) const noexcept;
+             * @brief Method that returns bit value under the specified index.
+             * @param [in] index - Index of bit in stored binary data.
+             * @return Value of the selected bit.
+             *
+             * @attention Before using this method, MUST be checked that the index does not out-of-range.
+             */
+            bool GetBitValue (std::size_t /*index*/) const noexcept;
 
         public:
             BitStreamEngine(void) = delete;
@@ -231,7 +241,7 @@ namespace analyzer::common::types
              * @fn bool BitStreamEngine::All (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when all bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
-             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] last - Last index of bit in binary sequence to which (inclusive)bits will be checked. Default: npos.
              * @return True - if all bits in block of stored data are set, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
@@ -242,7 +252,7 @@ namespace analyzer::common::types
              * @fn bool BitStreamEngine::Any (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
-             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] last - Last index of bit in binary sequence to which (inclusive) bits will be checked. Default: npos.
              * @return True - if any of the bits in block of stored data are set, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
@@ -253,7 +263,7 @@ namespace analyzer::common::types
              * @fn bool BitStreamEngine::None (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
-             * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] last - Last index of bit in binary sequence to which (inclusive) bits will be checked. Default: npos.
              * @return True - if none of the bits in block of stored data are set, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
@@ -331,7 +341,7 @@ namespace analyzer::common::types
                 sequence.AssignData<Type>(&value, 1);
 
                 while (first <= last) {
-                    Set(position++, sequence.BitsTransform().Test(first++));
+                    Set(position++, sequence.BitsTransform().GetBitValue(first++));
                 }
                 return true;
             }
@@ -390,7 +400,7 @@ namespace analyzer::common::types
 
                 std::size_t position = 0;
                 while (first <= last) {
-                    wrapper.BitsTransform().Set(position++, Test(first++));
+                    wrapper.BitsTransform().Set(position++, GetBitValue(first++));
                 }
                 return result;
             }
@@ -440,16 +450,16 @@ namespace analyzer::common::types
                         if ((engine.storedData.DataModeType() & DATA_MODE_DEPENDENT) != 0U)
                         {
                             for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
-                                stream << engine.Test(idx);
+                                stream << engine.GetBitValue(idx);
                                 if (idx % 8 == 0) { stream << ' '; }
                             }
-                            stream << engine.Test(0);
+                            stream << engine.GetBitValue(0);
                         }
                         else  // If data handling mode type is DATA_MODE_INDEPENDENT.
                         {
                             for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
                                 if (idx % 8 == 0 && idx != 0) { stream << ' '; }
-                                stream << engine.Test(idx);
+                                stream << engine.GetBitValue(idx);
                             }
                         }
                     }
@@ -643,11 +653,11 @@ namespace analyzer::common::types
 
             /**
              * @fn std::size_t ByteStreamEngine::GetBytePosition (std::size_t) const noexcept;
-             * @brief Method that returns the correct position of selected byte in stored data in any data endian.
-             * @param [in] index - Index of byte in byte sequence of stored data.
-             * @return Index of element in array of raw stored data.
+             * @brief Method that returns the correct position of selected byte in stored binary data in any data endian.
+             * @param [in] index - Index of byte in stored binary data.
+             * @return Index of element in array of binary stored data.
              *
-             * @note Method returns index 'npos' if selected index is out-of-range.
+             * @note Before using this method, MUST be checked that the index does not out-of-range.
              */
             std::size_t GetBytePosition (std::size_t /*index*/) const noexcept;
 
@@ -700,7 +710,7 @@ namespace analyzer::common::types
 
             /**
              * @fn const ByteStreamEngine & ByteStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
-             * @brief Method that performs round left bit shift by a specified byte offset.
+             * @brief Method that performs round left byte shift by a specified byte offset.
              * @param [in] shift - Byte offset for round left byte shift.
              * @return Const lvalue reference of ByteStreamEngine class.
              */
@@ -708,16 +718,63 @@ namespace analyzer::common::types
 
             /**
              * @fn const ByteStreamEngine & ByteStreamEngine::RoundShiftRight (std::size_t) const noexcept;
-             * @brief Method that performs round right bit shift by a specified byte offset.
+             * @brief Method that performs round right byte shift by a specified byte offset.
              * @param [in] shift - Byte offset for round right byte shift.
              * @return Const lvalue reference of ByteStreamEngine class.
              */
             const ByteStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
 
             /**
-             * @fn inline std::byte ByteStreamEngine::operator[] (const std::size_t) const noexcept;
+             * @fn bool ByteStreamEngine::Test (std::size_t, std::byte) const noexcept;
+             * @brief Method that checks the byte under the specified index.
+             * @param [in] index - Index of byte in stored binary data.
+             * @param [in] value - Value of the pattern byte for check.
+             * @return True - if byte under selected index of stored data has specified value, otherwise - false.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
+             */
+            bool Test (std::size_t /*index*/, std::byte /*value*/) const noexcept;
+
+            /**
+             * @fn bool ByteStreamEngine::All (std::byte, std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
+             * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
+             * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
+             * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
+             * @return True - if all bytes in block of stored data have specified value, otherwise - false.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
+             */
+            bool All (std::byte /*value*/ = std::byte(0xFF), std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn bool ByteStreamEngine::Any (std::byte, std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
+             * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
+             * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
+             * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
+             * @return True - if any of the bytes in block of stored data have specified value, otherwise - false.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
+             */
+            bool Any (std::byte /*byte*/ = std::byte(0xFF), std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn bool ByteStreamEngine::None (std::byte, std::size_t, std::size_t) const noexcept;
+             * @brief Method that returns bit sequence characteristic when all bytes have a value '0x00' in block of stored data.
+             * @param [in] value - Value of the pattern byte for check. Default: 0x00.
+             * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
+             * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
+             * @return True - if all bytes in block of stored data have a value '0x00', otherwise - false.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
+             */
+            bool None (std::byte /*byte*/ = std::byte(0x00), std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn inline std::optional<std::byte> ByteStreamEngine::operator[] (const std::size_t) const noexcept;
              * @brief Operator that returns the value of byte under the specified index.
-             * @param [in] index - Index of byte in byte sequence of stored binary data.
+             * @param [in] index - Index of byte in stored binary data.
              * @return Value of the selected byte.
              */
             inline std::optional<std::byte> operator[] (const std::size_t index) const noexcept
@@ -729,7 +786,7 @@ namespace analyzer::common::types
             /**
              * @fn std::byte * ByteStreamEngine::GetAt (std::size_t) const noexcept;
              * @brief Method that returns a pointer to the value of byte under the specified endian-oriented byte index.
-             * @param [in] index - Index of byte in byte sequence.
+             * @param [in] index - Index of byte in stored binary data.
              * @return Return a pointer to the value of byte under the specified index or nullptr if index is out-of-range.
              *
              * @note This method considers the endian type in which binary stored data are presented.

@@ -217,8 +217,6 @@ namespace analyzer::common::types
     // Method that returns the correct position of selected byte in stored data in any data endian.
     std::size_t BinaryDataEngine::ByteStreamEngine::GetBytePosition (const std::size_t index) const noexcept
     {
-        if (index >= Length()) { return npos; }
-
         if (storedData.dataEndianType == DATA_LITTLE_ENDIAN || (storedData.dataModeType & DATA_MODE_INDEPENDENT) != 0U)
         {
             return index;
@@ -303,6 +301,56 @@ namespace analyzer::common::types
             }
         }
         return *this;
+    }
+
+    // Method that checks the byte under the specified index.
+    bool BinaryDataEngine::ByteStreamEngine::Test (const std::size_t index, const std::byte value) const noexcept
+    {
+        return (index < Length() && storedData.data[GetBytePosition(index)] == value);
+    }
+
+    // Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
+    bool BinaryDataEngine::ByteStreamEngine::All (const std::byte value, std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
+    bool BinaryDataEngine::ByteStreamEngine::Any (const std::byte value, std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool BinaryDataEngine::ByteStreamEngine::None (const std::byte value, std::size_t first, std::size_t last) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == true) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Method that returns a pointer to the value of byte under the specified index.

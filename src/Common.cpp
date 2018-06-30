@@ -74,15 +74,6 @@ namespace analyzer::common
         }
 
 
-        unsigned char charToUChar (const char symbol) noexcept
-        {
-            union {
-                char in;
-                unsigned char out;
-            } u { symbol };
-            return u.out;
-        }
-
         void replaceNonPrintableToSymbol (void* data, const std::size_t size, const char symbol) noexcept
         {
             auto* current = reinterpret_cast<unsigned char*>(data);
