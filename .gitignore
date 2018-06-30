@@ -35,3 +35,4 @@ coverity-build-log.txt
 /pvs-result
 /cmake-build-debug
 /cmake-build-release
+/.scannerwork
