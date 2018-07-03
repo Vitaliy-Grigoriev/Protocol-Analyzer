@@ -6,7 +6,6 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
 #ifndef PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
 #define PROTOCOL_ANALYZER_LOCKED_DEQUE_HPP
 

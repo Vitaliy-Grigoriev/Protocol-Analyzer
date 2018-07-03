@@ -22,24 +22,33 @@ namespace analyzer::net
             return;
         }
 
-        if (DisableSignalSIGPIPE() == false) {
-            CloseAfterError(); return;
+        if (DisableSignalSIGPIPE() == false)
+        {
+            close(fd); fd = INVALID_SOCKET;
+            return;
         }
-        if (SetSocketToNonBlock() == false) {
-            CloseAfterError(); return;
+        if (SetSocketToNonBlock() == false)
+        {
+            close(fd); fd = INVALID_SOCKET;
+            return;
         }
         LOG_INFO("Socket.Socket [", fd, "]: Socket was created.");
 
         epfd = epoll_create1(0);
-        if (epfd == INVALID_SOCKET) {
+        if (epfd == INVALID_SOCKET)
+        {
             LOG_ERROR("Socket.Socket [", fd, "]: In function 'epoll_create1' - ", GET_ERROR(errno));
-            CloseAfterError(); return;
+            close(fd); fd = INVALID_SOCKET;
+            return;
         }
 
         event.data.fd = fd;
-        if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) == SOCKET_ERROR) {
+        if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) == SOCKET_ERROR)
+        {
             LOG_ERROR("Socket.Socket [", fd, "]: In function 'epoll_ctl' - ", GET_ERROR(errno));
-            CloseAfterError();
+            close(fd); fd = INVALID_SOCKET;
+            close(epfd); epfd = INVALID_SOCKET;
+            return;
         }
     }
 
@@ -170,6 +179,8 @@ namespace analyzer::net
     // Receiving the message from external host.
     int32_t Socket::Recv (char* data, std::size_t length, bool noWait)
     {
+        using std::chrono::system_clock;
+
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Recv: Socket is invalid.");
             return -1;
@@ -251,6 +262,8 @@ namespace analyzer::net
     // Receiving the message from external host until reach the end.
     int32_t Socket::RecvToEnd (char* data, std::size_t length)
     {
+        using std::chrono::system_clock;
+
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.RecvToEnd: Socket is invalid.");
             return -1;

@@ -3,7 +3,6 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
 #ifndef PROTOCOL_ANALYZER_BINARY_STRUCTURED_DATA_ENGINE_HPP
 #define PROTOCOL_ANALYZER_BINARY_STRUCTURED_DATA_ENGINE_HPP
 
@@ -284,12 +283,12 @@ namespace analyzer::common::types
          * Type BinaryStructuredDataEngine::GetSubField (const uint16_t, const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns subfield value of structured data under selected index from low to high bit order.
          * @tparam [in] Type - Typename of variable to which subfield will be converted.
-         * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_INDEPENDENT.
+         * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @return Subfield value under selected index in selected format from low to high bit order.
          */
-        template <typename Type, uint8_t Mode = DATA_MODE_INDEPENDENT>
+        template <typename Type, uint8_t Mode = DATA_MODE_DEPENDENT>
         Type GetSubField (const uint16_t fieldIndex, const uint16_t bitIndex, const uint16_t length) const noexcept
         {
             static_assert(common::is_supports_binary_operations<Type>::value == true &&
@@ -303,7 +302,7 @@ namespace analyzer::common::types
                 {
                     const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex + idx);
                     if (bitOffset != BinaryDataEngine::npos) {
-                        result = static_cast<Type>((result << 1) | (data.BitsTransform().Test(bitOffset) == true ? 0x01 : 0x00));
+                        result = static_cast<Type>((result << 1) | (data.BitsTransform().GetBitValue(bitOffset) == true ? 0x01 : 0x00));
                     }
                 }
                 return result;
@@ -327,13 +326,13 @@ namespace analyzer::common::types
          * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) const noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
-         * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_INDEPENDENT.
+         * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @param [in] value - Bit value for assignment to selected field bit offset of structured data. Default: true.
          * @return True - if value assignment is successful, otherwise - false.
          */
-        template <uint8_t Mode = DATA_MODE_INDEPENDENT>
+        template <uint8_t Mode = DATA_MODE_DEPENDENT>
         bool SetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex, const bool value = true) const noexcept
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
@@ -351,21 +350,21 @@ namespace analyzer::common::types
          * @fn template <uint8_t Mode>
          * bool BinaryStructuredDataEngine::GetFieldBit (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit field value of structured data under selected indexes.
-         * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_INDEPENDENT.
+         * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @return Boolean value that indicates about the value of the selected bit.
          *
          * @warning Method always returns value 'false' if the index is out-of-range.
          */
-        template <uint8_t Mode = DATA_MODE_INDEPENDENT>
+        template <uint8_t Mode = DATA_MODE_DEPENDENT>
         bool GetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
             {
                 const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
                 if (bitOffset != BinaryDataEngine::npos) {
-                    return data.BitsTransform().Test(bitOffset);
+                    return data.BitsTransform().GetBitValue(bitOffset);
                 }
             }
             return false;
@@ -471,7 +470,7 @@ namespace analyzer::common::types
                         for (std::size_t idx = 0; idx < engine.data.BitsTransform().Length(); ++idx)
                         {
                             if (idx % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                            stream << engine.data.BitsTransform().Test(idx);
+                            stream << engine.data.BitsTransform().GetBitValue(idx);
                             if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == engine.fieldsCount) { break; }
                                 stream << "    ";
@@ -495,7 +494,7 @@ namespace analyzer::common::types
                                 for (std::size_t idx = offset; idx < offset + 8; ++idx)
                                 {
                                     if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                                    stream << engine.data.BitsTransform().Test(idx);
+                                    stream << engine.data.BitsTransform().GetBitValue(idx);
                                     if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                         if (++patternBlock == engine.fieldsCount) { break; }
                                         stream << "    ";

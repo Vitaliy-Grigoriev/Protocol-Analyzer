@@ -3,7 +3,6 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
 

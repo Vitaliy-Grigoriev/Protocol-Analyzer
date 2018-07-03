@@ -3,7 +3,6 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
 #ifndef PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
 #define PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
 
@@ -94,6 +93,13 @@ namespace analyzer::common::types
 
 
     /**
+     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
+     * @brief Forward declaration of BinaryStructuredDataEngine class.
+     */
+    class BinaryStructuredDataEngine;
+
+
+    /**
      * @class BinaryDataEngine   BinaryDataEngine.hpp   "include/analyzer/BinaryDataEngine.hpp"
      * @brief Main class of analyzer framework that contains binary data and gives an interface to work with it.
      *
@@ -101,6 +107,7 @@ namespace analyzer::common::types
      */
     class BinaryDataEngine
     {
+        friend class BinaryStructuredDataEngine;
         //friend class BinaryDataEngineIterator<8>;
         //friend class BinaryDataEngineConstIterator<BinaryDataEngine>;
 
@@ -136,6 +143,7 @@ namespace analyzer::common::types
         class BitStreamEngine
         {
             friend class BinaryDataEngine;
+            friend class BinaryStructuredDataEngine;
 
         private:
             /**
@@ -331,17 +339,14 @@ namespace analyzer::common::types
             bool SetBitSequence (const Type value, std::size_t position = 0, std::size_t first = 0, const std::size_t last = sizeof(Type) * 8 - 1) const noexcept
             {
                 static_assert(std::is_arithmetic<Type>::value == true, "It is not possible to use not arithmetic type for this method.");
-
                 const std::size_t size = last - first + 1;
                 if (sizeof(Type) * 8 < size || position + size > Length()) {
                     return false;
                 }
 
-                BinaryDataEngine sequence(Mode, (Endian == DATA_SYSTEM_ENDIAN) ? system_endian : Endian);
-                sequence.AssignData<Type>(&value, 1);
-
+                BinaryDataEngine wrapper(reinterpret_cast<std::byte*>(&value), sizeof(Type), (Endian == DATA_SYSTEM_ENDIAN) ? system_endian : Endian, Mode);
                 while (first <= last) {
-                    Set(position++, sequence.BitsTransform().GetBitValue(first++));
+                    Set(position++, wrapper.BitsTransform().GetBitValue(first++));
                 }
                 return true;
             }
@@ -421,6 +426,8 @@ namespace analyzer::common::types
              * @brief Operator that returns the value of bit under the specified index.
              * @param [in] index - Index of bit in binary sequence of stored data.
              * @return Value of the selected bit in stored binary data.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
              */
             inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
 
@@ -643,6 +650,7 @@ namespace analyzer::common::types
         class ByteStreamEngine
         {
             friend class BinaryDataEngine;
+            friend class BinaryStructuredDataEngine;
 
         private:
             /**

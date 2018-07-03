@@ -46,6 +46,7 @@ int32_t main (int32_t size, char** data)
 
     BinaryStructuredDataEngine buffer1(types::DATA_BIG_ENDIAN);
     buffer1.AssignData(&tcp, byte_pattern, 7);
+    uint8_t value = buffer1.GetSubField<uint8_t>(4, 0, 7);
     //std::cout << buffer1.ToFormattedString() << std::endl << std::endl;
     //std::cout << uint16_t(buffer1.GetSubField<uint32_t>(2, 4, 3)) << std::endl;
 

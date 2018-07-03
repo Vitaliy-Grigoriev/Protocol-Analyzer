@@ -3,9 +3,8 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
-#ifndef PROTOCOL_ANALYZER_RAW_DATA_BUFFER_ITERATOR_HPP
-#define PROTOCOL_ANALYZER_RAW_DATA_BUFFER_ITERATOR_HPP
+#ifndef PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_ITERATOR_HPP
+#define PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_ITERATOR_HPP
 
 #include <iterator>
 
@@ -182,4 +181,4 @@ namespace analyzer::common::types
 }  // namespace types.
 
 
-#endif  // PROTOCOL_ANALYZER_RAW_DATA_BUFFER_ITERATOR_HPP
+#endif  // PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_ITERATOR_HPP

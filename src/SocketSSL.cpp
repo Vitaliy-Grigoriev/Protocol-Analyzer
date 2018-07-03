@@ -134,6 +134,8 @@ namespace analyzer::net
 
     int32_t SocketSSL::Recv (char* data, std::size_t length, const bool noWait)
     {
+        using std::chrono::system_clock;
+
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL: Socket is invalid.");
             SSLCloseAfterError(); return -1;
@@ -178,6 +180,8 @@ namespace analyzer::net
 
     int32_t SocketSSL::RecvToEnd (char* data, std::size_t length)
     {
+        using std::chrono::system_clock;
+
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.RecvToEnd: Socket is invalid.");
             SSLCloseAfterError(); return -1;
@@ -287,11 +291,11 @@ namespace analyzer::net
         const std::vector<std::string> current = GetCiphersList();
         for (auto&& it : current)
         {
-            if (it.find("SRP") == it.npos && it.find("DH-") == it.npos      &&
-                it.find("RC4") == it.npos && it.find("CAMELLIA") == it.npos &&
-                it.find("MD5") == it.npos && it.find("SEED") == it.npos     &&
-                it.find("DES") == it.npos && it.find("PSK") == it.npos      &&
-                it.find("RSA") == it.npos /* RSA - ROBOT attack. */)
+            if (it.find("SRP") == std::string::npos && it.find("DH-") == std::string::npos      &&
+                it.find("RC4") == std::string::npos && it.find("CAMELLIA") == std::string::npos &&
+                it.find("MD5") == std::string::npos && it.find("SEED") == std::string::npos     &&
+                it.find("DES") == std::string::npos && it.find("PSK") == std::string::npos      &&
+                it.find("RSA") == std::string::npos /* RSA - ROBOT attack. */)
             {
                 secure += it + ';';
             }

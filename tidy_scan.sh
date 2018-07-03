@@ -1,37 +1,26 @@
 #!/usr/bin/env bash
 
-if [ "$#" -lt 1 ]
-then
- clang-tidy src/*.cpp include/analyzer/*.hpp -checks=*,-google-default-arguments,-modernize-redundant-void-arg,-llvm-include-order,-readability-simplify-boolean-expr -- -std=c++17 -I/usr/include
- exit "0"
-fi
-
-if [ "$1" -eq 1 ]
-then
-clang-tidy src/Log.cpp -checks=*,-google-default-arguments -- -std=c++17 -Iinclude/analizer -I/usr/include
-exit "0"
-fi
-
-if [ "$1" -eq 2 ]
-then
-clang-tidy src/Socket.cpp src/SocketSSL.cpp -checks=*,-google-default-arguments -- -std=c++17 -Iinclude/analizer -I/usr/include
-exit "0"
-fi
-
-if [ "$1" -eq 3 ]
-then
-clang-tidy src/Task.cpp src/TaskManager.cpp -checks=*,-google-default-arguments -- -std=c++17 -Iinclude/analizer -I/usr/include
-exit "0"
-fi
-
-if [ "$1" -eq 4 ]
-then
-clang-tidy src/Common.cpp src/System.cpp src/Mutex.cpp src/Parser.cpp src/Utilities.cpp src/Timer.cpp -checks=*,-google-default-arguments -- -std=c++17 -Iinclude/analizer -I/usr/include
-exit "0"
-fi
-
-if [ "$1" -eq 5 ]
-then
-clang-tidy src/Protocol.cpp -checks=*,-google-default-arguments -- -std=c++17 -Iinclude/analizer -I/usr/include
-exit "0"
-fi
+clang-tidy src/*.cpp include/analyzer/*.hpp -checks=*,\
+-hicpp-use-auto,\
+-modernize-use-auto,\
+-google-default-arguments,\
+-modernize-redundant-void-arg,\
+-llvm-include-order,\
+-readability-simplify-boolean-expr,\
+-fuchsia-overloaded-operator,\
+-fuchsia-default-arguments,\
+-google-readability-namespace-comments,\
+-llvm-namespace-comment,\
+-hicpp-no-array-decay,\
+-llvm-header-guard,\
+-hicpp-signed-bitwise,\
+-cppcoreguidelines-pro-type-reinterpret-cast,\
+-cppcoreguidelines-pro-type-const-cast,\
+-clang-diagnostic-deprecated-declarations,\
+-cppcoreguidelines-pro-bounds-pointer-arithmetic,\
+-cppcoreguidelines-pro-bounds-constant-array-index,\
+-cppcoreguidelines-pro-bounds-array-to-pointer-decay,\
+-cppcoreguidelines-pro-type-vararg,\
+-google-runtime-references,\
+-misc-misplaced-widening-cast\
+ -- -std=c++17

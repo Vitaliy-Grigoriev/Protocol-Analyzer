@@ -189,7 +189,7 @@ namespace analyzer::common::types
                 for (std::size_t idx = 0; idx < data.BitsTransform().Length(); ++idx)
                 {
                     if (idx % 8 == 0 && blockBitCount != 0) { result << ' '; }
-                    result << data.BitsTransform().Test(idx);
+                    result << data.BitsTransform().GetBitValue(idx);
                     if (++blockBitCount == dataPattern[patternBlock] * 8) {
                         if (++patternBlock == fieldsCount) { break; }
                         result << "\nField " << patternBlock + 1 << ":   ";
@@ -213,7 +213,7 @@ namespace analyzer::common::types
                         for (std::size_t idx = offset; idx < offset + 8; ++idx)
                         {
                             if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { result << ' '; }
-                            result << data.BitsTransform().Test(idx);
+                            result << data.BitsTransform().GetBitValue(idx);
                             if (++blockBitCount == dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == fieldsCount) { break; }
                                 result << "\nField " << patternBlock + 1 << ":   ";

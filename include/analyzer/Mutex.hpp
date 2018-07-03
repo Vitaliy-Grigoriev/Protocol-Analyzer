@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PROTOCOL_ANALYZER_MUTEX_HPP
 #define PROTOCOL_ANALYZER_MUTEX_HPP
 

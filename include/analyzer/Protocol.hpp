@@ -1,12 +1,19 @@
-#pragma once
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #ifndef PROTOCOL_ANALYZER_PROTOCOL_HPP
 #define PROTOCOL_ANALYZER_PROTOCOL_HPP
+
+#include <string>  // std::string.
+#include <cstdint>  // uint16_t.
 
 
 namespace analyzer::net::protocols
 {
     /**
-     * @class URLInfo Protocol.hpp "include/analyzer/Protocol.hpp"
+     * @class URLInfo   Protocol.hpp   "include/analyzer/Protocol.hpp"
      * @brief Parsing Uniform Resource Locators (URL).
      *
      * @see RFC 1738.
@@ -22,7 +29,7 @@ namespace analyzer::net::protocols
     };*/
 
     /**
-     * @class ParseURI Protocol.hpp "include/analyzer/Protocol.hpp"
+     * @class ParseURI   Protocol.hpp   "include/analyzer/Protocol.hpp"
      * @brief Parsing Uniform Resource Identifier (URI).
      *
      * @see RFC 3986, RFC 2732.
@@ -63,7 +70,7 @@ namespace analyzer::net::protocols
 
 
     /**
-     * @interface Protocol Protocol.hpp "include/analyzer/Protocol.hpp"
+     * @interface Protocol   Protocol.hpp   "include/analyzer/Protocol.hpp"
      * @brief Interface of application layer protocol.
      */
     class Protocol

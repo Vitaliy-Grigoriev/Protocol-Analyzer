@@ -1,4 +1,8 @@
-#pragma once
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #ifndef PROTOCOL_ANALYZER_TASK_HPP
 #define PROTOCOL_ANALYZER_TASK_HPP
 
@@ -54,8 +58,8 @@ namespace analyzer::task
         TaskContext & operator= (const TaskContext &) = delete;
 
 
-        explicit TaskContext (const std::string& name, uint32_t time_out = DEFAULT_TIMEOUT_TASK) noexcept
-                : workerName(name), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_IDLE), exitCode(0)
+        explicit TaskContext (std::string name, uint32_t time_out = DEFAULT_TIMEOUT_TASK) noexcept
+                : workerName(std::move(name)), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_IDLE), exitCode(0)
         { }
 
         inline std::string GetWorkerName(void) const noexcept { return workerName; }

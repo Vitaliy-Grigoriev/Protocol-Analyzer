@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PROTOCOL_ANALYZER_HTTP_HPP
 #define PROTOCOL_ANALYZER_HTTP_HPP
 

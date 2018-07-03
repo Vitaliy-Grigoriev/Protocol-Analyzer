@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PROTOCOL_ANALYZER_COMMON_HPP
 #define PROTOCOL_ANALYZER_COMMON_HPP
 
@@ -259,7 +258,7 @@ namespace analyzer::common
          * @fn bool readFileToEnd (const std::string_view &, std::string &) noexcept;
          * @brief Function that reads all data from file.
          * @param [in] path - Path to file.
-         * @param [out] data - String value for assign.
+         * @param [in,out] data - String value for assign.
          * @return True - if the data is read from the file successfully, otherwise - false.
          */
         bool readFileToEnd (std::string_view /*path*/, std::string & /*data*/) noexcept;
@@ -391,9 +390,9 @@ namespace analyzer::common
                     decltype(std::declval<Type>() | std::declval<Type>())>,
             typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() << std::declval<std::size_t>()), Type>::value>,
             typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() >> std::declval<std::size_t>()), Type>::value>,
-            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() ^ std::declval<Type>()), Type>::value>,
-            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() & std::declval<Type>()), Type>::value>,
-            typename std::enable_if_t<std::is_same<decltype(std::declval<Type>() | std::declval<Type>()), Type>::value>>
+            typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() ^ std::declval<Type>()), Type>::value>,
+            typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() & std::declval<Type>()), Type>::value>,
+            typename std::enable_if_t<std::is_convertible<decltype(std::declval<Type>() | std::declval<Type>()), Type>::value>>
         : std::true_type { };
 
 

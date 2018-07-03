@@ -3,7 +3,6 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#pragma once
 #ifndef PROTOCOL_ANALYZER_SOCKET_HPP
 #define PROTOCOL_ANALYZER_SOCKET_HPP
 
@@ -53,7 +52,6 @@
 
 namespace analyzer::net
 {
-    using std::chrono::system_clock;
     /**
       * @typedef bool (*CompleteFunctor) (const char *, std::size_t) noexcept;
       * @brief The type of the complete functor in Socket.Recv method.
