@@ -1,12 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/analyzer/System.hpp"
-
-
-namespace analyzer::system
-{
+#include "../../include/framework/Task.hpp"
+#include "../../include/framework/Common.hpp"
 
 
 
-}  // namespace system.
+

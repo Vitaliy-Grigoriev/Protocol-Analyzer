@@ -8,7 +8,7 @@
 
 #include <unordered_map>
 
-#include "../include/analyzer/Log.hpp"
+#include "../../include/framework/Log.hpp"
 
 
 namespace analyzer::log

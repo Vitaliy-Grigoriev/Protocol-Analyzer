@@ -9,8 +9,8 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../include/analyzer/Socket.hpp"
-#include "../include/analyzer/Utilities.hpp"
+#include "../../include/framework/Socket.hpp"
+#include "../../include/framework/Utilities.hpp"
 
 
 namespace analyzer::utility

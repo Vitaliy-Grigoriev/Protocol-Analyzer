@@ -5,8 +5,8 @@
 #include <csignal>
 #include <unistd.h>
 
-#include "../include/analyzer/System.hpp"
-#include "../include/analyzer/Socket.hpp"
+#include "../../include/framework/System.hpp"
+#include "../../include/framework/Socket.hpp"
 
 
 namespace analyzer::net

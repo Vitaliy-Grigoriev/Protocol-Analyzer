@@ -1,9 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "../include/analyzer/Log.hpp"  // In this header file also defined "Common.hpp".
-#include "../include/analyzer/Http.hpp"
-#include "../include/analyzer/Socket.hpp"
+#include "../../include/framework/Log.hpp"  // In this header file also defined "Common.hpp".
+#include "../../include/framework/Http.hpp"
+#include "../../include/framework/Socket.hpp"
 
 #define MAX_HTTP_HEADER_LENGTH 8192 // Maximum HTTP request header (Apache, Nginx, IIS)
 

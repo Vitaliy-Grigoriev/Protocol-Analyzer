@@ -10,7 +10,7 @@
 #include <stdexcept>  // std::exception, std::out_of_range.
 #include <algorithm>  // std::find_if, std::count.
 
-#include "../include/analyzer/Common.hpp"
+#include "../../include/framework/Common.hpp"
 
 
 namespace analyzer::common

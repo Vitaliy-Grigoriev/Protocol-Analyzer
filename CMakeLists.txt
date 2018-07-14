@@ -1,15 +1,22 @@
-cmake_minimum_required(VERSION 3.8)  # For support C++17 standard.
-project(ProtocolAnalyzer CXX)
+cmake_minimum_required(VERSION   3.8)  # For support C++17 standard.
+project(ProtocolAnalyzer   CXX)
+
 
 set(EXECUTABLE_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/bin/)
 set(LIBRARY_OUTPUT_PATH         ${PROJECT_SOURCE_DIR}/lib/)
 set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include/)
 set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib/)
 
-set(INCLUDES   ${PROJECT_SOURCE_DIR}/include/analyzer)
-set(SOURCES    ${PROJECT_SOURCE_DIR}/src)
-set(TESTS      ${PROJECT_SOURCE_DIR}/test)
+# Select Analyzer Framework paths to source and include files.
+set(FRAMEWORK_INCLUDES   ${PROJECT_SOURCE_DIR}/include/framework)
+set(FRAMEWORK_SOURCES    ${PROJECT_SOURCE_DIR}/src/framework)
+# Select Analyzer paths to source and include files.
+set(ANALYZER_INCLUDES   ${PROJECT_SOURCE_DIR}/include/analyzer)
+set(ANALYZER_SOURCES    ${PROJECT_SOURCE_DIR}/src/analyzer)
+# Select path to tests sources.
+set(TESTS   ${PROJECT_SOURCE_DIR}/test)
 
+# Select CPP standard.
 set(CMAKE_CXX_STANDARD   17)
 set(CMAKE_CXX_STANDARD_REQUIRED   ON)
 
@@ -50,83 +57,66 @@ else()  # Other compilers.
 endif()
 
 
-# Build core framework libraries.
-set(SYSTEM_LIB       ${INCLUDES}/System.hpp ${INCLUDES}/Mutex.hpp    ${SOURCES}/System.cpp ${SOURCES}/Mutex.cpp)
-set(LOGGING_LIB      ${INCLUDES}/Log.hpp                             ${SOURCES}/Log.cpp)
-#set(COMMON_LIB       ${INCLUDES}/Common.hpp ${INCLUDES}/LockedDeque.hpp ${INCLUDES}/BinaryDataEngine.hpp ${INCLUDES}/BinaryDataEngineIterator.hpp    ${SOURCES}/Common.cpp ${SOURCES}/BinaryDataEngine.cpp ${SOURCES}/BinaryDataEngineIterator.cpp)
-set(COMMON_LIB
-        ${INCLUDES}/Common.hpp
-        ${INCLUDES}/LockedDeque.hpp
-        ${INCLUDES}/BinaryDataEngine.hpp
-        ${INCLUDES}/BinaryStructuredDataEngine.hpp
+# Build Analyzer Framework libraries.
+# Select Analyzer Framework source files.
+file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES}/*.cpp")
+# Select Analyzer Framework include files.
+file(GLOB   FHEADERS   "${FRAMEWORK_INCLUDES}/*.hpp")
+# Ignore several source files.
+file(GLOB   ignore_files   "BinaryDataEngineIterator.hpp  Task.*  TaskManager.cpp")
 
-        ${SOURCES}/Common.cpp
-        ${SOURCES}/BitStreamEngine.cpp
-        ${SOURCES}/ByteStreamEngine.cpp
-        ${SOURCES}/BinaryDataEngine.cpp
-        ${SOURCES}/BinaryStructuredDataEngine.cpp)
-
-# Build functional framework libraries.
-set(TASK_LIB         ${INCLUDES}/Notification.hpp) #${INCLUDES}/Task.hpp ${SOURCES}/Task.cpp   ${SOURCES}/TaskManager.cpp)
-set(PARSER_LIB       ${INCLUDES}/Parser.hpp                          ${SOURCES}/Parser.cpp)
-set(PROTOCOL_LIB     ${INCLUDES}/Protocol.hpp ${INCLUDES}/Http.hpp   ${SOURCES}/Protocol.cpp  ${SOURCES}/Http.cpp)
-set(DIAGNOSTIC_LIB   ${INCLUDES}/Timer.hpp                           ${SOURCES}/Timer.cpp)
-set(UTILITIES_LIB    ${INCLUDES}/Utilities.hpp                       ${SOURCES}/Utilities.cpp)
-set(SOCKET_LIB       ${INCLUDES}/Socket.hpp                          ${SOURCES}/Socket.cpp  ${SOURCES}/SocketSSL.cpp)
-
-add_library(Common       STATIC   ${COMMON_LIB})
-add_library(System       STATIC   ${SYSTEM_LIB})
-add_library(Logging      STATIC   ${LOGGING_LIB})
-add_library(Task         STATIC   ${TASK_LIB})
-add_library(Parser       STATIC   ${PARSER_LIB})
-add_library(Diagnostic   STATIC   ${DIAGNOSTIC_LIB})
-add_library(Socket       STATIC   ${SOCKET_LIB})
-add_library(Protocol     STATIC   ${PROTOCOL_LIB})
-add_library(Utilities    STATIC   ${UTILITIES_LIB})
-
-target_link_libraries(System      pthread)
-target_link_libraries(Common      System)
-target_link_libraries(Logging     Common)
-target_link_libraries(Parser      Logging)
-target_link_libraries(Protocol    Logging)
-target_link_libraries(Socket      ssl crypto Logging System)
-target_link_libraries(Task        pthread Logging)
-target_link_libraries(Utilities   Socket Protocol)
+# Build Analyzer Framework library.
+add_library(AnalyzerFramework   STATIC   ${FSOURCES} ${FHEADERS})
+# Link external libraries.
+target_link_libraries(AnalyzerFramework   pthread ssl crypto)
 
 
-# Build test suites for framework library.
-set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${INCLUDES}/AnalyzerApi.hpp)
-set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${INCLUDES}/AnalyzerApi.hpp)
-set(COMMON_TEST               ${TESTS}/test_common.cpp               ${INCLUDES}/AnalyzerApi.hpp)
-set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp      ${INCLUDES}/AnalyzerApi.hpp)
-set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${INCLUDES}/AnalyzerApi.hpp)
-#set(MANAGER_TEST              ${TESTS}/test_manager.cpp              ${INCLUDES}/AnalyzerApi.hpp)
-set(LOGGING_TEST              ${TESTS}/test_logging.cpp              ${INCLUDES}/AnalyzerApi.hpp)
-set(ANYTHING_TEST             ${TESTS}/test_anything.cpp             ${INCLUDES}/AnalyzerApi.hpp)
-set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp           ${INCLUDES}/AnalyzerApi.hpp)
-set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp         ${INCLUDES}/AnalyzerApi.hpp)
-set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${INCLUDES}/AnalyzerApi.hpp)
+
+# Build test suites for Analyzer Framework library.
+set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(COMMON_TEST               ${TESTS}/test_common.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp      ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(LOGGING_TEST              ${TESTS}/test_logging.cpp              ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(ANYTHING_TEST             ${TESTS}/test_anything.cpp             ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp           ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp         ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
 
 add_executable(test_ssl                  ${SSL_TEST})
 add_executable(test_socket               ${SOCKET_TEST})
 add_executable(test_common               ${COMMON_TEST})
 add_executable(test_timing               ${TIMING_TEST})
 add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
-#add_executable(test_manager              ${MANAGER_TEST})
 add_executable(test_logging              ${LOGGING_TEST})
 add_executable(test_anything             ${ANYTHING_TEST})
 add_executable(test_uri_parser           ${URI_PARSER_TEST})
 add_executable(test_notification         ${NOTIFICATION_TEST})
 add_executable(test_http2_negotiation    ${HTTP2_NEGOTIATION_TEST})
 
-#target_link_libraries(test_manager             Task)
-target_link_libraries(test_ssl                 Socket Utilities)
-target_link_libraries(test_socket              Socket)
-target_link_libraries(test_common              Common)
-target_link_libraries(test_binary_data_engine  Common Diagnostic)
-target_link_libraries(test_timing              Diagnostic)
-target_link_libraries(test_anything            Logging Common Parser)
-target_link_libraries(test_logging             Logging)
-target_link_libraries(test_uri_parser          Protocol)
-target_link_libraries(test_notification        Task System)
-target_link_libraries(test_http2_negotiation   Utilities)
+set_target_properties(
+        test_ssl
+        test_socket
+        test_common
+        test_timing
+        test_binary_data_engine
+        test_logging
+        test_anything
+        test_uri_parser
+        test_notification
+        test_http2_negotiation
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY   ${EXECUTABLE_OUTPUT_PATH}/test_binaries
+)
+
+target_link_libraries(test_ssl                 AnalyzerFramework)
+target_link_libraries(test_socket              AnalyzerFramework)
+target_link_libraries(test_common              AnalyzerFramework)
+target_link_libraries(test_binary_data_engine  AnalyzerFramework)
+target_link_libraries(test_timing              AnalyzerFramework)
+target_link_libraries(test_anything            AnalyzerFramework)
+target_link_libraries(test_logging             AnalyzerFramework)
+target_link_libraries(test_uri_parser          AnalyzerFramework)
+target_link_libraries(test_notification        AnalyzerFramework)
+target_link_libraries(test_http2_negotiation   AnalyzerFramework)

@@ -9,7 +9,7 @@
 #include <map>
 #include <iostream>
 
-#include "../include/analyzer/AnalyzerApi.hpp"
+#include "../include/framework/AnalyzerApi.hpp"
 
 
 int32_t main (int32_t size, char** data)

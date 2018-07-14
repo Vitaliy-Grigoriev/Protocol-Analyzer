@@ -8,8 +8,8 @@
 
 #include <iostream>
 
-#include "../include/analyzer/System.hpp"
-#include "../include/analyzer/Notification.hpp"
+#include "../include/framework/System.hpp"
+#include "../include/framework/Notification.hpp"
 
 using namespace analyzer::task;
 using namespace analyzer::system;

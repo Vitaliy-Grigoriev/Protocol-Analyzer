@@ -8,7 +8,7 @@
 
 #include <utility>  // std::swap.
 
-#include "../include/analyzer/BinaryDataEngine.hpp"
+#include "../../include/framework/BinaryDataEngine.hpp"
 
 
 namespace analyzer::common::types
@@ -258,7 +258,7 @@ namespace analyzer::common::types
             if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
                 rightDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
-            else {   // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
+            else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
                 rightDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
         }
@@ -339,6 +339,7 @@ namespace analyzer::common::types
         return false;
     }
 
+    // Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
     bool BinaryDataEngine::ByteStreamEngine::None (const std::byte value, std::size_t first, std::size_t last) const noexcept
     {
         if (last == npos) { last = Length() - 1; }
@@ -356,8 +357,7 @@ namespace analyzer::common::types
     // Method that returns a pointer to the value of byte under the specified index.
     std::byte* BinaryDataEngine::ByteStreamEngine::GetAt (const std::size_t index) const noexcept
     {
-        if (index >= Length()) { return nullptr; }
-        return &storedData.data[GetBytePosition(index)];
+        return (index < Length() ? &storedData.data[GetBytePosition(index)] : nullptr);
     }
 
 }  // namespace types.

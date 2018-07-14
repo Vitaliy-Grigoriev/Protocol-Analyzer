@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "../include/analyzer/AnalyzerApi.hpp"
+#include "../include/framework/AnalyzerApi.hpp"
 
 using namespace analyzer;
 

@@ -5,7 +5,7 @@
 #include <thread>
 #include <csignal>
 
-#include "../include/analyzer/Task.hpp"
+#include "../../include/framework/Task.hpp"
 
 
 namespace analyzer::task

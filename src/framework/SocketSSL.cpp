@@ -6,7 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include "../include/analyzer/Socket.hpp"
+#include "../../include/framework/Socket.hpp"
 
 
 namespace analyzer::net

@@ -3,8 +3,8 @@
 
 #include <regex>
 
-#include "../include/analyzer/Log.hpp"  // In this header file also defined "Common.hpp".
-#include "../include/analyzer/Socket.hpp"
+#include "../../include/framework/Log.hpp"  // In this header file also defined "Common.hpp".
+#include "../../include/framework/Socket.hpp"
 
 
 #define MAX_URL_LENGTH 2048 // Microsoft Internet Explorer

@@ -745,11 +745,11 @@ namespace analyzer::common::types
 
             /**
              * @fn bool ByteStreamEngine::All (std::byte, std::size_t, std::size_t) const noexcept;
-             * @brief Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
+             * @brief Method that returns byte sequence characteristic when all bytes have a specified value in block of stored data.
              * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if all bytes in block of stored data have specified value, otherwise - false.
+             * @return True - if all bytes in block of stored data have a specified value, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -757,11 +757,11 @@ namespace analyzer::common::types
 
             /**
              * @fn bool ByteStreamEngine::Any (std::byte, std::size_t, std::size_t) const noexcept;
-             * @brief Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
+             * @brief Method that returns byte sequence characteristic when any of the bytes have a specified value in block of stored data.
              * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if any of the bytes in block of stored data have specified value, otherwise - false.
+             * @return True - if any of the bytes in block of stored data have a specified value, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -769,11 +769,11 @@ namespace analyzer::common::types
 
             /**
              * @fn bool ByteStreamEngine::None (std::byte, std::size_t, std::size_t) const noexcept;
-             * @brief Method that returns bit sequence characteristic when all bytes have a value '0x00' in block of stored data.
+             * @brief Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
              * @param [in] value - Value of the pattern byte for check. Default: 0x00.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if all bytes in block of stored data have a value '0x00', otherwise - false.
+             * @return True - if all of the bytes in block of stored data have not a specified value, otherwise - false.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -1131,6 +1131,13 @@ namespace analyzer::common::types
          * @brief Method that resets the internal state of BinaryDataEngine class to default state.
          */
         void Reset(void) noexcept;
+
+        /**
+         * @fn std::string BinaryDataEngine::ToHexString() const noexcept;
+         * @brief Method that returns internal binary data represented in hex string.
+         * @return String that represent internal binary data.
+         */
+        std::string ToHexString(void) const noexcept;
 
         /**
          * @fn inline operator BinaryDataEngine::bool() const noexcept;

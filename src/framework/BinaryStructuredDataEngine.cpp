@@ -7,7 +7,7 @@
 // ============================================================================
 
 
-#include "../include/analyzer/BinaryStructuredDataEngine.hpp"
+#include "../../include/framework/BinaryStructuredDataEngine.hpp"
 
 
 namespace analyzer::common::types

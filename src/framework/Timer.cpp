@@ -6,7 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include "../include/analyzer/Timer.hpp"
+#include "../../include/framework/Timer.hpp"
 
 
 namespace analyzer::diagnostic

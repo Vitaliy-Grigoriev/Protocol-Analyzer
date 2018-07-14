@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "../include/analyzer/Log.hpp"
+#include "../include/framework/Log.hpp"
 
 
 int32_t main (int32_t size, char** data)

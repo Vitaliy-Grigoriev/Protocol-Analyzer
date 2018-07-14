@@ -8,7 +8,7 @@
 
 #include <sstream>  // std::ostringstream.
 
-#include "../include/analyzer/BinaryDataEngine.hpp"
+#include "../../include/framework/BinaryDataEngine.hpp"
 
 
 namespace analyzer::common::types

@@ -75,7 +75,7 @@ namespace analyzer::common::types
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
             {
                 const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataPattern.get(), dataPattern.get() + fieldIndex, 0)) * 8;
-                if (Mode == DATA_MODE_INDEPENDENT) { return offset + bitIndex; }
+                if constexpr (Mode == DATA_MODE_INDEPENDENT) { return offset + bitIndex; }
 
                 if (dataEndianType == DATA_BIG_ENDIAN) {
                     return offset + dataPattern[fieldIndex] * 8 - bitIndex - 1;

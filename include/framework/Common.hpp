@@ -149,17 +149,15 @@ namespace analyzer::common
 
         /**
          * @fn template <typename Type>
-         * std::string getHexValue (const Type &, const uint16_t, bool) noexcept;
+         * std::string getHexValue (const Type, const uint16_t, bool) noexcept;
          * @brief Function that converts any data to hex format.
          * @tparam [in] data - Input data of selected type.
          * @param [in] width - Width of hex value. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
          * @return String in hex format of width length.
          */
-        template <typename Type,
-                typename std::enable_if<std::is_integral<Type>::value>::type * = nullptr,
-                typename std::enable_if<std::is_unsigned<Type>::value>::type * = nullptr>
-        std::string getHexValue (const Type& data, const uint16_t width = 2, bool upper = true) noexcept
+        template <typename Type, typename = std::enable_if_t<sizeof(Type) <= sizeof(std::size_t), Type>>
+        std::string getHexValue (const Type data, const uint16_t width = 2, bool upper = true) noexcept
         {
             std::ostringstream result;
             if (upper == true) { result.setf(std::ios_base::uppercase); }
@@ -177,7 +175,7 @@ namespace analyzer::common
          * @param [in] upper - In what case the data will present in hex format. Default: true.
          * @return String in hex format.
          */
-        template <typename Type>
+        template <typename Type, typename = std::enable_if_t<sizeof(Type) <= sizeof(std::size_t), Type>>
         std::string getHexString (const Type* data, const std::size_t length, const uint16_t width = 2, bool upper = true) noexcept
         {
             std::string result;
@@ -225,7 +223,7 @@ namespace analyzer::common
          * @param [in] size - Size of input data.
          * @param [in] symbol - One value in char type for insert. Default: '.' (0x2E).
          */
-        void replaceNonPrintableToSymbol (void * data, std::size_t size, char symbol = '.') noexcept;
+        void replaceNonPrintableToSymbol (void * /*data*/, std::size_t /*size*/, char /*symbol*/ = '.') noexcept;
 
     }  // namespace text.
 

@@ -10,7 +10,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "../include/analyzer/Timer.hpp"
+#include "../include/framework/Timer.hpp"
 
 
 int32_t main (int32_t size, char** data)

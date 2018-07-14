@@ -8,7 +8,7 @@
 
 #include <utility>  // std::move.
 
-#include "../include/analyzer/BinaryDataEngine.hpp"
+#include "../../include/framework/BinaryDataEngine.hpp"
 
 
 namespace analyzer::common::types
@@ -172,7 +172,7 @@ namespace analyzer::common::types
     // Safety getter of internal value.
     std::byte* BinaryDataEngine::GetAt (const std::size_t index) const noexcept
     {
-        return index < length ? &data[index] : nullptr;
+        return (index < length ? &data[index] : nullptr);
     }
 
     // Method that clears the internal binary data.
@@ -191,6 +191,12 @@ namespace analyzer::common::types
         Clear();
         dataModeType = DATA_MODE_DEFAULT;
         dataEndianType = system_endian;
+    }
+
+    // Method that returns internal binary data represented in hex string.
+    std::string BinaryDataEngine::ToHexString(void) const noexcept
+    {
+        return common::text::getHexString(data.get(), length);
     }
 
     // Operator that returns a const reference to an element by selected index.
