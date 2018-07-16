@@ -71,7 +71,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
-           packages:
+          packages:
             - clang-6.0
       env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
 
