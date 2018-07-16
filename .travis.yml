@@ -79,9 +79,10 @@ matrix:
             description: "Fuzz testing framework for network protocols."
             version: 0.0.8
           notification_email: Vit.link420@gmail.com
-          build_command_prepend: "cov-configure --comptype clangcxx --compiler clang++-6.0 && cmake ."
+          #build_command_prepend: "cov-configure --comptype clangcxx --compiler clang++-6.0 && cmake ."
+          build_command_prepend: "cmake -j4"
           build_command: "make -j4"
-          branch_pattern: coverity_scan
+          branch_pattern: master
       env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
 
 
