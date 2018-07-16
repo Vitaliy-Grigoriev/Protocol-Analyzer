@@ -12,7 +12,7 @@
 namespace analyzer::system
 {
     /**
-     * @class LocalMutex Mutex.hpp "include/analyzer/Mutex.hpp"
+     * @class LocalMutex Mutex.hpp "include/framework/Mutex.hpp"
      * @brief This class defined the interface for exception-free POSIX-oriented mutex for specific usages.
      */
     class LocalMutex
@@ -80,7 +80,7 @@ namespace analyzer::system
 
 
     /**
-     * @class LockGuard Mutex.hpp "include/analyzer/Mutex.hpp"
+     * @class LockGuard Mutex.hpp "include/framework/Mutex.hpp"
      * @brief This class defined the interface for lock mutex in constructor and automatically unlock in destructor.
      *
      * @note This class only for LocalMutex class as original the std::lock_guard class in STL.

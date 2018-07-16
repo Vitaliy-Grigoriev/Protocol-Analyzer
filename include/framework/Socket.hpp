@@ -60,7 +60,7 @@ namespace analyzer::net
 
 
     /**
-     * @class SocketStatePool Socket.hpp "include/analyzer/Socket.hpp"
+     * @class SocketStatePool Socket.hpp "include/framework/Socket.hpp"
      * @brief This singleton class defined the interface of checking the status of socket descriptors.
      *
      * @note This singleton class is thread-safe.

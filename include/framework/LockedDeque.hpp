@@ -19,7 +19,7 @@
 namespace analyzer::common::types
 {
     /**
-     * @class LockedDeque LockedDeque.hpp "include/analyzer/LockedDeque.hpp"
+     * @class LockedDeque LockedDeque.hpp "include/framework/LockedDeque.hpp"
      * @brief This class defined concurrency wrapper over STL deque class to work in parallel threads.
      * @tparam [in] Type - Typename of stored data in STL deque.
      *

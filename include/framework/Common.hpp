@@ -295,7 +295,7 @@ namespace analyzer::common
 
 
     /**
-     * @class Data Common.hpp "include/analyzer/Common.hpp"
+     * @class Data Common.hpp "include/framework/Common.hpp"
      * @brief Class container that defined the interface to manage anything data.
      * @tparam [in] Type - Typename of stored data. Default: char.
      */

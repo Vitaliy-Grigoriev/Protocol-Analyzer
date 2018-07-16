@@ -19,7 +19,7 @@ namespace analyzer::net::protocols::http
 
 
     /**
-     * @class HttpHeader Http.hpp "include/analyzer/Http.hpp"
+     * @class HttpHeader Http.hpp "include/framework/Http.hpp"
      * @brief HTTP/1.1 and HTTP/2.0 headers class.
      */
     class HttpHeader {
@@ -29,7 +29,7 @@ namespace analyzer::net::protocols::http
 
 
     /**
-     * @class http   Http.hpp   "include/analyzer/Http.hpp"
+     * @class http   Http.hpp   "include/framework/Http.hpp"
      * @brief HTTP/1.1 and HTTP/2.0 implementations.
      */
     class http : public Protocol {

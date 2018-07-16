@@ -96,7 +96,7 @@ namespace analyzer::log
 
 
     /**
-     * @class StrSysError Log.hpp "include/analyzer/Log.hpp"
+     * @class StrSysError Log.hpp "include/framework/Log.hpp"
      * @brief This singleton class defined the interface of receipt an system error.
      *
      * @note This singleton class is thread-safe.
@@ -141,7 +141,7 @@ namespace analyzer::log
 
 
     /**
-     * @class Logger Log.hpp "include/analyzer/Log.hpp"
+     * @class Logger Log.hpp "include/framework/Log.hpp"
      * @brief This singleton class defined the interface for program logging.
      *
      * @note This singleton class is thread-safe, exception-safe and fault-tolerant.

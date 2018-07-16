@@ -9,9 +9,9 @@ fi
 export COMPILER="/usr/bin/clang++"
 export BUILD_TYPE="Debug"
 
-mkdir check && cd check && cmake -j 4 ..
+mkdir check && cd check && cmake -j4 ..
 
-/usr/local/bin/cov-build --dir cov-int make -j 4 && tar czvf project.tgz cov-int && curl \
+/usr/local/bin/cov-build --dir cov-int make -j4 && tar czvf project.tgz cov-int && curl \
   --form token=7wpvlRSdjmG7H2W5WL0fHw \
   --form email=Vit.link420@gmail.com \
   --form file=@project.tgz \

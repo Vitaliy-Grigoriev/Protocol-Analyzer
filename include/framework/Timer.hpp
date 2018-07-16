@@ -15,7 +15,7 @@
 namespace analyzer::diagnostic
 {
     /**
-     * @class Timer Timer.hpp "include/analyzer/Timer.hpp"
+     * @class Timer Timer.hpp "include/framework/Timer.hpp"
      * @brief Class that checks the performance of code.
      */
     class Timer
@@ -43,7 +43,7 @@ namespace analyzer::diagnostic
 
     public:
         /**
-         * @class TimerCount Timer.hpp "include/analyzer/Timer.hpp"
+         * @class TimerCount Timer.hpp "include/framework/Timer.hpp"
          * @brief Class that contains the internal values of Timer class.
          *
          * @note It is the internal public class of Timer class.

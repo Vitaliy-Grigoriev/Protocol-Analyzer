@@ -93,14 +93,14 @@ namespace analyzer::common::types
 
 
     /**
-     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
+     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
      * @brief Forward declaration of BinaryStructuredDataEngine class.
      */
     class BinaryStructuredDataEngine;
 
 
     /**
-     * @class BinaryDataEngine   BinaryDataEngine.hpp   "include/analyzer/BinaryDataEngine.hpp"
+     * @class BinaryDataEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
      * @brief Main class of analyzer framework that contains binary data and gives an interface to work with it.
      *
      * @note This class is cross-platform.
@@ -135,7 +135,7 @@ namespace analyzer::common::types
 
     private:
         /**
-         * @class BitStreamEngine   BinaryDataEngine.hpp   "include/analyzer/BinaryDataEngine.hpp"
+         * @class BitStreamEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
          * @brief Class that operates on a sequence of bits and offers an interface for working with them.
          *
          * @attention This class MUST BE initialized in all constructors of owner class.
@@ -642,7 +642,7 @@ namespace analyzer::common::types
 
 
         /**
-         * @class ByteStreamEngine   BinaryDataEngine.hpp   "include/analyzer/BinaryDataEngine.hpp"
+         * @class ByteStreamEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
          * @brief Class that operates on a sequence of bytes and offers an interface for working with them.
          *
          * @attention This class MUST BE initialized in all constructors of owner class.

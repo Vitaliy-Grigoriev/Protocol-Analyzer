@@ -13,7 +13,7 @@
 namespace analyzer::net::protocols
 {
     /**
-     * @class URLInfo   Protocol.hpp   "include/analyzer/Protocol.hpp"
+     * @class URLInfo   Protocol.hpp   "include/framework/Protocol.hpp"
      * @brief Parsing Uniform Resource Locators (URL).
      *
      * @see RFC 1738.
@@ -29,7 +29,7 @@ namespace analyzer::net::protocols
     };*/
 
     /**
-     * @class ParseURI   Protocol.hpp   "include/analyzer/Protocol.hpp"
+     * @class ParseURI   Protocol.hpp   "include/framework/Protocol.hpp"
      * @brief Parsing Uniform Resource Identifier (URI).
      *
      * @see RFC 3986, RFC 2732.
@@ -70,7 +70,7 @@ namespace analyzer::net::protocols
 
 
     /**
-     * @interface Protocol   Protocol.hpp   "include/analyzer/Protocol.hpp"
+     * @interface Protocol   Protocol.hpp   "include/framework/Protocol.hpp"
      * @brief Interface of application layer protocol.
      */
     class Protocol

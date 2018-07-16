@@ -13,7 +13,7 @@
 namespace analyzer::parser
 {
     /**
-     * @class PortsParser Parser.hpp "include/analyzer/Parser.hpp"
+     * @class PortsParser Parser.hpp "include/framework/Parser.hpp"
      * @brief Class that parses the range of ports.
      */
     class PortsParser

@@ -14,7 +14,7 @@ namespace analyzer::common::types
     class BinaryDataEngine;
 
     /**
-     * @class BitReferenceContainer BinaryDataEngineIterator.hpp "include/analyzer/BinaryDataEngineIterator.hpp"
+     * @class BitReferenceContainer BinaryDataEngineIterator.hpp "include/framework/BinaryDataEngineIterator.hpp"
      * @brief Class that contains referenced binary data and gives an interface to work with it.
      */
     class BitReferenceContainer

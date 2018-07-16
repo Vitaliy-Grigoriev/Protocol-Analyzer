@@ -1,16 +1,50 @@
 {
+    "Host":
+    {
+        "Settings":
+        {
+            "EthernetMTU": 1500,
+            "MachineEndian": "little/big/middle"
+        }
+    },
+    "Application":
+    {
+        "NetworkSettings":
+        {
+            "IPPacketFragmentationMTU": 1500
+        },
+        "Capabilities":
+        {
+            "AbilityToRestartAfterCrash": false,
+            "AbilityToBlockDOSAttack": false
+        }
+    },
     "Protocol":
     {
-        "Name": "string",
+        "Name": "ProtocolName",
+        "Description": "ProtocolDescription",
+        "ProtocolSettings":
+        {
+            "MultipleSessions":
+            {
+                "Enable": true,
+                "SessionsLimit": 5
+            }
+        },
         "NetworkSettings":
         {
             "Global":
             {
-                "Transport": "tcp/udp/tcp_ssl"
-            },
-            "Local":
-            {
-                "Port": 111
+                "Transport": "ip/ip6/tcp/udp/tls/dtls",
+                "SSLOptions":
+                {
+                    "Version": "auto/tls1.0/tls1.1/tls1.2/tls1.3",
+                    "SNI": "DomainName",
+                    "CipherExclusionsByMask": "3DES;RC6",
+                    "HashExclusionsByMask": "MD5;SHA1",
+                    "PKIExclusionsByMask": "DH",
+                    "SSLClientCertificatePath": "full_path_to_certificate"
+                }
             },
             "Target":
             {
@@ -18,21 +52,21 @@
                 "Port": 222
             }
         },
-        "RequestSet":
+        "Request":
         {
-            "RoundName1":
+            "Round1":
             {
-                "Name": "string",
-	            "Description": "string",
+                "Name": "RoundName1",
+	            "Description": "RoundDescription1",
                 "Fields":
                 [
                     {
                         "ID": 1,
-                        "Name": "name1",
-                        "Description": "string",
-                        "Condition": "required",
-                        "Permission": "volatile",
-	                    "Amount": "single",
+                        "Name": "FieldName1",
+                        "Description": "FieldDescription1",
+                        "Condition": "required/optional",
+                        "Permission": "volatile/const",
+	                    "Amount": "single/multiple",
                         "Type": "i16",
 	                    "InitValue": 0,
                         "ValidValues":
@@ -40,15 +74,16 @@
 	                        "Range": "1-65535",
 	                        "Values": [ 52, 37, 307 ]
 	                    },
-                        "Dependencies": [
-                            { "RoundName1.ID": 2, "Field": "Size", "Type": "size" },
-                            { "RoundName1.ID": 3, "Field": "Size", "Type": "size" }
+                        "Dependencies":
+                        [
+                            { "Round1.ID": 2, "Field": "Size", "Type": "size" },
+                            { "Round1.ID": 3, "Field": "Size", "Type": "size" }
                         ]
                     },
                     {
                         "ID": 2,
-	                    "Name": "name2",
-                        "Description": "string",
+	                    "Name": "FieldName2",
+                        "Description": "FieldDescription2",
 	                    "Condition": "optional",
 	                    "Amount": "multiple",
 	                    "Type": "string",
@@ -57,13 +92,13 @@
 		                    {
 			                    "Index": 1,
 			                    "Permission": "const",
-			                    "Type": "bool/char/int16/int32/int64/float",
+			                    "Type": "bool/char/i16/i32/i64/float",
 			                    "Size": 2
 		                    },
 		                    {
 			                    "Index": 2,
 			                    "Permission": "volatile",
-			                    "Type": "bool/char/int16/int32/int64/float",
+			                    "Type": "bool/char/i16/i32/i64/float",
 			                    "Size": 4
 		                    }
 	                    ],
@@ -75,33 +110,33 @@
                     },
                     {
                         "ID": 3,
-                        "Name": "name3",
-                        "Description": "string"
+                        "Name": "FieldName3",
+                        "Description": "FieldDescription3"
                     }
                 ],
                 "Dependencies": [ null ]
             },
-            "RoundName2":
+            "Round2":
             {
-                "Name": "name4",
-                "Description": "string",
+                "Name": "RoundName2",
+                "Description": "RoundDescription2",
                 "Dependencies": [
                     { "RoundName4.ID": 1, "Type": "require" }
                 ]
             }
         },
-        "ResponseSet":
+        "Response":
         {
-            "RoundName4":
+            "Round3":
             {
-                "Name": "name5",
-                "Description": "string",
+                "Name": "RoundName3",
+                "Description": "RoundDescription3",
                 "Fields":
                 [
                     {
                         "ID": 1,
-                        "Name": "string",
-                        "Description": "string",
+                        "Name": "FieldName1",
+                        "Description": "FieldDescription1",
                         "Condition": "required",
                         "Permission": "volatile",
                         "Amount": "single",

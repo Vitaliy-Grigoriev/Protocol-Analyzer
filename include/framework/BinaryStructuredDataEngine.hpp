@@ -23,7 +23,7 @@ namespace analyzer::common::types
 
 
     /**
-     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/analyzer/BinaryStructuredDataEngine.hpp"
+     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
      * @brief Main class of analyzer framework that contains binary structured data and gives an interface to work with it.
      *
      * @note This class is cross-platform.
@@ -470,7 +470,7 @@ namespace analyzer::common::types
                         for (std::size_t idx = 0; idx < engine.data.BitsTransform().Length(); ++idx)
                         {
                             if (idx % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                            stream << engine.data.BitsTransform().GetBitValue(idx);
+                            stream << engine.data.BitsTransform().Test(idx);
                             if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == engine.fieldsCount) { break; }
                                 stream << "    ";
@@ -494,7 +494,7 @@ namespace analyzer::common::types
                                 for (std::size_t idx = offset; idx < offset + 8; ++idx)
                                 {
                                     if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                                    stream << engine.data.BitsTransform().GetBitValue(idx);
+                                    stream << engine.data.BitsTransform().Test(idx);
                                     if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                         if (++patternBlock == engine.fieldsCount) { break; }
                                         stream << "    ";

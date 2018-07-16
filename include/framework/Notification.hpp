@@ -20,7 +20,7 @@ namespace analyzer::task
     class NotificationSubject;
 
     /**
-     * @class Notification Notification.hpp "include/analyzer/Notification.hpp"
+     * @class Notification Notification.hpp "include/framework/Notification.hpp"
      * @brief Class that defines a notification template.
      * @tparam [in] Type - The internal expected value type.
      *
@@ -119,7 +119,7 @@ namespace analyzer::task
 
 
     /**
-     * @class NotificationObserver Notification.hpp "include/analyzer/Notification.hpp"
+     * @class NotificationObserver Notification.hpp "include/framework/Notification.hpp"
      * @brief Class that defines an interface for observer part for event signal wait.
      * @tparam [in] Type - The internal expected value type.
      *
@@ -150,7 +150,7 @@ namespace analyzer::task
 
 
     /**
-     * @class NotificationSubject Notification.hpp "include/analyzer/Notification.hpp"
+     * @class NotificationSubject Notification.hpp "include/framework/Notification.hpp"
      * @brief Class that defines an interface for subject part for sent event signal.
      * @tparam [in] Type - The internal expected value type.
      *
@@ -208,7 +208,7 @@ namespace analyzer::task
 
 
     /**
-     * @class NotificationInit Notification.hpp "include/analyzer/Notification.hpp"
+     * @class NotificationInit Notification.hpp "include/framework/Notification.hpp"
      * @brief Class that defines an interface for init all notification template.
      * @tparam [in] Type - The internal expected value type.
      */

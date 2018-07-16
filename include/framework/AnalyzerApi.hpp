@@ -18,8 +18,6 @@
 #include "BinaryStructuredDataEngine.hpp"  // In this header file also defined "BinaryDataEngine.hpp".
 #include "Parser.hpp"
 #include "Socket.hpp"
-//#include "Http.hpp"  // In this header file also defined "Protocol.hpp".
-//#include "Task.hpp"
 #include "Utilities.hpp"
 #include "Notification.hpp"
 

@@ -1,35 +1,43 @@
 {
     "ProxyServer":
     {
+        "Type": "socks4/socks5",
         "Host": "127.0.0.1",
         "DstPort": 443,
         "SrcPort": 129
     },
-    "Logger":
+    "Logging":
     {
         "DirectoryPath": "full_path_to_directory",
-        "Logfile": "file_name/console",
-        "ErrorFile": "file_name/console",
-        "ReportFile": "file_name/console",
-        "LogLevel": 5,
+        "LogFileName": "file_name/console",
+        "ErrorFileName": "file_name/console",
+        "Verbose": 6,
         "VolumeSize": 50000,
         "VolumePrefix": "prefix",
-        "LogfileExtension": ".log"
-    },
-    "Actions":
-    {
-        "ExitAfterError": true
+        "LogFileExtension": ".log"
     },
     "Network":
     {
         "MaximumSocketConnections": 100,
         "LocalPortsForBind": "129,560,1024-1500",
-        "TimeoutBetweenRequests": 3,
-        "TimeoutForAsyncWait": 3,
-        "TimeoutForReceive": 5
+        "Timeouts":
+        {
+            "DelayBetweenRequests": 3,
+            "ResponseAsyncWait": 10,
+            "ConsiderAsError": true
+        }
     },
     "Engine":
     {
-        "MaximumThreads": 8
+        "ThreadsLimit": 8,
+        "Events":
+        {
+            "ExitAfterError": true
+        }
+    },
+    "Report":
+    {
+        "Format": "xml/json/pdf",
+        "ReportFileName": "string"
     }
 }

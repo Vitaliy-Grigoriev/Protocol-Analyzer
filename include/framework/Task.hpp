@@ -39,7 +39,7 @@ namespace analyzer::task
     };
 
     /**
-      * @class TaskContext Task.hpp "include/analyzer/Task.hpp"
+      * @class TaskContext Task.hpp "include/framework/Task.hpp"
       * @brief The context of the new task that determines its status and needed values.
       */
     class TaskContext
@@ -97,7 +97,7 @@ namespace analyzer::task
 
 
     /**
-     * @class TaskManager Task.hpp "include/analyzer/Task.hpp"
+     * @class TaskManager Task.hpp "include/framework/Task.hpp"
      * @brief This class defined the work with pool of tasks.
      *
      * @note This class is not thread safe.
@@ -108,7 +108,7 @@ namespace analyzer::task
 
     private:
         /**
-         * @class ThreadPool Task.hpp "include/analyzer/Task.hpp"
+         * @class ThreadPool Task.hpp "include/framework/Task.hpp"
          * @brief This class defined the work with pool of thread IDs.
          *
          * @note It is the internal class of TaskManager class.

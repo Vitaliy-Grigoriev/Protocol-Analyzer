@@ -83,7 +83,7 @@ matrix:
           build_command_prepend: "cmake -j4"
           build_command: "make -j4"
           branch_pattern: master
-      env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
+      env: COMPILER=clang++-6.0 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=wGhXwTBUERj3jzKFt87n4VCtVye7RJCPwW7Y3+Ly7ra/qO47ychNB7qpwff9Z0EkWaBPTKbHSt198GcxioifoQm7pEtgit7vBZVA8wojhB5RJfhd0qwC+x8qwvLkj10O4duqkxVpjqcsvjaKtmBnqvayZUpVyyPMUqmlW/MUZ3OaeoRhZtNd3LnaSayQ+I+gtY/4dhMlzHanRYt6TCwcKs2wWgmf7K0kuA2Cl8PhIJ4JoaUp/H4c+BRLsuI/nIA6vFUnPjJZnSX8H9dsFqJAu0KPrUzeSh43I7F7zGwAvrqaX3V4oJyPR/JrRjHf/kcF340nqygNXZAMXYyoz0QcjZZAVFIdEsqcFi2niQwjNUKw5uWe+47OlX347/u5zKI/fb/6//NNzBzT71xCGmVTvfkgDr5nJRZbOdcuY8yFhnwNeohczba0grh9jkIHOVOMzH6sKVhmFo79jv9Ql/T1yJejqASKAJTGTMSLpSfhIlskzrD3/PVMqJAK3VLwf7L47P9OcQ0iDsdlQ1V8S4GYT801V0YsSPTs7kRyqQTluvS5YFMoSNrGLhFYLx0YDpVpPumLITXY1HRlqfigxa61k7sQxSXShMF4aHa3qNdvTJ6FEqBHFnywQpaVsNBPQlkzyff9H+ClrYv4GgOBU+9yySGjQEyyEIkhK6H74znofbg=
 
 
 before_install:
