@@ -40,6 +40,24 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env: COMPILER=g++-8 BUILD_TYPE=Release
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env: COMPILER=g++-8 BUILD_TYPE=Debug
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
@@ -90,7 +108,7 @@ matrix:
             version: 0.0.8
           notification_email: Vit.link420@gmail.com
           #build_command_prepend: "cov-configure --comptype clangcxx --compiler clang++-6.0 && cmake ."
-          build_command_prepend: "cmake -j4"
+          build_command_prepend: "cmake -j4 ."
           build_command: "make -j4"
           branch_pattern: master
       env: COMPILER=clang++-6.0 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
