@@ -98,20 +98,18 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
           packages:
-            - clang-6.0
+            - g++-7
         coverity_scan:
           project:
             name: "Vitaliy-Grigoriev/Protocol-Analyzer"
             description: "Fuzz testing framework for network protocols."
             version: 0.0.8
           notification_email: Vit.link420@gmail.com
-          #build_command_prepend: "cov-configure --comptype clangcxx --compiler clang++-6.0 && cmake ."
-          build_command_prepend: "cmake -j4 ."
+          build_command_prepend: "cov-configure --comptype g++ --compiler g++-7 && cmake -j4 ."
           build_command: "make -j4"
           branch_pattern: master
-      env: COMPILER=clang++-6.0 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
+      env: COMPILER=g++-7 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
 
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
