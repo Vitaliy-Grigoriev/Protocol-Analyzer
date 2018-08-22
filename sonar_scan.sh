@@ -21,7 +21,7 @@ sonar-scanner \
   -Dsonar.cpp.std=c++17 \
   -Dsonar.issuesReport.html.enable=true \
   -Dsonar.projectBaseDir=${PROJECT_DIR} \
-  -Dsonar.sources=src,include/analyzer \
+  -Dsonar.sources=src/framework,include/framework,test \
   -Dsonar.cfamily.build-wrapper-output=output \
   -Dsonar.host.url=https://sonarcloud.io \
   -Dsonar.login=d421338a22460d731e2db7b8f7af57647547f8ee

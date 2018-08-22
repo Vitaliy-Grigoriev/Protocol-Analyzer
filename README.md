@@ -5,8 +5,10 @@
 [![Coverity Scan](https://img.shields.io/coverity/scan/10369.svg)](https://scan.coverity.com/projects/vitaliy-grigoriev-protocol-analyzer)
 [![Build Status](https://travis-ci.org/Vitaliy-Grigoriev/Protocol-Analyzer.svg?branch=master)](/Vitaliy-Grigoriev/Protocol-Analyzer)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/62752273b4bc42d7af29b182c97295d3)](https://www.codacy.com/app/vit.link420/Protocol-Analyzer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Vitaliy-Grigoriev/Protocol-Analyzer&amp;utm_campaign=Badge_Grade)
-[![Sonar Qube Security Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)
-[![Sonar Qube Vulnerabilities Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)
+[![SonarQube Security Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)
+[![SonarQube Vulnerabilities Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)
+[![SonarQube Bags Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=bugs)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=bugs)
+
 
 <h3><b>The framework under the deep development.</b> Version 0.0.8.</h3>
 

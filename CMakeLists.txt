@@ -63,7 +63,11 @@ file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES}/*.cpp")
 # Select Analyzer Framework include files.
 file(GLOB   FHEADERS   "${FRAMEWORK_INCLUDES}/*.hpp")
 # Ignore several source files.
-file(GLOB   ignore_files   "BinaryDataEngineIterator.hpp  Task.*  TaskManager.cpp")
+list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*BinaryDataEngineIterator.cpp$")
+list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*Task.cpp$")
+list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*TaskManager.cpp$")
+list(FILTER   FHEADERS   EXCLUDE   REGEX   ".*BinaryDataEngineIterator.hpp$")
+list(FILTER   FHEADERS   EXCLUDE   REGEX   ".*Task.hpp$")
 
 # Build Analyzer Framework library.
 add_library(AnalyzerFramework   STATIC   ${FSOURCES} ${FHEADERS})
