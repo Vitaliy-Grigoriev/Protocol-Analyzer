@@ -10,9 +10,6 @@
 
 namespace analyzer::task
 {
-    TaskContext::~TaskContext(void) = default;
-
-
     void TaskManager::signal_handler (int32_t sig) noexcept
     {
 
@@ -213,7 +210,7 @@ namespace analyzer::task
 
     std::size_t TaskManager::ThreadPool::AddID (const task_value_t& value) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(work_mutex); }
+        try { std::lock_guard<std::mutex> lock { work_mutex }; }
         catch (const std::system_error& err) {
             LOG_ERROR("TaskManager.ThreadPool.AddID: When lock mutex - '", err.what(), "'.");
             return 0;
@@ -232,7 +229,7 @@ namespace analyzer::task
 
     bool TaskManager::ThreadPool::RemoveID (const std::size_t value) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(work_mutex); }
+        try { std::lock_guard<std::mutex> lock { work_mutex }; }
         catch (const std::system_error& err) {
             LOG_ERROR("TaskManager.ThreadPool.RemoveID: When lock mutex - '", err.what(), "'.");
             return false;
@@ -241,9 +238,9 @@ namespace analyzer::task
         return (id_set.erase(value) != 0);
     }
 
-    const TaskManager::task_value_t& TaskManager::ThreadPool::FindID (std::size_t identifier) noexcept
+    const TaskManager::task_value_t& TaskManager::ThreadPool::FindID (const std::size_t identifier) noexcept
     {
-        try { std::lock_guard<std::mutex> lock(work_mutex); }
+        try { std::lock_guard<std::mutex> lock { work_mutex }; }
         catch (const std::system_error& err) {
             LOG_ERROR("TaskManager.ThreadPool.FindID: When lock mutex - '", err.what(), "'.");
             return *null_task_value_t;

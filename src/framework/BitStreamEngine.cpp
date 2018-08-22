@@ -19,13 +19,13 @@ namespace analyzer::common::types
         if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U)
         {
             if (storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
-                return { index >> 3, std::byte(0x01) << index % 8 };
+                return { index >> 3, std::byte(0x01) << (index % 8) };
             }
             // If data endian type is DATA_BIG_ENDIAN.
-            return { storedData.length - (index >> 3) - 1, std::byte(0x01) << index % 8 };
+            return { storedData.length - (index >> 3) - 1, std::byte(0x01) << (index % 8) };
         }
         // If data handling mode type is DATA_MODE_INDEPENDENT.
-        return { index >> 3, std::byte(0x80) >> index % 8 };
+        return { index >> 3, std::byte(0x80) >> (index % 8) };
     }
 
     // Method that returns bit value under the specified index.
@@ -413,7 +413,8 @@ namespace analyzer::common::types
             result.unsetf(std::ios_base::boolalpha);
             if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U)
             {
-                while (last >= first && last != 0) {
+                while (last >= first && last != 0)
+                {
                     if (last % 8 == 0) { result << ' '; }
                     result << GetBitValue(last--);
                 }
@@ -421,9 +422,10 @@ namespace analyzer::common::types
             }
             else  // If data handling mode type is DATA_MODE_INDEPENDENT.
             {
-                while (first <= last) {
+                while (first <= last)
+                {
                     result << GetBitValue(first++);
-                    if (first % 8 == 0 && first != 0) { result << ' '; }
+                    if (first % 8 == 0) { result << ' '; }
                 }
             }
         }

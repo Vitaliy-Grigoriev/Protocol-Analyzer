@@ -14,8 +14,8 @@
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
 #include "Notification.hpp"
 
-#define DEFAULT_TIMEOUT_TASK 10  // sec.
-#define TIMEOUT_TASK_UNLIMITED 0
+#define DEFAULT_TIMEOUT_TASK   10  // In seconds.
+#define TIMEOUT_TASK_UNLIMITED   0
 
 
 namespace analyzer::task
@@ -23,10 +23,10 @@ namespace analyzer::task
     using time = std::chrono::system_clock;
 
     /**
-     * @enum TASK_STATES
-     * @brief The task statuses.
+     * @enum TASK_STATUS
+     * @brief Statuses of the task used in TaskContext class.
      */
-    enum TASK_STATES : uint32_t
+    enum TASK_STATUS : uint16_t
     {
         TASK_STATE_IDLE = 0,         // This state set if the task has not started yet.
         TASK_STATE_ERROR = 1,        // This state set if the task finished with error and wait for return the result.
@@ -39,16 +39,16 @@ namespace analyzer::task
     };
 
     /**
-      * @class TaskContext Task.hpp "include/framework/Task.hpp"
-      * @brief The context of the new task that determines its status and needed values.
-      */
+     * @class TaskContext   Task.hpp   "include/framework/Task.hpp"
+     * @brief The context of the new task that determines its status and needed values.
+     */
     class TaskContext
     {
     private:
         const std::string workerName;
         mutable time::time_point startTime;
         std::atomic<std::chrono::seconds> timeout;
-        std::atomic<uint32_t> status;
+        std::atomic<TASK_STATUS> status;
         std::atomic<int32_t> exitCode;
 
     public:
@@ -58,46 +58,46 @@ namespace analyzer::task
         TaskContext & operator= (const TaskContext &) = delete;
 
 
-        explicit TaskContext (std::string name, uint32_t time_out = DEFAULT_TIMEOUT_TASK) noexcept
-                : workerName(std::move(name)), timeout(std::chrono::seconds(time_out)), status(TASK_STATE_IDLE), exitCode(0)
+        explicit TaskContext (std::string name, const uint32_t timeout = DEFAULT_TIMEOUT_TASK) noexcept
+                : workerName(std::move(name)), timeout(std::chrono::seconds(timeout)), status(TASK_STATE_IDLE), exitCode(0)
         { }
 
         inline std::string GetWorkerName(void) const noexcept { return workerName; }
 
-        inline void SetStartTime(time::time_point start) noexcept
+        inline void SetStartTime (const time::time_point start) noexcept
         {
             startTime = start;
             LOG_TRACE("TaskContext.SetStartTime: Task '", workerName, "' start time: ", common::clockToString(startTime), '.');
         }
         inline time::time_point GetStartTime(void) const noexcept { return startTime; }
 
-        inline void SetTimeOut (std::chrono::seconds new_timeout) noexcept { timeout.store(new_timeout, std::memory_order_release); }
+        inline void SetTimeOut (const std::chrono::seconds n_timeout) noexcept { timeout.store(n_timeout, std::memory_order_release); }
         inline std::chrono::seconds GetTimeOut(void) const noexcept { return timeout.load(std::memory_order_acquire); }
 
-        inline void SetStatus (const uint32_t new_status) noexcept
+        inline void SetStatus (const TASK_STATUS n_status) noexcept
         {
-            status.store(new_status, std::memory_order_seq_cst);
-            LOG_TRACE("TaskContext.SetStatus: Task '", workerName, "' changed status: ", status.load(std::memory_order_seq_cst), '.');
+            status.store(n_status, std::memory_order_seq_cst);
+            LOG_TRACE("TaskContext.SetStatus: Task '", workerName, "' changed status to: ", status.load(std::memory_order_seq_cst), '.');
         }
-        inline uint32_t GetStatus(void) const noexcept { return status.load(std::memory_order_seq_cst); }
+        inline TASK_STATUS GetStatus(void) const noexcept { return status.load(std::memory_order_seq_cst); }
 
         inline void SetExitCode (const int32_t new_code) noexcept { exitCode.store(new_code, std::memory_order_relaxed); }
         inline int32_t GetExitCode(void) const noexcept { return exitCode.load(std::memory_order_relaxed); }
 
-        virtual ~TaskContext(void);
+        virtual ~TaskContext(void) = default;
     };
 
     /**
-      * @typedef typedef void * (*Worker)(void *);
-      * @brief The type of the internal thread worker in TaskManager.
-      *
-      * @note The Worker function starts in new thread.
-      */
+     * @typedef typedef void * (*Worker)(void *);
+     * @brief The type of the internal thread worker in TaskManager.
+     *
+     * @note The Worker function starts in new thread.
+     */
     using Worker = void * (*) (void *);
 
 
     /**
-     * @class TaskManager Task.hpp "include/framework/Task.hpp"
+     * @class TaskManager   Task.hpp   "include/framework/Task.hpp"
      * @brief This class defined the work with pool of tasks.
      *
      * @note This class is not thread safe.
@@ -108,7 +108,7 @@ namespace analyzer::task
 
     private:
         /**
-         * @class ThreadPool Task.hpp "include/framework/Task.hpp"
+         * @class ThreadPool   Task.hpp   "include/framework/Task.hpp"
          * @brief This class defined the work with pool of thread IDs.
          *
          * @note It is the internal class of TaskManager class.
@@ -139,7 +139,7 @@ namespace analyzer::task
 
         static void signal_handler (int32_t /*sig*/) noexcept;
 
-        [[ noreturn ]]
+        [[noreturn]]
         static void * ThreadsManager (void * /*input*/) noexcept;
 
     private:

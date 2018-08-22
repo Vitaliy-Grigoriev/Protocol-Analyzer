@@ -110,10 +110,11 @@ namespace analyzer::common::types
     // Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
     std::optional<uint16_t> BinaryStructuredDataEngine::GetNonemptyFieldIndex (const uint16_t start, const uint16_t* const pattern, const uint16_t size) const noexcept
     {
+        // Check inputted 'start' and 'size' variables in one condition.
         if (start >= size) { return std::nullopt; }
         std::size_t offset = 0;  // Current bit offset.
 
-        if (pattern != nullptr && size != 0)
+        if (pattern != nullptr)
         {
             const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
             if (bitCount != data.BitsTransform().Length()) { return std::nullopt; }
