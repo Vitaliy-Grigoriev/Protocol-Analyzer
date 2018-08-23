@@ -8,7 +8,8 @@
 [![SonarQube Security Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=security_rating)
 [![SonarQube Vulnerabilities Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=vulnerabilities)
 [![SonarQube Bags Badge](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=bugs)](https://sonarcloud.io/api/project_badges/measure?project=Protocol-Analyzer&metric=bugs)
-
+[![Lgtm alerts](https://img.shields.io/lgtm/alerts/g/Vitaliy-Grigoriev/Protocol-Analyzer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Vitaliy-Grigoriev/Protocol-Analyzer/alerts/)
+[![Lgtm language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Vitaliy-Grigoriev/Protocol-Analyzer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Vitaliy-Grigoriev/Protocol-Analyzer/context:cpp)
 
 <h3><b>The framework under the deep development.</b> Version 0.0.8.</h3>
 
