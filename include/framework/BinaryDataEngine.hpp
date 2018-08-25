@@ -42,7 +42,7 @@
 //////////////////////////////////////////////////
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     /**
      * @enum DATA_ENDIAN_TYPE

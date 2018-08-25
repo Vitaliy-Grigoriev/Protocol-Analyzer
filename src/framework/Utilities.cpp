@@ -13,7 +13,7 @@
 #include "../../include/framework/Utilities.hpp"
 
 
-namespace analyzer::utility
+namespace analyzer::framework::utility
 {
 #if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
 

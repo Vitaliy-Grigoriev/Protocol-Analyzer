@@ -13,7 +13,7 @@
 #include "../../include/framework/Common.hpp"
 
 
-namespace analyzer::common
+namespace analyzer::framework::common
 {
     std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
     {

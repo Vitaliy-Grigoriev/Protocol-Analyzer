@@ -10,7 +10,7 @@
 #include "../../include/framework/BinaryStructuredDataEngine.hpp"
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     // Constructor of BinaryStructuredDataEngine class with prepared structured data.
     BinaryStructuredDataEngine::BinaryStructuredDataEngine (BinaryDataEngine& input, const uint16_t* pattern, const uint16_t size, const DATA_ENDIAN_TYPE endian) noexcept

@@ -8,7 +8,7 @@
 
 #define PROTOCOL_ANALYZER_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
-#define PROTOCOL_ANALYZER_VERSION_PATCH 9
+#define PROTOCOL_ANALYZER_VERSION_PATCH 10
 
 
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
@@ -25,95 +25,122 @@
 ///////////////////   STRUCTURE OF PROTOCOL ANALYZER   ///////////////////
 /**
  * @namespace analyzer
- * @brief The main namespace that contains definition of analyzer framework.
+ * @brief The main namespace that contains definition of analyzer.
  */
 namespace analyzer
 {
     /**
-     * @namespace system
-     * @brief The namespace that contains definition of various core functions.
+     * @namespace framework
+     * @brief The namespace that contains definition of framework module of analyzer.
      */
-    namespace system {
-    }  // namespace system.
-    /**
-     * @namespace net
-     * @brief The namespace that contains definitions of network transports.
-     */
-    namespace net {
+    namespace framework
+    {
         /**
-         * @namespace protocols
-         * @brief The namespace that contains definitions of network transports and protocols.
+         * @namespace system
+         * @brief The namespace that contains definition of various core functions.
          */
-        namespace protocols {
+        namespace system {
+        }  // namespace system.
+        /**
+         * @namespace storage
+         * @brief The namespace that contains definition of various framework global storages.
+         */
+        namespace storage {
+        }  // namespace storage.
+        /**
+         * @namespace callbacks
+         * @brief The namespace that contains interfaces of various framework callback types.
+         */
+        namespace callbacks {
+        }  // namespace callbacks.
+        /**
+         * @namespace modules
+         * @brief The namespace that contains identifiers of various framework modules.
+         */
+        namespace modules {
+        }  // namespace modules.
+        /**
+         * @namespace net
+         * @brief The namespace that contains definitions of network transports.
+         */
+        namespace net
+        {
             /**
-             * @namespace http
-             * @brief The namespace that contains definitions of HTTP protocols.
+             * @namespace protocols
+             * @brief The namespace that contains definitions of network transports and protocols.
              */
-            namespace http {
-            }  // namespace http.
-        }  // namespace protocols.
-    }  // namespace net.
-    /**
-     * @namespace utility
-     * @brief The namespace that contains definition of various utilities.
-     */
-    namespace utility {
-    }  // namespace utility.
-    /**
-     * @namespace common
-     * @brief The namespace that contains definition of common functions.
-     */
-    namespace common {
+            namespace protocols
+            {
+                /**
+                 * @namespace http
+                 * @brief The namespace that contains definitions of HTTP protocols.
+                 */
+                namespace http {
+                }  // namespace http.
+            }  // namespace protocols.
+        }  // namespace net.
         /**
-         * @namespace types
-         * @brief The namespace that contains definition of various framework types.
+         * @namespace utility
+         * @brief The namespace that contains definition of various utilities.
          */
-        namespace types {
-        }  // namespace types.
+        namespace utility {
+        }  // namespace utility.
         /**
-         * @namespace text
-         * @brief The namespace that contains definition of various functions which works with text.
+         * @namespace common
+         * @brief The namespace that contains definition of common functions.
          */
-        namespace text {
-        }  // namespace text.
+        namespace common
+        {
+            /**
+             * @namespace types
+             * @brief The namespace that contains definition of various framework types.
+             */
+            namespace types {
+            }  // namespace types.
+            /**
+             * @namespace text
+             * @brief The namespace that contains definition of various functions which works with text.
+             */
+            namespace text {
+            }  // namespace text.
+            /**
+             * @namespace file
+             * @brief The namespace that contains definition of various functions which works with files.
+             */
+            namespace file {
+            }  // namespace file.
+            /**
+             * @namespace convert
+             * @brief The namespace that contains definition of various functions which converts various types of data to the desired representation.
+             */
+            namespace convert {
+            }  // namespace convert.
+        }  // namespace common.
         /**
-         * @namespace file
-         * @brief The namespace that contains definition of various functions which works with files.
+         * @namespace log
+         * @brief The namespace that contains definition of logging and error classes.
          */
-        namespace file {
-        }  // namespace file.
+        namespace log {
+        }  // namespace log.
         /**
-         * @namespace convert
-         * @brief The namespace that contains definition of various functions which converts various types of data to the desired representation.
+         * @namespace task
+         * @brief The namespace that contains definitions of task class.
          */
-        namespace convert {
-        }  // namespace convert.
-    }  // namespace common.
-    /**
-     * @namespace log
-     * @brief The namespace that contains definition of logging and error classes.
-     */
-    namespace log {
-    }  // namespace log.
-    /**
-     * @namespace task
-     * @brief The namespace that contains definitions of task class.
-     */
-    namespace task {
-    }  // namespace task.
-    /**
-     * @namespace parser
-     * @brief The namespace that contains definitions of various parsers.
-     */
-    namespace parser {
-    }  // namespace parser.
-    /**
-     * @namespace diagnostic
-     * @brief The namespace that contains definitions of diagnostic tools.
-     */
-    namespace diagnostic {
-    }  // namespace diagnostic.
-    
+        namespace task {
+        }  // namespace task.
+        /**
+         * @namespace parser
+         * @brief The namespace that contains definitions of various parsers.
+         */
+        namespace parser{
+        }  // namespace parser.
+        /**
+         * @namespace diagnostic
+         * @brief The namespace that contains definitions of diagnostic tools.
+         */
+        namespace diagnostic {
+        }  // namespace diagnostic.
+    }  // namespace framework.
 }  // namespace analyzer.
 ///////////////////   STRUCTURE OF PROTOCOL ANALYZER   ///////////////////
 

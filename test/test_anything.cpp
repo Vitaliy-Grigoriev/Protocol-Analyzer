@@ -1,12 +1,13 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <chrono>
 #include <iostream>
 #include <algorithm>
 
 #include "../include/framework/AnalyzerApi.hpp"
 
-using namespace analyzer;
+using namespace analyzer::framework;
 
 
 int32_t main (int32_t size, char** data)

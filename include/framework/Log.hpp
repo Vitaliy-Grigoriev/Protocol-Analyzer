@@ -21,7 +21,7 @@
  * @param [in] error - Error code number.
  * @return String that contains a description of the error.
  */
-#define GET_ERROR(error) (analyzer::log::StrSysError::Instance())(error)
+#define GET_ERROR(error) (analyzer::framework::log::StrSysError::Instance())(error)
 
 
 /**
@@ -41,44 +41,44 @@
  * @brief Marco that outputs message to the logfile with TRACE level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_TRACE(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::TRACE, args))
+#define LOG_TRACE(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::TRACE, args))
 /**
  * @def LOG_INFO (args...);
  * @brief Marco that outputs message to the logfile with INFO level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_INFO(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::INFORMATION, args))
+#define LOG_INFO(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::INFORMATION, args))
 /**
  * @def LOG_MAJOR (args...);
  * @brief Marco that outputs message to the logfile with MAJOR level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_MAJOR(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::MAJOR, args))
+#define LOG_MAJOR(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::MAJOR, args))
 /**
  * @def LOG_WARNING (args...);
  * @brief Marco that outputs message to the logfile with WARNING level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_WARNING(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::WARNING, args))
+#define LOG_WARNING(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::WARNING, args))
 /**
  * @def LOG_ERROR (args...);
  * @brief Marco that outputs message to the logfile with ERROR level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_ERROR(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::ERROR, args))
+#define LOG_ERROR(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::ERROR, args))
 /**
  * @def LOG_FATAL (args...);
  * @brief Marco that outputs message to the logfile with FATAL level attribute.
  * @tparam [in] args - The sequence of parameters for output to the logfile.
  */
-#define LOG_FATAL(args...) (analyzer::log::Logger::Instance().Push(analyzer::log::LEVEL::FATAL, args))
+#define LOG_FATAL(args...) (analyzer::framework::log::Logger::Instance().Push(analyzer::framework::log::LEVEL::FATAL, args))
 
 #pragma GCC diagnostic pop
 
 /**@}*/
 
 
-namespace analyzer::log
+namespace analyzer::framework::log
 {
     /**
      * @enum LEVEL
@@ -125,7 +125,7 @@ namespace analyzer::log
 
         /**
          * @fn static StrSysError & StrSysError::Instance() noexcept;
-         * @brief Method that returns the instance of the system error singleton class.
+         * @brief Method that returns the instance of the StrSysError singleton class.
          * @return The instance of singleton class.
          */
         static StrSysError & Instance(void) noexcept;
@@ -183,9 +183,9 @@ namespace analyzer::log
          * @var std::string logFileName;
          * @brief Current name and path of the logfile.
          *
-         * @note Default path to logfile: "../log/program_volume1.log".
+         * @note Default path to logfile: "../../log/program_volume1.log".
          */
-        std::string logFileName = "../log/program_volume1.log";
+        std::string logFileName = "../../log/program_volume1.log";
         /**
          * @var volatile std::size_t recordsLimit;
          * @brief Number of entries in logfile.

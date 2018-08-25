@@ -9,7 +9,7 @@
 #include <iterator>
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     class BinaryDataEngine;
 

@@ -9,7 +9,7 @@
 // In System library MUST NOT use any another functional framework libraries because it is a core library.
 
 
-namespace analyzer::system
+namespace analyzer::framework::system
 {
     /**
      * @class LocalMutex Mutex.hpp "include/framework/Mutex.hpp"

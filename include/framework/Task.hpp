@@ -18,7 +18,7 @@
 #define TIMEOUT_TASK_UNLIMITED   0
 
 
-namespace analyzer::task
+namespace analyzer::framework::task
 {
     using time = std::chrono::system_clock;
 

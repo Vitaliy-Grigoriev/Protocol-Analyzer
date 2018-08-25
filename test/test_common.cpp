@@ -19,7 +19,7 @@ int32_t main (int32_t size, char** data)
 
     while (count++ < 1000000)
     {
-        const auto t = analyzer::common::GetRandomValue<uint32_t>();
+        const auto t = analyzer::framework::common::GetRandomValue<uint32_t>();
         if (example.emplace(t).second == false) {
             std::cout << "[+] Find duplication: " << t << " after " << count << " iterations." << std::endl;
             continue;

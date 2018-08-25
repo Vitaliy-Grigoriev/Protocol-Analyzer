@@ -16,12 +16,10 @@
 #include <string_view>  // std::string_view.
 #include <type_traits>  // std::is_convertible, std::enable_if, std::is_integral, std::is_unsigned, std::is_same, std::is_trivial, std::is_standard_layout.
 
-// In Common library MUST NOT use any another framework libraries because it is a core library.
-
 #define DEFAULT_BUFFER_SIZE 1048576  // 1 Mb.
 
 
-namespace analyzer::common
+namespace analyzer::framework::common
 {
     /**
      * @fn template <typename Type>
@@ -148,7 +146,7 @@ namespace analyzer::common
 
 
         /**
-         * @fn template <typename Type>
+         * @fn template <typename Type, typename>
          * std::string getHexValue (const Type, const uint16_t, bool) noexcept;
          * @brief Function that converts any data to hex format.
          * @tparam [in] data - Input data of selected type.
@@ -166,7 +164,7 @@ namespace analyzer::common
         }
 
         /**
-         * @fn template <typename Type>
+         * @fn template <typename Type, typename>
          * std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
          * @brief Function that converts string data to hex format.
          * @tparam [in] data - Input data of selected type.

@@ -15,7 +15,7 @@
 
 int32_t main (int32_t size, char** data)
 {
-    analyzer::diagnostic::Timer timer(true);
+    analyzer::framework::diagnostic::Timer timer(true);
     // Test 1.  Work 2 seconds.
     std::this_thread::sleep_for(std::chrono::seconds(2));
     std::size_t count = timer.GetCount().MilliSeconds();
@@ -55,9 +55,9 @@ int32_t main (int32_t size, char** data)
     std::cout << "[+] Test 6:  " << res << std::endl;
 
     // Compare tests.
-    analyzer::diagnostic::Timer timer_1(true);
+    analyzer::framework::diagnostic::Timer timer_1(true);
     std::this_thread::sleep_for(std::chrono::microseconds(15));
-    analyzer::diagnostic::Timer timer_2(true);
+    analyzer::framework::diagnostic::Timer timer_2(true);
 
     // Test 7.  Compare after 1 second.
     std::this_thread::sleep_for(std::chrono::seconds(1));

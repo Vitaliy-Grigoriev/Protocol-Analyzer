@@ -11,8 +11,8 @@
 #include "../include/framework/System.hpp"
 #include "../include/framework/Notification.hpp"
 
-using namespace analyzer::task;
-using namespace analyzer::system;
+using namespace analyzer::framework::task;
+using namespace analyzer::framework::system;
 
 
 int32_t main (int32_t size, char** data)

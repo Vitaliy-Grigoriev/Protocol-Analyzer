@@ -14,7 +14,7 @@
 // In System library MUST NOT use any another functional framework libraries because it is a core library.
 
 
-namespace analyzer::system
+namespace analyzer::framework::system
 {
     /**
       * @fn template <typename Type, typename... Args>

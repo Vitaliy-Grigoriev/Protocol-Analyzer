@@ -18,7 +18,7 @@ const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexc
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
-using namespace analyzer;
+using namespace analyzer::framework;
 
 
 int32_t main (int32_t size, char** data)
@@ -33,12 +33,12 @@ int32_t main (int32_t size, char** data)
         return EXIT_FAILURE;
     }
 
-    if (sock->Connect("rucinema.net") == false) {
+    if (sock->Connect("clang.llvm.org") == false) {
         std::cout << "[error] Connection fail..." << std::endl;
         return EXIT_FAILURE;
     }
 
-    const char buff[] = "GET / HTTP/1.1\r\nHost: rucinema.net\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
+    const char buff[] = "GET / HTTP/1.1\r\nHost: clang.llvm.org\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
     const int32_t ret = sock->Send(buff, sizeof(buff));
     if (ret == -1) {
         std::cout << "[error] Send fail..." << std::endl;
@@ -47,7 +47,7 @@ int32_t main (int32_t size, char** data)
 
     int32_t length = 0;
     char buff_receive[1024] = { };
-    const bool result = sock->Recv(buff_receive, sizeof(buff_receive) - 1, length, double_CRLF_functor, 250);
+    const bool result = sock->Recv(buff_receive, sizeof(buff_receive), length, double_CRLF_functor, 250);
     if (result == false) {
         std::cout << "[error] Recv fail..." << std::endl;
         return EXIT_FAILURE;

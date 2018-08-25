@@ -4,7 +4,7 @@
 #include "../../include/framework/System.hpp"
 
 
-namespace analyzer::system
+namespace analyzer::framework::system
 {
 
 

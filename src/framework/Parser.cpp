@@ -5,7 +5,7 @@
 #include "../../include/framework/Parser.hpp"
 
 
-namespace analyzer::parser
+namespace analyzer::framework::parser
 {
     PortsParser::PortsParser (std::string_view ports, const char delimiter) noexcept
     {

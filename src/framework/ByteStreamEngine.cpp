@@ -11,7 +11,7 @@
 #include "../../include/framework/BinaryDataEngine.hpp"
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     /* ************************************************************************************************************* */
     /* ************************************************** Support ************************************************** */

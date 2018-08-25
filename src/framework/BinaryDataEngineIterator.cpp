@@ -12,7 +12,7 @@
 
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
 
 }  // namespace types.

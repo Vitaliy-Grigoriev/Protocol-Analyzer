@@ -11,7 +11,7 @@ int32_t main (int32_t size, char** data)
 #if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
     const std::string host = "www.google.com";
 
-    const auto protocols = analyzer::utility::CheckALPNSupportedProtocols(host);
+    const auto protocols = analyzer::framework::utility::CheckALPNSupportedProtocols(host);
     if (protocols.empty() == false)
     {
         std::cout << "[+] Find next protocols on the '" << host << "': " << std::endl;
@@ -22,7 +22,7 @@ int32_t main (int32_t size, char** data)
     }
 
 
-    analyzer::net::SocketSSL sock;
+    analyzer::framework::net::SocketSSL sock;
     if (sock.SetHttpProtocols() == false) {
         std::cout << "[error] Set all HTTP protocols failed..." << std::endl;
         return EXIT_FAILURE;
@@ -40,13 +40,13 @@ int32_t main (int32_t size, char** data)
     std::cout << "[+] Selected:   ";
     switch (sock.GetSelectedProtocol())
     {
-        case analyzer::net::protocols::http::HTTP_VERSION::HTTP1_1:
+        case analyzer::framework::net::protocols::http::HTTP_VERSION::HTTP1_1:
             std::cout << "HTTP/1.1 protocol." << std::endl;
             break;
-        case analyzer::net::protocols::http::HTTP_VERSION::HTTP2_0:
+        case analyzer::framework::net::protocols::http::HTTP_VERSION::HTTP2_0:
             std::cout << "HTTP/2.0 protocol." << std::endl;
             break;
-        case analyzer::net::protocols::http::HTTP_VERSION::UNKNOWN:
+        case analyzer::framework::net::protocols::http::HTTP_VERSION::UNKNOWN:
             std::cout << "ALPN protocol UNKNOWN." << std::endl;
             break;
     }

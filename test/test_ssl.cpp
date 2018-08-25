@@ -15,7 +15,7 @@
 int32_t main (int32_t size, char** data)
 {
     /*const std::string host = "habrahabr.ru";
-    const auto protos = analyzer::utility::CheckSupportedTLSProtocols(host);
+    const auto protos = analyzer::framework::utility::CheckSupportedTLSProtocols(host);
     if (protos.empty() == false)
     {
         std::cout << "Find next protocols on the host (" << host << "): " << std::endl;
@@ -25,13 +25,13 @@ int32_t main (int32_t size, char** data)
         std::cout << std::endl;
     }*/
 
-    auto sockets = analyzer::system::allocMemoryForArrayOfObjects<analyzer::net::SocketSSL>(3, SSL_METHOD_TLS11);
+    auto sockets = analyzer::framework::system::allocMemoryForArrayOfObjects<analyzer::framework::net::SocketSSL>(3, SSL_METHOD_TLS11);
     if (sockets == nullptr) {
         std::cerr << "[error] Alloc memory fail..." << std::endl;
         return EXIT_FAILURE;
     }
 
-    auto request = [] (analyzer::net::SocketSSL* sock, const std::string& domain) noexcept -> bool
+    auto request = [] (analyzer::framework::net::SocketSSL* sock, const std::string& domain) noexcept -> bool
     {
 #if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
         if (sock->SetHttp_1_1_OnlyProtocol() == false) {
@@ -71,7 +71,6 @@ int32_t main (int32_t size, char** data)
 
     std::cerr << request(sockets[0].get(), "tproger.ru") << std::endl;
     std::cerr << request(sockets[1].get(), "habrahabr.ru") << std::endl;
-    std::cerr << request(sockets[2].get(), "geektimes.ru") << std::endl;
 
     return EXIT_SUCCESS;
 }

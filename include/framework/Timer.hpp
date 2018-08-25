@@ -12,7 +12,7 @@
 #include <cstddef>
 
 
-namespace analyzer::diagnostic
+namespace analyzer::framework::diagnostic
 {
     /**
      * @class Timer Timer.hpp "include/framework/Timer.hpp"

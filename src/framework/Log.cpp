@@ -11,7 +11,7 @@
 #include "../../include/framework/Log.hpp"
 
 
-namespace analyzer::log
+namespace analyzer::framework::log
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"

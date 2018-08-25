@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include <regex>
 
 #include "../../include/framework/Log.hpp"  // In this header file also defined "Common.hpp".
@@ -10,7 +15,7 @@
 #define MAX_URL_LENGTH 2048 // Microsoft Internet Explorer
 
 
-namespace analyzer::net::protocols
+namespace analyzer::framework::net::protocols
 {
     ParseURI::ParseURI (const char* link, const std::size_t size)
             : port(DEFAULT_PORT)

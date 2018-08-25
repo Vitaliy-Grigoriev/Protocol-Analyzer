@@ -7,9 +7,10 @@
 
 #include "../../include/framework/System.hpp"
 #include "../../include/framework/Socket.hpp"
+#include "../../include/framework/GlobalInfo.hpp"  // storage::GlobalInfo.
 
 
-namespace analyzer::net
+namespace analyzer::framework::net
 {
     // Constructor.
     Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time)
@@ -148,6 +149,16 @@ namespace analyzer::net
         }
         LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "'...");
 
+        // Check callback functor.
+        using functor = callbacks::SocketCallbackFunctorBeforeSend;
+        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
+        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND);
+        if (callback != nullptr)
+        {
+            LOG_TRACE("Socket.Send [", fd, "]: Calling the SocketCallbackFunctorBeforeSend functor...");
+            callback->operator()(const_cast<char*>(data), &length);
+        }
+        
         std::size_t idx = 0;
         while (length > 0)
         {
@@ -216,6 +227,16 @@ namespace analyzer::net
             if (noWait == true) { break; }
         }
 
+        // Check callback functor.
+        using functor = callbacks::SocketCallbackFunctorAfterReceive;
+        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
+        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        if (callback != nullptr)
+        {
+            LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
+            callback->operator()(data, idx);
+        }
+
         LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
@@ -254,6 +275,16 @@ namespace analyzer::net
             successFunctor = functor(data, static_cast<std::size_t>(idx));
         } while (length > 0 && successFunctor == false);
 
+        // Check callback functor.
+        using func = callbacks::SocketCallbackFunctorAfterReceive;
+        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
+        auto callback = gi.GetCallback<func>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        if (callback != nullptr)
+        {
+            LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
+            callback->operator()(data, idx);
+        }
+
         obtainLength = static_cast<int32_t>(idx);
         LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
         return successFunctor;
@@ -288,6 +319,16 @@ namespace analyzer::net
 
             idx += static_cast<std::size_t>(result);
             length -= static_cast<std::size_t>(result);
+        }
+
+        // Check callback functor.
+        using functor = callbacks::SocketCallbackFunctorAfterReceive;
+        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
+        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        if (callback != nullptr)
+        {
+            LOG_TRACE("Socket.RecvToEnd [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
+            callback->operator()(data, idx);
         }
 
         LOG_TRACE("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");

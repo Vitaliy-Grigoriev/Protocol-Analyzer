@@ -16,10 +16,10 @@
 // In Common library MUST NOT use any another framework libraries because it is a core library.
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     /**
-     * @class LockedDeque LockedDeque.hpp "include/framework/LockedDeque.hpp"
+     * @class LockedDeque   LockedDeque.hpp   "include/framework/LockedDeque.hpp"
      * @brief This class defined concurrency wrapper over STL deque class to work in parallel threads.
      * @tparam [in] Type - Typename of stored data in STL deque.
      *
@@ -33,7 +33,7 @@ namespace analyzer::common::types
     private:
         /**
          * @var std::mutex mutex;
-         * @brief A mutex value for thread-safe program working.
+         * @brief Mutex value for thread-safe class working.
          */
         std::mutex mutex = { };
         /**

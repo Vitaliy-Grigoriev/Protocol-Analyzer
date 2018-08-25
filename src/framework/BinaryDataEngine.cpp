@@ -11,7 +11,7 @@
 #include "../../include/framework/BinaryDataEngine.hpp"
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     // Variable that stores system endian.
     inline const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();

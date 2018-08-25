@@ -11,7 +11,7 @@
 #include "../../include/framework/BinaryDataEngine.hpp"
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
     // Method that returns the correct position of selected bit in stored data in any data endian.
     std::pair<std::size_t, std::byte> BinaryDataEngine::BitStreamEngine::GetBitPosition (const std::size_t index) const noexcept

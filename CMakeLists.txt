@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION   3.8)  # For support C++17 standard.
 project(ProtocolAnalyzer   CXX)
 
+# Select output binary paths.
+set(EXECUTABLE_OUTPUT_PATH   ${PROJECT_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/lib)
+# Select input system paths.
+set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include)
+set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib)
 
-set(EXECUTABLE_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/bin/)
-set(LIBRARY_OUTPUT_PATH         ${PROJECT_SOURCE_DIR}/lib/)
-set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include/)
-set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib/)
-
-# Select Analyzer Framework paths to source and include files.
-set(FRAMEWORK_INCLUDES   ${PROJECT_SOURCE_DIR}/include/framework)
-set(FRAMEWORK_SOURCES    ${PROJECT_SOURCE_DIR}/src/framework)
-# Select Analyzer paths to source and include files.
-set(ANALYZER_INCLUDES   ${PROJECT_SOURCE_DIR}/include/analyzer)
-set(ANALYZER_SOURCES    ${PROJECT_SOURCE_DIR}/src/analyzer)
+# Select Framework Module paths to source and include files.
+set(FRAMEWORK_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/framework)
+set(FRAMEWORK_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/framework)
+# Select Analyzer Module paths to source and include files.
+set(ANALYZER_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/analyzer)
+set(ANALYZER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/analyzer)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
 
@@ -59,9 +60,9 @@ endif()
 
 # Build Analyzer Framework libraries.
 # Select Analyzer Framework source files.
-file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES}/*.cpp")
+file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES_PATH}/*.cpp")
 # Select Analyzer Framework include files.
-file(GLOB   FHEADERS   "${FRAMEWORK_INCLUDES}/*.hpp")
+file(GLOB   FHEADERS   "${FRAMEWORK_INCLUDES_PATH}/*.hpp")
 # Ignore several source files.
 list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*BinaryDataEngineIterator.cpp$")
 list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*Task.cpp$")
@@ -77,16 +78,17 @@ target_link_libraries(AnalyzerFramework   pthread ssl crypto)
 
 
 # Build test suites for Analyzer Framework library.
-set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(COMMON_TEST               ${TESTS}/test_common.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp      ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(LOGGING_TEST              ${TESTS}/test_logging.cpp              ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(ANYTHING_TEST             ${TESTS}/test_anything.cpp             ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp           ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp         ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
-set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${FRAMEWORK_INCLUDES}/AnalyzerApi.hpp)
+set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(COMMON_TEST               ${TESTS}/test_common.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp   ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(LOGGING_TEST              ${TESTS}/test_logging.cpp              ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(ANYTHING_TEST             ${TESTS}/test_anything.cpp             ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(CALLBACKS_TEST            ${TESTS}/test_callbacks.cpp            ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp           ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp         ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
 
 add_executable(test_ssl                  ${SSL_TEST})
 add_executable(test_socket               ${SOCKET_TEST})
@@ -95,6 +97,7 @@ add_executable(test_timing               ${TIMING_TEST})
 add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
 add_executable(test_logging              ${LOGGING_TEST})
 add_executable(test_anything             ${ANYTHING_TEST})
+add_executable(test_callbacks            ${CALLBACKS_TEST})
 add_executable(test_uri_parser           ${URI_PARSER_TEST})
 add_executable(test_notification         ${NOTIFICATION_TEST})
 add_executable(test_http2_negotiation    ${HTTP2_NEGOTIATION_TEST})
@@ -107,6 +110,7 @@ set_target_properties(
         test_binary_data_engine
         test_logging
         test_anything
+        test_callbacks
         test_uri_parser
         test_notification
         test_http2_negotiation
@@ -121,6 +125,7 @@ target_link_libraries(test_binary_data_engine  AnalyzerFramework)
 target_link_libraries(test_timing              AnalyzerFramework)
 target_link_libraries(test_anything            AnalyzerFramework)
 target_link_libraries(test_logging             AnalyzerFramework)
+target_link_libraries(test_callbacks           AnalyzerFramework)
 target_link_libraries(test_uri_parser          AnalyzerFramework)
 target_link_libraries(test_notification        AnalyzerFramework)
 target_link_libraries(test_http2_negotiation   AnalyzerFramework)

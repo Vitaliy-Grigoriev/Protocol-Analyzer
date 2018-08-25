@@ -14,7 +14,7 @@
 #include "Mutex.hpp"
 
 
-namespace analyzer::task
+namespace analyzer::framework::task
 {
     template <typename Type>
     class NotificationSubject;

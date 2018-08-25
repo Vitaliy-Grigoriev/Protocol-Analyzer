@@ -8,7 +8,7 @@
 #include "../../include/framework/Task.hpp"
 
 
-namespace analyzer::task
+namespace analyzer::framework::task
 {
     void TaskManager::signal_handler (int32_t sig) noexcept
     {

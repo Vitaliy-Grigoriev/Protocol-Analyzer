@@ -13,8 +13,7 @@ build-wrapper-linux-x86-64 --out-dir output make -j4
 sonar-scanner \
   -Dsonar.projectKey=Protocol-Analyzer \
   -Dsonar.projectName="Protocol Analyzer" \
-  -Dsonar.projectVersion=0.0.8 \
-  -Dsonar.organization=vitaliy-grigoriev-github \
+  -Dsonar.projectVersion=0.0.9 \
   -Dsonar.cfamily.threads=3 \
   -Dsonar.sourceEncoding=UTF-8 \
   -Dsonar.language=cpp \
@@ -24,6 +23,7 @@ sonar-scanner \
   -Dsonar.sources=src/framework,include/framework,test \
   -Dsonar.cfamily.build-wrapper-output=output \
   -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.organization=vitaliy-grigoriev-github \
   -Dsonar.login=d421338a22460d731e2db7b8f7af57647547f8ee
 
 cd .. && rm -rf check

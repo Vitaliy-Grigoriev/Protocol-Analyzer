@@ -6,16 +6,19 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #include <bitset>
 #include <iostream>
 
 #include "../include/framework/Timer.hpp"
 #include "../include/framework/AnalyzerApi.hpp"
 
-namespace types = analyzer::common::types;
-using analyzer::common::types::BinaryDataEngine;
-using analyzer::common::types::BinaryStructuredDataEngine;
-using timer = analyzer::diagnostic::Timer;
+namespace types = analyzer::framework::common::types;
+using analyzer::framework::common::types::BinaryDataEngine;
+using analyzer::framework::common::types::BinaryStructuredDataEngine;
+using timer = analyzer::framework::diagnostic::Timer;
+
+
 
 int32_t main (int32_t size, char** data)
 {

@@ -4,7 +4,7 @@
 #include "../../include/framework/Mutex.hpp"
 
 
-namespace analyzer::system
+namespace analyzer::framework::system
 {
     [[nodiscard]]
     bool LocalMutex::Lock(void) noexcept

@@ -10,7 +10,7 @@
 #include <cstdint>  // uint16_t.
 
 
-namespace analyzer::net::protocols
+namespace analyzer::framework::net::protocols
 {
     /**
      * @class URLInfo   Protocol.hpp   "include/framework/Protocol.hpp"

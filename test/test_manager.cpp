@@ -7,7 +7,7 @@
 
 int main(void)
 {
-    analyzer::task::TaskManager net;
+    analyzer::framework::task::TaskManager net;
     char ya[] = "GET / HTTP/1.1\r\nHost: ya.ru\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
     pthread_t t_1 = net.Add(ya, strlen(ya), "ya.ru");
 
@@ -35,14 +35,14 @@ int main(void)
 
     //net.Add(ya, sizeof(ya), "fe80::e1c5:45c0:1d03:8e38%eth0", 443, TCPv6);
     net.WaitAll();
-    analyzer::task::data_t data_1 = net.GetData(t_1);
-    analyzer::task::data_t data_2 = net.GetData(t_2);
-    analyzer::task::data_t data_3 = net.GetData(t_3);
-    analyzer::task::data_t data_4 = net.GetData(t_4);
-    analyzer::task::data_t data_5 = net.GetData(t_5);
-    analyzer::task::data_t data_6 = net.GetData(t_6);
-    analyzer::task::data_t data_7 = net.GetData(t_7);
-    analyzer::task::data_t data_8 = net.GetData(t_8);
+    analyzer::framework::task::data_t data_1 = net.GetData(t_1);
+    analyzer::framework::task::data_t data_2 = net.GetData(t_2);
+    analyzer::framework::task::data_t data_3 = net.GetData(t_3);
+    analyzer::framework::task::data_t data_4 = net.GetData(t_4);
+    analyzer::framework::task::data_t data_5 = net.GetData(t_5);
+    analyzer::framework::task::data_t data_6 = net.GetData(t_6);
+    analyzer::framework::task::data_t data_7 = net.GetData(t_7);
+    analyzer::framework::task::data_t data_8 = net.GetData(t_8);
 
     return EXIT_SUCCESS;
 }

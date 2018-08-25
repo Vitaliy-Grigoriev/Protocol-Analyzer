@@ -4,7 +4,7 @@
 #include "Protocol.hpp"
 
 
-namespace analyzer::net::protocols::http
+namespace analyzer::framework::net::protocols::http
 {
     /**
      * @enum HTTP_VERSION

@@ -9,7 +9,7 @@
 #include "../../include/framework/Timer.hpp"
 
 
-namespace analyzer::diagnostic
+namespace analyzer::framework::diagnostic
 {
     Timer::Timer (bool start) noexcept
     {

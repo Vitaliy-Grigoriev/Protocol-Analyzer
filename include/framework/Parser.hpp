@@ -10,7 +10,7 @@
 #include <string_view>
 
 
-namespace analyzer::parser
+namespace analyzer::framework::parser
 {
     /**
      * @class PortsParser Parser.hpp "include/framework/Parser.hpp"

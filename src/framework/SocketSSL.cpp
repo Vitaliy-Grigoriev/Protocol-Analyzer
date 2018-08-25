@@ -9,7 +9,7 @@
 #include "../../include/framework/Socket.hpp"
 
 
-namespace analyzer::net
+namespace analyzer::framework::net
 {
     /**
      * @fn inline static std::string CheckSSLErrors() noexcept;

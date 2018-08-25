@@ -50,7 +50,7 @@
 #define DEFAULT_RECEIVE_CHUNK 250 // Chunk part for receive massage.
 
 
-namespace analyzer::net
+namespace analyzer::framework::net
 {
     /**
       * @typedef bool (*CompleteFunctor) (const char *, std::size_t) noexcept;

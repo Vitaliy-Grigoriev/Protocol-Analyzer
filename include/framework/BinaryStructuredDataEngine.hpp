@@ -11,7 +11,7 @@
 #include "BinaryDataEngine.hpp"  // types::BinaryDataEngine.
 
 
-namespace analyzer::common::types
+namespace analyzer::framework::common::types
 {
 /**
  * @def STRUCTURED_DATA_HANDLING_MODE;
