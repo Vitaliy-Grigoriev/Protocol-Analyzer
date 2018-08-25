@@ -8,12 +8,12 @@ set(LIBRARY_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include)
 set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib)
 
-# Select Framework Module paths to source and include files.
+# Select Analyzer Framework Module paths to source and include files.
 set(FRAMEWORK_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/framework)
 set(FRAMEWORK_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/framework)
-# Select Analyzer Module paths to source and include files.
-set(ANALYZER_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/analyzer)
-set(ANALYZER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/analyzer)
+# Select Analyzer Scanner Module paths to source and include files.
+set(SCANNER_INCLUDES_PATH ${PROJECT_SOURCE_DIR}/include/scanner)
+set(SCANNER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/scanner)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
 

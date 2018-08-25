@@ -151,8 +151,7 @@ namespace analyzer::framework::net
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorBeforeSend;
-        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
-        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Send [", fd, "]: Calling the SocketCallbackFunctorBeforeSend functor...");
@@ -229,8 +228,7 @@ namespace analyzer::framework::net
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorAfterReceive;
-        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
-        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
@@ -277,8 +275,7 @@ namespace analyzer::framework::net
 
         // Check callback functor.
         using func = callbacks::SocketCallbackFunctorAfterReceive;
-        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
-        auto callback = gi.GetCallback<func>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<func>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
@@ -323,8 +320,7 @@ namespace analyzer::framework::net
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorAfterReceive;
-        const storage::GlobalInfo& gi = storage::GlobalInfo::Instance();
-        auto callback = gi.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.RecvToEnd [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");

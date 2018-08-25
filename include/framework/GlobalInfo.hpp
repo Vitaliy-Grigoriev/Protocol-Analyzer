@@ -8,7 +8,6 @@
 
 #include <array>  // std::array.
 #include <memory>  // std::unique_ptr.
-#include <utility>  // std::pair.
 
 #include "Log.hpp"  // log::Logger.
 #include "FrameworkModuleTypes.hpp"  // FRAMEWORK_MODULE_TYPES.
@@ -110,6 +109,13 @@ namespace analyzer::framework::storage
          */
         ~GlobalInfo(void) = default;
     };
+
+
+    /**
+     * @var inline static GlobalInfo & GI;
+     * @brief Global variable that consist of the instance of the GlobalInfo singleton class.
+     */
+    inline static GlobalInfo& GI = GlobalInfo::Instance();
 
 }  // namespace storage.
 
