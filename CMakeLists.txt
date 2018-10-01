@@ -57,6 +57,10 @@ else()  # Other compilers.
     set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS}")
 endif()
 
+# Output compile flags.
+message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
+message("Debug flags:   ${CMAKE_CXX_FLAGS_DEBUG}.")
+
 
 # Build Analyzer Framework libraries.
 # Select Analyzer Framework source files.

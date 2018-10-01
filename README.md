@@ -1,5 +1,5 @@
 # Protocol Analyzer
-<h2><b>Fuzz testing framework for network protocols.</b></h2>
+<h2><b>Protocol-oriented fuzz testing framework for network protocols.</b></h2>
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Vitaliy-Grigoriev/Protocol-Analyzer/blob/master/LICENSE)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10369.svg)](https://scan.coverity.com/projects/vitaliy-grigoriev-protocol-analyzer)
@@ -13,7 +13,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer/badge)](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer)
 
 
-<h3><b>The framework under the deep development.</b> Version 0.0.8.</h3>
+<h3><b>The framework under the deep development.</b> Version 0.0.10.</h3>
 
 --------------
 <h2><b>The main purposes of the framework</b></h2>
@@ -32,17 +32,17 @@
   * Managed Socket Pool for unique interface to take and control sockets;
   * UDP Socket interface;
   * RAW Socket interface;
-  * Netlink interface for interact with Linux Kernel;
+  * Netlink socket interface for interact with Linux Kernel;
   * Create two error interfaces: POSIX-oriented, C++ exceptions.
 
-* Development an unique interface for describing the Network Protocol;
+* Development an interface for describing the structure of Network Protocol;
   * Implement libJSON as submodule of framework for parsing input configs.
 
-* Development an unique interface for create Tasks and manage them;
-* Development an unique interface for store Global information and Settings in runtime;
-* Development main data class for working with binary data and build all infrastructure around it;
-* Create a low-level and high-level API for analyzer library.
-* Development Callback infrastructure through the framework.
+* Development an interface for create Tasks and manage them;
+* Development an interface for store Global information and Settings in runtime;
+* ✓ Development main data class for working with binary data and build all infrastructure around it;
+* Create a low-level and high-level API for analyzer library;
+* ✓ Development Callback infrastructure through the framework.
 
 --------------
 <h2><b>Requirements for building the project</b></h2>
