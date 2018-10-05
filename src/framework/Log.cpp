@@ -160,11 +160,12 @@ namespace analyzer::framework::log
         std::size_t fileEntries = 0;
         do
         {
+            // If error is occurred, then recover last state.
             if (GetNameWithNextVolume(logFileName) == false)
             {
+                logFileName = lastFileName;
                 const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
                 CommonLogger(time, "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
-                logFileName = lastFileName;
                 return false;
             }
 
@@ -172,17 +173,17 @@ namespace analyzer::framework::log
                 fileEntries = 0;
                 break;
             }
-            fileEntries = common::file::getFileLines(logFileName);
-        } while (fileEntries != common::file::ErrorState && fileEntries >= recordsLimit);
 
-        // If error is occurred, then recover last state.
-        if (fileEntries == common::file::ErrorState)
-        {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
-            logFileName = lastFileName;
-            return false;
-        }
+            fileEntries = common::file::getFileLines(logFileName);
+            // If error is occurred, then recover last state.
+            if (fileEntries == common::file::ErrorState)
+            {
+                logFileName = lastFileName;
+                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
+                CommonLogger(time, "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
+                return false;
+            }
+        } while (fileEntries >= recordsLimit);
 
         try
         {
