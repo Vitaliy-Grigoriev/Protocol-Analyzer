@@ -116,7 +116,7 @@ namespace analyzer::framework::net
             if (result <= 0)
             {
                 if (BIO_should_retry(bio) != 0) {
-                    if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); return false; }
+                    if (IsReadyForSend(1500) == false) { SSLCloseAfterError(); return false; }
                     continue;
                 }
                 LOG_ERROR("SocketSSL.Send [", fd,"]: In function 'SSL_write' - ", CheckSSLErrors());
@@ -156,7 +156,7 @@ namespace analyzer::framework::net
             {
                 if (BIO_should_retry(bio) != 0)
                 {
-                    if (IsReadyForRecv(3000) == false) {
+                    if (IsReadyForRecv(1500) == false) {
                         if (idx == 0) { SSLCloseAfterError(); return -1; }
                         break;  // In this case no error.
                     }
@@ -188,7 +188,7 @@ namespace analyzer::framework::net
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
 
         std::size_t idx = 0;
-        while (length > 0 && IsReadyForRecv(3000) == true && system_clock::now() < limit)
+        while (length > 0 && IsReadyForRecv(1500) == true && system_clock::now() < limit)
         {
             const int32_t result = SSL_read(ssl, &data[idx], static_cast<int32_t>(length));
             const std::size_t err = ERR_get_error();
@@ -238,7 +238,7 @@ namespace analyzer::framework::net
             if (result <= 0)
             {
                 if (BIO_should_retry(bio) != 0) {
-                    if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); break; }
+                    if (IsReadyForSend(1500) == false) { SSLCloseAfterError(); break; }
                     continue;
                 }
                 LOG_ERROR("SocketSSL.DoHandshakeSSL [", fd,"]: Handshake failed - ", CheckSSLErrors());
