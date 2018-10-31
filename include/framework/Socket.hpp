@@ -36,31 +36,33 @@
 #define SSL_METHOD_TLS12 2  // 0x0303
 //#define SSL_METHOD_TLS13 3  // 0x0304
 
-#define SOCKET_ERROR   (-1)
-#define INVALID_SOCKET (-1)
-#define SOCKET_SUCCESS 0
+#define SOCKET_ERROR     (-1)
+#define INVALID_SOCKET   (-1)
+#define SOCKET_SUCCESS   0
 
-#define DEFAULT_TIMEOUT      5    // sec.
-#define DEFAULT_TIMEOUT_SSL  7    // sec.
+#define DEFAULT_TIMEOUT       5    // sec.
+#define DEFAULT_TIMEOUT_SSL   7    // sec.
 
-#define DEFAULT_TIME_SIGWAIT (-1) // milli sec.
-#define MAXIMUM_SOCKET_DESCRIPTORS 1024 // Maximum descriptors for epoll_wait().
+#define DEFAULT_TIME_SIGWAIT   (-1)  // milli sec.
+#define MAXIMUM_SOCKET_DESCRIPTORS   1024  // Maximum descriptors for epoll_wait().
 #define UNLIMITED_LIVE_TIME 0 // Unlimited live time for socket descriptor in SocketStatePool.
 
-#define DEFAULT_RECEIVE_CHUNK 250 // Chunk part for receive massage.
+#define DEFAULT_NO_CHUNK   0  // Chunk part for receive massage.
 
 
 namespace analyzer::framework::net
 {
     /**
-      * @typedef bool (*CompleteFunctor) (const char *, std::size_t) noexcept;
+      * @typedef bool (*CompleteFunctor) (const char * const, std::size_t) noexcept;
       * @brief The type of the complete functor in Socket.Recv method.
+      *
+      * @note Functor MUST returns TRUE value to finish receiving data, otherwise - FALSE.
       */
-    using CompleteFunctor = bool (*) (const char *, std::size_t) noexcept;
+    using CompleteFunctor = bool (*) (const char * const, std::size_t) noexcept;
 
 
     /**
-     * @class SocketStatePool Socket.hpp "include/framework/Socket.hpp"
+     * @class SocketStatePool   Socket.hpp   "include/framework/Socket.hpp"
      * @brief This singleton class defined the interface of checking the status of socket descriptors.
      *
      * @note This singleton class is thread-safe.
@@ -181,8 +183,8 @@ namespace analyzer::framework::net
          * @fn bool SocketStatePool::RegisterSocket (int32_t, SOCKET_TYPE, uint32_t) noexcept;
          * @brief Method that adds new socket descriptor to common set.
          * @param [in] fd - Socket descriptor.
-         * @param [in] type - The type of socket descriptor. Default: TEST_ON_REQUEST.
-         * @param [in] liveTime - The time (in seconds) during which the socket descriptor is registered. Default: UNLIMITED_LIVE_TIME.
+         * @param [in] type - Type of socket descriptor. Default: TEST_ON_REQUEST.
+         * @param [in] liveTime - Time (in seconds) during which the socket descriptor is registered. Default: UNLIMITED_LIVE_TIME.
          * @return Boolean value that indicates the adding status.
          */
         //bool RegisterSocket (int32_t /*fd*/, SOCKET_TYPE /*type*/ = TEST_ON_REQUEST, uint32_t /*liveTime*/ = UNLIMITED_LIVE_TIME) noexcept;
@@ -191,7 +193,7 @@ namespace analyzer::framework::net
          * @fn bool SocketStatePool::ChangeSocketType (int32_t, SOCKET_TYPE) noexcept;
          * @brief Method that change the type of socket descriptor in common set.
          * @param [in] fd - Socket descriptor.
-         * @param [in] type - The type of socket descriptor.
+         * @param [in] type - Type of socket descriptor.
          * @return Boolean value that indicates the changing status.
          *
          * @todo Need to implement adding TEST_ALWAYS with NOTIFY_ALWAYS option or other.
@@ -279,7 +281,7 @@ namespace analyzer::framework::net
     protected:
         // The Socket descriptor.
         int32_t fd = INVALID_SOCKET;
-        // Name or IPv4/IPv6 of external host.
+        // Name or IPv4/IPv6 address of external host.
         std::string exHost;
 
 
@@ -304,7 +306,7 @@ namespace analyzer::framework::net
         explicit Socket (int32_t  /*family*/   = AF_INET,
                          int32_t  /*type*/     = SOCK_STREAM,
                          int32_t  /*protocol*/ = IPPROTO_TCP,
-                         uint32_t /*timeout*/  = DEFAULT_TIMEOUT);
+                         uint32_t /*timeout*/  = DEFAULT_TIMEOUT) noexcept;
 
 
         // Return Socket descriptor.
@@ -317,20 +319,44 @@ namespace analyzer::framework::net
 
         // Associates a local address with a socket.
         bool Bind (uint16_t /*port*/);
+        // Associates a local address with prepared sockaddr.
+        bool Bind (const struct sockaddr * /*addr*/, uint32_t /*size*/);
         // Connecting to external host.
         virtual bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT);
-        // Sending the message to external host over TCP.
-        virtual int32_t Send (const char * /*data*/, std::size_t /*length*/);
-        // Receiving the message from external host over TCP.
+        // Sending the message to external host over TCP protocol.
+        virtual bool Send (const char * /*data*/, std::size_t /*length*/) noexcept;
+        // Receiving the message from external host over TCP protocol.
         virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false);
-        // Receiving the message from external host over TCP until the functor returns false value.
-        bool Recv (char * /*data*/, std::size_t /*length*/, int32_t & /*obtainLength*/, CompleteFunctor /*functor*/, std::size_t /*chunkLength*/ = DEFAULT_RECEIVE_CHUNK);
-        // Receiving the message from external host until reach the end over TCP.
+        // Receiving the message from external host over TCP protocol until the functor returns false value.
+        bool Recv (char * /*data*/, std::size_t /*length*/, std::size_t & /*obtainLength*/, CompleteFunctor /*functor*/, std::size_t /*chunkLength*/ = DEFAULT_NO_CHUNK);
+        // Receiving the message from external host until reach the end over TCP protocol.
         // 1. The socket is no data to read.
         // 2. Has expired connection timeout.
         // 3. The lack of space in the buffer for reading.
         // 4. The socket has not been informed for reading signal.
-        virtual int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/);
+        virtual int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) noexcept;
+
+        /**
+         * @fn bool Socket::SendTo (const char *, uint16_t, const char *, std::size_t) noexcept;
+         * @brief Method that sends message to external host over UDP protocol.
+         * @param [in] host - Name or IPv4/IPv6 address of external host.
+         * @param [in] port - Destination port number.
+         * @param [in] data - Pointer to data for sending.
+         * @param [in] length - Length of sending data.
+         * @return True - if sending data is successful, otherwise - false.
+         */
+        virtual bool SendTo (const char * /*host*/, uint16_t /*port*/, const char * /*data*/, std::size_t /*length*/) noexcept;
+
+        /**
+         * @fn int32_t Socket::RecvFrom (const char *, uint16_t, const char *, std::size_t) noexcept;
+         * @brief Method that receives message from external host over UDP protocol.
+         * @param [in] host - Name or IPv4/IPv6 address of external host.
+         * @param [in] port - Destination port number.
+         * @param [in] data - Pointer to data buffer for receiving.
+         * @param [in] length - Length of data for receiving.
+         * @return Number of received bytes or error code (error code is less than zero).
+         */
+        virtual int32_t RecvFrom (const char * /*host*/, uint16_t /*port*/, char * /*data*/, std::size_t /*length*/) noexcept;
 
         // Shutdown the connection (SHUT_RD, SHUT_WR, SHUT_RDWR).
         virtual void Shutdown (int32_t /*how*/ = SHUT_RDWR) const;
@@ -387,12 +413,12 @@ namespace analyzer::framework::net
         // Constructor.
         explicit SocketSSL (uint16_t     /*method*/  = SSL_METHOD_TLS12,
                             const char * /*ciphers*/ = nullptr,
-                            uint32_t     /*timeout*/ = DEFAULT_TIMEOUT_SSL);
+                            uint32_t     /*timeout*/ = DEFAULT_TIMEOUT_SSL) noexcept;
 
         // Connecting to external host.
         bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT_TLS) final;
         // Sending the message to external host.
-        int32_t Send (const char * /*data*/, std::size_t /*length*/) final;
+        bool Send (const char * /*data*/, std::size_t /*length*/) noexcept final;
         // Receiving the message from external host.
         int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false) final;
         // Receiving the message from external host until reach the end.
@@ -400,7 +426,7 @@ namespace analyzer::framework::net
         // 2. Has expired connection timeout.
         // 3. The lack of space in the buffer for reading.
         // 4. The socket has not been informed for reading signal.
-        int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) final;
+        int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) noexcept final;
 
         // Return the SSL object.
         inline SSL * GetSSL(void) const noexcept { return ssl; }

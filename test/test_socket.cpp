@@ -1,18 +1,23 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include <iostream>
 
 #include "../include/framework/AnalyzerApi.hpp"
 
 
-const auto CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
+const auto CRLF_functor = [] (const char* const data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
 };
 
-const auto double_CRLF_functor = [] (const char* data, std::size_t length) noexcept -> bool
+const auto double_CRLF_functor = [] (const char* const data, std::size_t length) noexcept -> bool
 {
     const char symbols[] = { 0x0D, 0x0A, 0x0D, 0x0A };
     return ( std::search(data, data + length, symbols, symbols + sizeof(symbols)) != data + length );
@@ -45,7 +50,7 @@ int32_t main (int32_t size, char** data)
         return EXIT_FAILURE;
     }
 
-    int32_t length = 0;
+    std::size_t length = 0;
     char buff_receive[1024] = { };
     const bool result = sock->Recv(buff_receive, sizeof(buff_receive), length, double_CRLF_functor, 250);
     if (result == false) {

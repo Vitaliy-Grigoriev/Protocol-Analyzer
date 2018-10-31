@@ -27,12 +27,13 @@ coverity-build-log.txt
 
 #Folders
 /bin
-/lib
+/lib-debug
+/lib-release
 /log
 /build
 /check
 /fullhtml
 /pvs-result
-/cmake-build-debug
-/cmake-build-release
+/cmake-build-debug*
+/cmake-build-release*
 /.scannerwork

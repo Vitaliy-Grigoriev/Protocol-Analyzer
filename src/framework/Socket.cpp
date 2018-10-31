@@ -1,6 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #include <fcntl.h>
 #include <csignal>
 #include <unistd.h>
@@ -13,7 +18,7 @@
 namespace analyzer::framework::net
 {
     // Constructor.
-    Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time)
+    Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time) noexcept
             : socketFamily(family), socketType(type), ipProtocol(protocol), timeout(time)
     {
         LOG_TRACE("Socket.Socket: Creating socket...");
@@ -51,6 +56,10 @@ namespace analyzer::framework::net
             close(epfd); epfd = INVALID_SOCKET;
             return;
         }
+
+        if (family == AF_NETLINK) {
+            exHost = "Netlink";
+        }
     }
 
 
@@ -69,7 +78,7 @@ namespace analyzer::framework::net
             service.sin_addr.s_addr = INADDR_ANY;
             service.sin_port = htons(port);
 
-            const int32_t result = bind(fd, reinterpret_cast<sockaddr*>(&service), sizeof(service));
+            const int32_t result = bind(fd, reinterpret_cast<sockaddr*>(&service), sizeof(struct sockaddr_in));
             if (result == SOCKET_SUCCESS)
             {
                 LOG_INFO("Socket.Bind [", fd, "]: Binding to local port '", port, "' is success.");
@@ -84,7 +93,7 @@ namespace analyzer::framework::net
             service6.sin6_addr = IN6ADDR_ANY_INIT;
             service6.sin6_port = htons(port);
 
-            const int32_t result = bind(fd, reinterpret_cast<sockaddr*>(&service6), sizeof(service6));
+            const int32_t result = bind(fd, reinterpret_cast<sockaddr*>(&service6), sizeof(struct sockaddr_in6));
             if (result == SOCKET_SUCCESS)
             {
                 LOG_INFO("Socket.Bind [", fd, "]: Binding to local port '", port, "' is success.");
@@ -94,10 +103,27 @@ namespace analyzer::framework::net
         }
         else { LOG_ERROR("Socket.Bind [", fd, "]: Unsupported socket family type - '", socketFamily, "'."); }
 
-        CloseAfterError();
         return false;
     }
 
+
+    // Associates a local address with prepared sockaddr.
+    bool Socket::Bind (const struct sockaddr* const addr, const uint32_t size)
+    {
+        if (fd == INVALID_SOCKET) {
+            LOG_ERROR("Socket.Bind: Socket is invalid.");
+            return false;
+        }
+
+        if (bind(fd, addr, size) == SOCKET_SUCCESS)
+        {
+            LOG_INFO("Socket.Bind [", fd, "]: Binding to local port is success.");
+            return true;
+        }
+
+        LOG_ERROR("Socket.Bind [", fd, "]: Binding to local port failed - ", GET_ERROR(errno));
+        return false;
+    }
 
     // Connecting to external host.
     bool Socket::Connect (const char* host, const uint16_t port)
@@ -109,11 +135,10 @@ namespace analyzer::framework::net
 
         exHost = host;
         struct addrinfo hints = { };
-        struct addrinfo *server = nullptr;
+        struct addrinfo* server = nullptr;
         hints.ai_family = socketFamily;
         hints.ai_socktype = socketType;
 
-        LOG_TRACE("Socket.Connect [", fd, "]: Connecting to '", host, "'...");
         const int32_t status = getaddrinfo(host, std::to_string(port).c_str(), &hints, &server);
         if (status != SOCKET_SUCCESS) {
             LOG_ERROR("Socket.Connect [", fd, "]: In function 'getaddrinfo' - ", gai_strerror(status));
@@ -121,19 +146,20 @@ namespace analyzer::framework::net
             return false;
         }
 
+        LOG_TRACE("Socket.Connect [", fd, "]: Connecting to '", host, "'...");
         for (auto&& curr = server; curr != nullptr; curr = curr->ai_next)
         {
             const int32_t result = connect(fd, curr->ai_addr, curr->ai_addrlen);
             if (result != SOCKET_ERROR || errno == EINPROGRESS)
             {
-                LOG_INFO("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port,"' is success.");
+                LOG_INFO("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port, "' is success.");
                 freeaddrinfo(server);
                 return true;
             }
             LOG_ERROR("Socket.Connect [", fd, "]: In function 'connect' - ", GET_ERROR(errno));
         }
 
-        LOG_ERROR("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port,"' failed.");
+        LOG_ERROR("Socket.Connect [", fd, "]: Connecting to '", exHost, "' on port '", port, "' failed.");
         freeaddrinfo(server);
         CloseAfterError();
         return false;
@@ -141,53 +167,51 @@ namespace analyzer::framework::net
 
 
     // Sending the message to external host.
-    int32_t Socket::Send (const char* data, std::size_t length)
+    bool Socket::Send (const char* const data, const std::size_t length) noexcept
     {
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Send: Socket is invalid.");
-            return -1;
+            return false;
         }
-        LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "'...");
+        LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "' by TCP socket...");
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorBeforeSend;
-        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND_TCP);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Send [", fd, "]: Calling the SocketCallbackFunctorBeforeSend functor...");
-            callback->operator()(const_cast<char*>(data), &length);
+            callback->operator()(const_cast<char*>(data), const_cast<std::size_t*>(&length));
         }
         
         std::size_t idx = 0;
-        while (length > 0)
+        while (idx != length)
         {
-            const intmax_t result = send(fd, &data[idx], length, 0);
+            const ssize_t result = send(fd, &data[idx], length - idx, 0);
             if (result == SOCKET_ERROR)
             {
                 // The socket is marked non-blocking and the requested operation would block.
-                if (errno == EWOULDBLOCK) {
-                    if (IsReadyForSend(3000) == false) { CloseAfterError(); return -1; }
+                if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                    if (IsReadyForSend(1500) == false) { CloseAfterError(); return false; }
                     continue;
                 }
                 // A signal occurred before any data was transmitted.
-                if (errno == EINTR) {
-                    continue;
-                }
-                LOG_ERROR("Socket.Send [", fd, "]: In function 'send' - ", GET_ERROR(errno));
-                CloseAfterError(); return -1;
-            }
+                if (errno == EINTR) { continue; }
 
+                LOG_ERROR("Socket.Send [", fd, "]: In function 'send' - ", GET_ERROR(errno));
+                CloseAfterError();
+                return false;
+            }
             idx += static_cast<std::size_t>(result);
-            length -= static_cast<std::size_t>(result);
         }
 
-        LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
-        return static_cast<int32_t>(idx);
+        LOG_TRACE("Socket.Send [", fd, "]: Sending data to '", exHost, "' is success: ", idx, " bytes.");
+        return (idx == length);
     }
 
 
     // Receiving the message from external host.
-    int32_t Socket::Recv (char* data, std::size_t length, bool noWait)
+    int32_t Socket::Recv (char* data, const std::size_t length, const bool noWait)
     {
         using std::chrono::system_clock;
 
@@ -199,96 +223,112 @@ namespace analyzer::framework::net
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
 
         std::size_t idx = 0;
-        while (length > 0 && system_clock::now() < limit)
+        while (idx != length && system_clock::now() < limit)
         {
-            const intmax_t result = recv(fd, &data[idx], length, 0);
+            const ssize_t result = recv(fd, &data[idx], length - idx, 0);
             if (result == SOCKET_ERROR)
             {
                 // The socket is marked non-blocking and the requested operation would block.
-                if (errno == EWOULDBLOCK) {
-                    if (IsReadyForRecv(3000) == false) {
+                if (errno == EWOULDBLOCK || errno == EAGAIN)
+                {
+                    if (IsReadyForRecv(1500) == false) {
                         if (idx == 0) { CloseAfterError(); return -1; }
                         break; // In this case no any error because we have any data.
                     }
                     continue;
                 }
                 // A signal occurred before any data was transmitted.
-                if (errno == EINTR) {
-                    continue;
-                }
+                if (errno == EINTR) { continue; }
+
                 LOG_ERROR("Socket.Recv [", fd, "]: In function 'recv' - ", GET_ERROR(errno));
-                CloseAfterError(); return -1;
+                CloseAfterError();
+                return -1;
             }
             if (result == 0) { break; }
 
             idx += static_cast<std::size_t>(result);
-            length -= static_cast<std::size_t>(result);
             if (noWait == true) { break; }
         }
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorAfterReceive;
-        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE_TCP);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
             callback->operator()(data, idx);
         }
 
-        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success: ", idx, " bytes.");
         return static_cast<int32_t>(idx);
     }
 
     // Receiving the message from external host over TCP until the functor returns false value.
-    bool Socket::Recv (char* data, std::size_t length, int32_t& obtainLength, CompleteFunctor functor, std::size_t chunkLength)
+    bool Socket::Recv (char* data, const std::size_t length, std::size_t& obtainLength, CompleteFunctor functor, std::size_t chunkLength)
     {
-        obtainLength = -1;
+        using std::chrono::system_clock;
+
         if (fd == INVALID_SOCKET) {
             LOG_ERROR("Socket.Recv: Socket is invalid.");
             return false;
         }
 
-        // Check mistakes.
-        if (chunkLength == 0) { chunkLength = DEFAULT_RECEIVE_CHUNK; }
-        if (chunkLength > length) {
+        // Check chunk condition.
+        bool withoutChunk = false;
+        if (chunkLength == DEFAULT_NO_CHUNK || chunkLength > length)
+        {
+            withoutChunk = true;
             chunkLength = length;
         }
 
+        const system_clock::time_point limit = system_clock::now() + GetTimeout();
         bool successFunctor = false;
         std::size_t idx = 0;
         do
         {
-            const int32_t result = Recv(&data[idx], chunkLength);
-            if (result == -1) {
-                if (idx == 0) { return false; }
-                break;  // In this case no any error because we have any data.
+            const ssize_t result = recv(fd, &data[idx], chunkLength, 0);
+            if (result == SOCKET_ERROR)
+            {
+                // The socket is marked non-blocking and the requested operation would block.
+                if (errno == EWOULDBLOCK || errno == EAGAIN)
+                {
+                    if (IsReadyForRecv(1500) == false) {
+                        if (idx == 0) { CloseAfterError(); return false; }
+                        break;  // In this case no any error because we have any data.
+                    }
+                    continue;
+                }
+                // A signal occurred before any data was transmitted.
+                if (errno == EINTR) { continue; }
+
+                LOG_ERROR("Socket.Recv [", fd, "]: In function 'recv' - ", GET_ERROR(errno));
+                CloseAfterError();
+                return false;
             }
             if (result == 0) { break; }
 
             idx += static_cast<std::size_t>(result);
-            length -= static_cast<std::size_t>(result);
-            if (chunkLength > length) {
-                chunkLength = length;
-            }
-            successFunctor = functor(data, static_cast<std::size_t>(idx));
-        } while (length > 0 && successFunctor == false);
+            if (withoutChunk == true) { chunkLength = length - idx; }
+            else if (chunkLength > length - idx) { chunkLength = length - idx; }
+
+        } while (idx != length && system_clock::now() < limit && (successFunctor = functor(data, idx)) == false);
 
         // Check callback functor.
         using func = callbacks::SocketCallbackFunctorAfterReceive;
-        auto callback = storage::GI.GetCallback<func>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<func>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE_TCP);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.Recv [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
             callback->operator()(data, idx);
         }
 
-        obtainLength = static_cast<int32_t>(idx);
-        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        obtainLength = idx;
+        LOG_TRACE("Socket.Recv [", fd, "]: Receiving data from '", exHost, "' is success: ", idx, " bytes.");
         return successFunctor;
     }
 
     // Receiving the message from external host until reach the end.
-    int32_t Socket::RecvToEnd (char* data, std::size_t length)
+    int32_t Socket::RecvToEnd (char* data, const std::size_t length) noexcept
     {
         using std::chrono::system_clock;
 
@@ -300,35 +340,110 @@ namespace analyzer::framework::net
         const system_clock::time_point limit = system_clock::now() + GetTimeout();
 
         std::size_t idx = 0;
-        while (length > 0 && IsReadyForRecv(3000) == true && system_clock::now() < limit)
+        while (idx != length && IsReadyForRecv(1500) == true && system_clock::now() < limit)
         {
-            const intmax_t result = recv(fd, &data[idx], length, 0);
+            const ssize_t result = recv(fd, &data[idx], length - idx, 0);
             if (result == SOCKET_ERROR)
             {
                 // A signal occurred before any data was transmitted.
-                if (errno == EINTR) {
-                    continue;
-                }
+                if (errno == EINTR) { continue; }
+
                 LOG_ERROR("Socket.RecvToEnd [", fd, "]: In function 'recv' - ", GET_ERROR(errno));
-                CloseAfterError(); return -1;
+                CloseAfterError();
+                return -1;
             }
             if (result == 0) { break; }
 
             idx += static_cast<std::size_t>(result);
-            length -= static_cast<std::size_t>(result);
         }
 
         // Check callback functor.
         using functor = callbacks::SocketCallbackFunctorAfterReceive;
-        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE_TCP);
         if (callback != nullptr)
         {
             LOG_TRACE("Socket.RecvToEnd [", fd, "]: Calling the SocketCallbackFunctorAfterReceive functor...");
             callback->operator()(data, idx);
         }
 
-        LOG_TRACE("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "' is success:  ", idx, " bytes.");
+        LOG_TRACE("Socket.RecvToEnd [", fd, "]: Receiving data from '", exHost, "' is success: ", idx, " bytes.");
         return static_cast<int32_t>(idx);
+    }
+
+    // Method that sends message to external host over UDP protocol.
+    bool Socket::SendTo (const char* host, const uint16_t port, const char* const data, const std::size_t length) noexcept
+    {
+        if (fd == INVALID_SOCKET) {
+            LOG_ERROR("Socket.SendTo: Socket is invalid.");
+            return false;
+        }
+
+        exHost = host;
+        struct addrinfo hints = { };
+        struct addrinfo* server = nullptr;
+        hints.ai_family = socketFamily;
+        hints.ai_socktype = socketType;
+
+        const int32_t status = getaddrinfo(host, std::to_string(port).c_str(), &hints, &server);
+        if (status != SOCKET_SUCCESS)
+        {
+            LOG_ERROR("Socket.SendTo [", fd, "]: In function 'getaddrinfo' - ", gai_strerror(status));
+            CloseAfterError();
+            return -1;
+        }
+
+        // Check callback functor.
+        using functor = callbacks::SocketCallbackFunctorBeforeSend;
+        auto callback = storage::GI.GetCallback<functor>(modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND_UDP);
+        if (callback != nullptr)
+        {
+            LOG_TRACE("Socket.SendTo [", fd, "]: Calling the SocketCallbackFunctorBeforeSend functor...");
+            callback->operator()(const_cast<char*>(data), const_cast<std::size_t*>(&length));
+        }
+
+        LOG_TRACE("Socket.SendTo [", fd, "]: Sending data to '", exHost, "' by UDP socket...");
+        for (auto&& curr = server; curr != nullptr; curr = curr->ai_next)
+        {
+            std::size_t idx = 0;
+            while (idx != length)
+            {
+                const ssize_t result = sendto(fd, &data[idx], length - idx, 0, curr->ai_addr, curr->ai_addrlen);
+                if (result == SOCKET_ERROR)
+                {
+                    // The socket is marked non-blocking and the requested operation would block.
+                    if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                        if (IsReadyForSend(1500) == false) { break; }
+                        continue;
+                    }
+                    // A signal occurred before any data was transmitted.
+                    if (errno == EINTR) { continue; }
+                    break;  // Error occurred.
+                }
+                idx += static_cast<std::size_t>(result);
+            }
+
+            // Check any errors.
+            if (idx == length)
+            {
+                LOG_INFO("Socket.SendTo [", fd, "]: Sending data to '", exHost, "' on port '", port, "' is success.");
+                freeaddrinfo(server);
+                return true;
+            }
+        }
+
+        LOG_ERROR("Socket.SendTo [", fd, "]: In function 'send' - ", GET_ERROR(errno));
+        CloseAfterError();
+        return false;
+    }
+
+    // Method that receives message from external host over UDP protocol.
+    int32_t Socket::RecvFrom (const char* host, const uint16_t port, char* data, const std::size_t length) noexcept
+    {
+        if (fd == INVALID_SOCKET) {
+            LOG_ERROR("Socket.RecvFrom: Socket is invalid.");
+            return -1;
+        }
+        return 0;
     }
 
 

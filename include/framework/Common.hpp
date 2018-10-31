@@ -1,3 +1,8 @@
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
 #ifndef PROTOCOL_ANALYZER_COMMON_HPP
 #define PROTOCOL_ANALYZER_COMMON_HPP
 
@@ -27,25 +32,27 @@ namespace analyzer::framework::common
      * GetRandomValue() noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.
      * @tparam [in] Type - Typename of the integral value for the random generating engine. Default: uint32_t.
-     * @return The pseudo-random number of the selected type.
+     * @tparam [in] begin - Start value from which random value will be generated.
+     * @tparam [in] end - End value to which random value will be generated.
+     * @return The pseudo-random number of the selected type on range (start + 1, end - 1).
      */
     template <typename Type = uint32_t>
     std::enable_if_t<std::is_integral<Type>::value, Type>
-    GetRandomValue(void) noexcept
+    GetRandomValue (const Type begin = std::numeric_limits<Type>::min(), const Type end = std::numeric_limits<Type>::max()) noexcept
     {
         using param_t = typename std::uniform_int_distribution<Type>::param_type;
         std::mt19937 gen{ std::random_device()() };
         std::uniform_int_distribution<Type> dist;
 
-        return dist(gen, param_t(std::numeric_limits<Type>::min() + 1, std::numeric_limits<Type>::max() - 1));
+        return dist(gen, param_t(begin + 1, end - 1));
     }
 
 
     /**
      * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;
-     * @brief Function that converts time point to calendar datetime in string format.
+     * @brief Function that converts time point to calendar datetime in string ISO-8601 format.
      * @param [in] time - The time point in processes clock ticks.
-     * @return Calendar datetime in string format.
+     * @return Calendar datetime in string ISO-8601 format.
      */
     std::string clockToString (const std::chrono::system_clock::time_point & /*time*/) noexcept;
 

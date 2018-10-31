@@ -37,13 +37,13 @@ namespace analyzer::framework::parser
 
     public:
         /**
-         * @fn PortsParser::PortsParser(void);
-         * @brief Default constructor.
+         * @fn PortsParser::PortsParser();
+         * @brief Default constructor of PortsParser class.
          */
         PortsParser(void) = default;
         /**
-         * @fn PortsParser::~PortsParser(void);
-         * @brief Default destructor.
+         * @fn PortsParser::~PortsParser();
+         * @brief Default destructor of PortsParser class.
          */
         ~PortsParser(void) = default;
 
@@ -77,7 +77,7 @@ namespace analyzer::framework::parser
         void SetPorts (std::string_view /*ports*/, char /*delimiter*/ = ',') noexcept;
 
         /**
-         * @fn uint16_t PortsParser::GetNextPort(void) noexcept;
+         * @fn uint16_t PortsParser::GetNextPort() noexcept;
          * @brief Method that gets next port value in input range.
          * @return Port number or PortsParser::end value if port enumeration is complete or an error occurred.
          *

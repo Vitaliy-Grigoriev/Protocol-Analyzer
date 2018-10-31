@@ -32,6 +32,9 @@ namespace analyzer::framework::system
     std::unique_ptr<Type> allocMemoryForObject (Args&&... args) noexcept
     {
         try {
+            if (sizeof...(args) == 0) {
+                return std::make_unique<Type>();
+            }
             return std::make_unique<Type>(std::forward<Args>(args)...);
         }
         catch (const std::exception& /*err*/) {

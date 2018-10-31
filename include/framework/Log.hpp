@@ -176,16 +176,16 @@ namespace analyzer::framework::log
          * @var std::ostream & out;
          * @brief Current descriptor of the output engine.
          *
-         * @note Default logging engine: Standard output (std::cout).
+         * @note Default logging engine: Standard buffered log output (std::clog).
          */
         std::ostream & out = std::cout;
         /**
          * @var std::string logFileName;
          * @brief Current name and path of the logfile.
          *
-         * @note Default path to logfile: "../../log/program_volume1.log".
+         * @note Default path to logfile: "program_volume1.log".
          */
-        std::string logFileName = "../../log/program_volume1.log";
+        std::string logFileName = "program_volume1.log";
         /**
          * @var volatile std::size_t recordsLimit;
          * @brief Number of entries in logfile.
@@ -203,9 +203,15 @@ namespace analyzer::framework::log
          * @brief The logging level type.
          *
          * @note If message has level that less then current level, then this message will be blocked.
-         * @note Default: TRACE.
+         * @note Default: LEVEL::MAJOR.
          */
-        volatile LEVEL levelType = LEVEL::TRACE;
+        volatile LEVEL levelType = LEVEL::MAJOR;
+        /**
+         * @var bool bufferedMode;
+         * @brief Boolean value that indicates about the buffered/unbuffered mode.
+         * @note Default: buffered mode.
+         */
+        bool bufferedMode = true;
 
     protected:
         /**
@@ -260,6 +266,9 @@ namespace analyzer::framework::log
             try {
                 // Without std::endl because it calls the flush() method.
                 out << value << '\n';
+                if (bufferedMode == false) {
+                    out.flush();
+                }
             }
             catch (const std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
@@ -384,11 +393,19 @@ namespace analyzer::framework::log
         bool ChangeLogFileName (std::string /*path*/) noexcept;
 
         /**
-         * @fn bool Logger::SwitchLoggingEngine(void) noexcept;
+         * @fn bool Logger::SwitchLoggingEngine() noexcept;
          * @brief Method that switches the output engine.
          * @return True - if engine is switched successfully, otherwise - false.
          */
         bool SwitchLoggingEngine(void) noexcept;
+
+        /**
+         * @fn void Logger::SwitchBufferedMode() noexcept;
+         * @brief Method that switches the buffered mode.
+         *
+         * @note Buffered mode set by default.
+         */
+        void SwitchBufferedMode(void) noexcept { bufferedMode = !bufferedMode; }
 
         /**
          * @fn void Logger::SetLogLevel (const volatile LEVEL) noexcept;

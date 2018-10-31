@@ -65,8 +65,8 @@ int32_t main (int32_t size, char** data)
     log::Logger::Instance().SwitchLoggingEngine();
     log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
 
-    storage::GI.SetCallback(new SocketCallbackFunctorBeforeSendImpl(), modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND);
-    storage::GI.SetCallback(new SocketCallbackFunctorAfterReceiveImpl(), modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE);
+    storage::GI.SetCallback(new SocketCallbackFunctorBeforeSendImpl(), modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_BEFORE_SEND_TCP);
+    storage::GI.SetCallback(new SocketCallbackFunctorAfterReceiveImpl(), modules::MODULE_SOCKET, callbacks::MODULE_SOCKET_AFTER_RECEIVE_TCP);
 
     auto sock = system::allocMemoryForObject<net::Socket>();
     if (sock->Connect("clang.llvm.org") == false) {

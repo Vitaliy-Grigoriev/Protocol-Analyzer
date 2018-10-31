@@ -24,7 +24,7 @@ namespace analyzer::framework::net
     }
 
 
-    SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout)
+    SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout) noexcept
             : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
     {
         if (method >= NUMBER_OF_CTX) {
@@ -95,40 +95,38 @@ namespace analyzer::framework::net
     }
 
 
-    int32_t SocketSSL::Send (const char* data, std::size_t length)
+    bool SocketSSL::Send (const char* data, const std::size_t length) noexcept
     {
         if (fd == INVALID_SOCKET || ssl == nullptr || bio == nullptr) {
             LOG_ERROR("SocketSSL.Send: Socket is invalid.");
-            SSLCloseAfterError(); return -1;
+            SSLCloseAfterError(); return false;
         }
         LOG_TRACE("SocketSSL.Send [", fd,"]: Sending data to '", exHost, "'...");
 
         std::size_t idx = 0;
-        while (length > 0)
+        while (idx != length)
         {
             const int32_t result = SSL_write(ssl, &data[idx], static_cast<int32_t>(length));
             const std::size_t err = ERR_get_error();
             if (err != 0) {
                 LOG_ERROR("SocketSSL.Send [", fd,"]: In function 'SSL_write' - ", ERR_error_string(err, nullptr));
-                SSLCloseAfterError(); return -1;
+                SSLCloseAfterError(); return false;
             }
 
             if (result <= 0)
             {
                 if (BIO_should_retry(bio) != 0) {
-                    if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); return -1; }
+                    if (IsReadyForSend(3000) == false) { SSLCloseAfterError(); return false; }
                     continue;
                 }
                 LOG_ERROR("SocketSSL.Send [", fd,"]: In function 'SSL_write' - ", CheckSSLErrors());
-                SSLCloseAfterError(); return -1;
+                SSLCloseAfterError(); return false;
             }
-
-            length -= static_cast<std::size_t>(result);
             idx += static_cast<std::size_t>(result);
         }
 
         LOG_TRACE("SocketSSL.Send [", fd,"]: Sending data to '", exHost, "' is success:  ", idx, " bytes.");
-        return static_cast<int32_t>(idx);
+        return (idx == length);
     }
 
 
@@ -178,7 +176,7 @@ namespace analyzer::framework::net
     }
 
 
-    int32_t SocketSSL::RecvToEnd (char* data, std::size_t length)
+    int32_t SocketSSL::RecvToEnd (char* data, std::size_t length) noexcept
     {
         using std::chrono::system_clock;
 

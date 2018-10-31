@@ -886,7 +886,7 @@ namespace analyzer::framework::common::types
         explicit BinaryDataEngine (std::size_t /*size*/, uint8_t /*mode*/ = DATA_MODE_DEFAULT, DATA_ENDIAN_TYPE /*endian*/ = system_endian) noexcept;
 
         /**
-         * @fn explicit BinaryDataEngine::BinaryDataEngine (std::byte *, std::size_t, DATA_ENDIAN_TYPE, uint8_t, bool) noexcept;
+         * @fn BinaryDataEngine::BinaryDataEngine (std::byte *, std::size_t, DATA_ENDIAN_TYPE, uint8_t, bool) noexcept;
          * @brief Constructor that accepts a pointer to allocated (or static) binary data.
          * @param [in] memory - Pointer to allocated (or static) data.
          * @param [in] size - Number of bytes in data.
@@ -899,10 +899,11 @@ namespace analyzer::framework::common::types
          * @attention Use option 'destruct' only in case when this object was allocated by operator 'new' and has original type 'std::byte'.
          * @attention Need to check existence of data after use this constructor.
          */
-        explicit BinaryDataEngine (std::byte * /*memory*/, std::size_t /*size*/,
-                                   DATA_ENDIAN_TYPE /*endian*/ = system_endian,
-                                   uint8_t /*mode*/ = DATA_MODE_DEFAULT,
-                                   bool /*destruct*/ = false) noexcept;
+        BinaryDataEngine (std::byte *      /*memory*/,
+                          std::size_t      /*size*/,
+                          DATA_ENDIAN_TYPE /*endian*/   = system_endian,
+                          uint8_t          /*mode*/     = DATA_MODE_DEFAULT,
+                          bool             /*destruct*/ = false) noexcept;
 
         /**
          * @fn BinaryDataEngine & BinaryDataEngine::operator= (const BinaryDataEngine &) noexcept;
