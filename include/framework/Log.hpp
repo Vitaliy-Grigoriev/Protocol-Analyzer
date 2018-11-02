@@ -3,6 +3,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_LOG_HPP
 #define PROTOCOL_ANALYZER_LOG_HPP
 
@@ -140,6 +141,7 @@ namespace analyzer::framework::log
     };
 
 
+
     /**
      * @class Logger Log.hpp "include/framework/Log.hpp"
      * @brief This singleton class defined the interface for program logging.
@@ -209,6 +211,7 @@ namespace analyzer::framework::log
         /**
          * @var bool bufferedMode;
          * @brief Boolean value that indicates about the buffered/unbuffered mode.
+         *
          * @note Default: buffered mode.
          */
         bool bufferedMode = true;
@@ -225,6 +228,15 @@ namespace analyzer::framework::log
          * @brief Protection destructor.
          */
         ~Logger(void) noexcept;
+
+        /**
+         * @fn static std::string Logger::GetTimePrefix() noexcept;
+         * @brief Method that returns the logger time prefix in string format.
+         * @return Logger time prefix in string format.
+         *
+         * @note Example: [0000-11-22  00:11:22.333]  ---  message.
+         */
+        static std::string GetTimePrefix(void) noexcept;
 
         /**
          * @fn bool Logger::CheckVolume (std::string &, bool) const noexcept;
@@ -272,7 +284,7 @@ namespace analyzer::framework::log
             }
             catch (const std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
-                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                out << GetTimePrefix();
                 out << "[error] Logger.CommonLogger: Exception occurred when push new log data - " << err.what() << '.' << std::endl;
             }
         }
@@ -293,8 +305,8 @@ namespace analyzer::framework::log
             }
             catch (const std::ios_base::failure& err) {
                 out.rdbuf(defaultIO);
-                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                out << "[error] Logger.CommonLogger Exception occurred when push new log data - " << err.what() << '.' << std::endl;
+                out << GetTimePrefix();
+                out << "[error] Logger.CommonLogger: Exception occurred when push new log data - " << err.what() << '.' << std::endl;
             }
         }
 
@@ -327,13 +339,12 @@ namespace analyzer::framework::log
 
             try { std::lock_guard<std::mutex> lock { logMutex }; }
             catch (const std::system_error& err) {
-                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                CommonLogger("[error] Logger.Push: In function 'lock_guard' - ", err.what(), '.');
+                CommonLogger(GetTimePrefix(), "[error] Logger.Push: In function 'lock_guard' - ", err.what(), '.');
                 return;
             }
 
             try {
-                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
+                out << GetTimePrefix();
                 switch (level)
                 {
                     case LEVEL::TRACE:
@@ -365,8 +376,7 @@ namespace analyzer::framework::log
             {
                 out.rdbuf(defaultIO);
                 if (fd.is_open() == true && fd.good() == true) { fd.close(); }
-                out << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                CommonLogger("[error] Logger.Push: Exception occurred when push new log data - ", err.what(), '.');
+                CommonLogger(GetTimePrefix(), "[error] Logger.Push: Exception occurred when push new log data - ", err.what(), '.');
             }
         }
 
@@ -400,12 +410,12 @@ namespace analyzer::framework::log
         bool SwitchLoggingEngine(void) noexcept;
 
         /**
-         * @fn void Logger::SwitchBufferedMode() noexcept;
+         * @fn inline void Logger::SwitchBufferedMode() noexcept;
          * @brief Method that switches the buffered mode.
          *
          * @note Buffered mode set by default.
          */
-        void SwitchBufferedMode(void) noexcept { bufferedMode = !bufferedMode; }
+        inline void SwitchBufferedMode(void) noexcept { bufferedMode = !bufferedMode; }
 
         /**
          * @fn void Logger::SetLogLevel (const volatile LEVEL) noexcept;

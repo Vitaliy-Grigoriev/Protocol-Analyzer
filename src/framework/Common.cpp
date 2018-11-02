@@ -6,6 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #include <ctime>  // strftime.
 #include <fstream>  // std::ifstream.
 #include <stdexcept>  // std::exception, std::out_of_range.
@@ -24,7 +25,7 @@ namespace analyzer::framework::common
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()).count() % 1000;
         struct tm* info = std::localtime(&currTime);
 
-        if (std::strftime(buff, sizeof buff, "%F  %T.", info) > 0) {
+        if (std::strftime(buff, sizeof(buff), "%F  %T.", info) > 0) {
             return std::string(buff) + std::to_string(ms);
         }
         return std::string();
@@ -33,19 +34,19 @@ namespace analyzer::framework::common
 
     namespace text
     {
-        std::string & trimLeft (std::string& str) noexcept
+        std::string& trimLeft (std::string& str) noexcept
         {
-            str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int32_t, int32_t>(std::isspace))));
+            str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](char symbol) { return !std::isspace(symbol); }));
             return str;
         }
 
-        std::string & trimRight (std::string& str) noexcept
+        std::string& trimRight (std::string& str) noexcept
         {
-            str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int32_t, int32_t>(std::isspace))).base(), str.end());
+            str.erase(std::find_if(str.rbegin(), str.rend(), [](char symbol) { return !std::isspace(symbol); }).base(), str.end());
             return str;
         }
 
-        std::string & trim (std::string& str) noexcept
+        std::string& trim (std::string& str) noexcept
         {
             return trimLeft(trimRight(str));
         }

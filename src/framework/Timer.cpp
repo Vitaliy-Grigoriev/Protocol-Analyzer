@@ -6,12 +6,13 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #include "../../include/framework/Timer.hpp"
 
 
 namespace analyzer::framework::diagnostic
 {
-    Timer::Timer (bool start) noexcept
+    Timer::Timer (const bool start) noexcept
     {
         if (start == true) { Start(); }
     }
@@ -32,7 +33,7 @@ namespace analyzer::framework::diagnostic
         return *this;
     }
 
-    void Timer::Reset (bool start) noexcept
+    void Timer::Reset (const bool start) noexcept
     {
         count.totalTime = { };
         count.lastStartTime = { };

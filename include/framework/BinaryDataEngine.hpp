@@ -3,6 +3,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
 #define PROTOCOL_ANALYZER_BINARY_DATA_ENGINE_HPP
 

@@ -3,11 +3,11 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_COMMON_HPP
 #define PROTOCOL_ANALYZER_COMMON_HPP
 
-#include <limits>  // std::numeric_limits.
-#include <random>  // std::uniform_int_distribution.
+#include <random>  // std::int*_t, std::numeric_limits, std::uniform_int_distribution.
 #include <chrono>  // std::system_clock.
 #include <string>  // std::string.
 #include <vector>  // std::vector.
@@ -16,7 +16,6 @@
 #include <utility>  // std::get, std::move.
 #include <sstream>  // std::istringstream, std::getline.
 #include <cstddef>  // std::size_t, std::byte.
-#include <cstdint>  // std::int*_t.
 #include <iterator>  // std::back_insert_iterator, std::istreambuf_iterator, std::iterator_traits.
 #include <string_view>  // std::string_view.
 #include <type_traits>  // std::is_convertible, std::enable_if, std::is_integral, std::is_unsigned, std::is_same, std::is_trivial, std::is_standard_layout.

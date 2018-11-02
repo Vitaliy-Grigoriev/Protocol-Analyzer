@@ -3,6 +3,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_GLOBAL_INFO_HPP
 #define PROTOCOL_ANALYZER_GLOBAL_INFO_HPP
 
@@ -35,7 +36,6 @@ namespace analyzer::framework::storage
          * @brief Variable that consist of various global callbacks.
          */
         std::array<std::unique_ptr<std::unique_ptr<BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
-
 
         /**
          * @fn static uint16_t GlobalInfo::GetModuleCallbacksSize (uint16_t) noexcept;
@@ -111,11 +111,19 @@ namespace analyzer::framework::storage
     };
 
 
+    /*********************************************** Global Variables ***********************************************/
+
     /**
      * @var inline static GlobalInfo & GI;
      * @brief Global variable that consist of the instance of the GlobalInfo singleton class.
      */
     inline static GlobalInfo& GI = GlobalInfo::Instance();
+
+    /**
+     * @var inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime;
+     * @brief Global variable that consist of the start time of Protocol Analyzer Framework.
+     */
+    inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime = std::chrono::system_clock::now();
 
 }  // namespace storage.
 

@@ -6,9 +6,11 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include <unordered_map>
+
+#include <unordered_map>  // std::unordered_map.
 
 #include "../../include/framework/Log.hpp"
+#include "../../include/framework/GlobalInfo.hpp"  // storage::ApplicationStartTime.
 
 
 namespace analyzer::framework::log
@@ -57,8 +59,7 @@ namespace analyzer::framework::log
         {
             fd.open(logFileName.c_str(), std::ios_base::out);
             if (fd.fail() == true) {
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[fatal] Logger.Logger: Could not open default logfile - '", logFileName, "'.");
+                CommonLogger(GetTimePrefix(), "[fatal] Logger.Logger: Could not open default logfile - '", logFileName, "'.");
                 std::terminate();
             }
 
@@ -68,8 +69,7 @@ namespace analyzer::framework::log
             out.rdbuf(fd.rdbuf());
         }
         catch (const std::ios_base::failure& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[fatal] Logger.Logger: Exception occurred when open default logfile - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[fatal] Logger.Logger: Exception occurred when open default logfile - ", err.what(), '.');
             std::terminate();
         }
     }
@@ -83,12 +83,18 @@ namespace analyzer::framework::log
             }
         }
         catch (const std::ios_base::failure& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[fatal] Logger.Logger: Exception occurred when close logging engine - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[fatal] Logger.Logger: Exception occurred when close logging engine - ", err.what(), '.');
             std::terminate();
         }
     }
 
+    // Method that returns the logger time prefix in string format.
+    std::string Logger::GetTimePrefix(void) noexcept
+    {
+        return '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
+    }
+
+    // Check and add volume to the logfile name.
     bool Logger::CheckVolume (std::string& name, const bool onlyCheck) const noexcept
     {
         try
@@ -113,8 +119,7 @@ namespace analyzer::framework::log
             }
         }
         catch (const std::exception& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.CheckVolume: Incorrect logfile name '", name, "' - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.CheckVolume: Incorrect logfile name '", name, "' - ", err.what(), '.');
             return false;
         }
         return true;
@@ -140,15 +145,15 @@ namespace analyzer::framework::log
                     name.replace(volumeSign, endPlace, std::to_string(++volumeNumber));
                 }
             }
-            else {
+            else
+            {
                 if (CheckVolume(name) == false) {
                     return false;
                 }
             }
         }
         catch (const std::exception& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.GetNameWithNextVolume: Incorrect logfile name '", name, "' - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.GetNameWithNextVolume: Incorrect logfile name '", name, "' - ", err.what(), '.');
             return false;
         }
         return true;
@@ -164,8 +169,7 @@ namespace analyzer::framework::log
             if (GetNameWithNextVolume(logFileName) == false)
             {
                 logFileName = lastFileName;
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
+                CommonLogger(GetTimePrefix(), "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
                 return false;
             }
 
@@ -179,8 +183,7 @@ namespace analyzer::framework::log
             if (fileEntries == common::file::ErrorState)
             {
                 logFileName = lastFileName;
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
+                CommonLogger(GetTimePrefix(), "[warning] Logger.ChangeVolume: Volume of logfile is not changed - '", logFileName, "'.");
                 return false;
             }
         } while (fileEntries >= recordsLimit);
@@ -193,13 +196,11 @@ namespace analyzer::framework::log
                 std::ofstream out_temp(logFileName.c_str(), std::ios_base::app);
                 if (out_temp.fail() == true)
                 {
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[error] Logger.ChangeVolume: Could not open logfile - '", logFileName, "'.");
+                    CommonLogger(GetTimePrefix(), "[error] Logger.ChangeVolume: Could not open logfile - '", logFileName, "'.");
                     logFileName = lastFileName;
                     return false;
                 }
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[info] Logger.ChangeVolume: Volume of logfile is changed to '", logFileName, "'.");
+                CommonLogger(GetTimePrefix(), "[info] Logger.ChangeVolume: Volume of logfile is changed to '", logFileName, "'.");
 
                 out.flush();
                 fd.close();
@@ -212,8 +213,7 @@ namespace analyzer::framework::log
                 std::ofstream out_temp(lastFileName.c_str(), std::ios_base::app);
                 if (out_temp.fail() == false)
                 {
-                    out_temp << '[' << common::clockToString(std::chrono::system_clock::now()) << "]  ---  ";
-                    out_temp << "[info] Logger.ChangeVolume: Volume of logfile is changed to '" << logFileName << "'.";
+                    out_temp << GetTimePrefix() << "[info] Logger.ChangeVolume: Volume of logfile is changed to '" << logFileName << "'.";
                     out_temp.close();
                 }
             }
@@ -222,8 +222,7 @@ namespace analyzer::framework::log
         catch (const std::ios_base::failure& err)
         {
             logFileName = lastFileName;
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.ChangeVolume: Exception occurred when change logfile volume - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.ChangeVolume: Exception occurred when change logfile volume - ", err.what(), '.');
             return false;
         }
         return true;
@@ -241,8 +240,7 @@ namespace analyzer::framework::log
     {
         try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.SetLogFileRecordsLimit: In function 'lock_guard' - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.SetLogFileRecordsLimit: In function 'lock_guard' - ", err.what(), '.');
             return false;
         }
 
@@ -259,8 +257,7 @@ namespace analyzer::framework::log
     {
         try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.ChangeLogFileName: In function 'lock_guard' - ", err.what(), '.');
             return false;
         }
 
@@ -272,8 +269,7 @@ namespace analyzer::framework::log
                 fd.open(logFileName.c_str(), std::ios_base::app);
                 if (fd.fail() == true)
                 {
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[error] Logger.ChangeLogFileName: Could not open last logfile - '", logFileName, "'.");
+                    CommonLogger(GetTimePrefix(), "[error] Logger.ChangeLogFileName: Could not open last logfile - '", logFileName, "'.");
                     return false;
                 }
                 out.flush();
@@ -283,8 +279,7 @@ namespace analyzer::framework::log
             // Check the volume in logfile name and if this volume not found, then add it.
             if (CheckVolume(path) == false)
             {
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[warning] Logger.ChangeLogFileName: Name of logfile is not changed - '", path, "'.");
+                CommonLogger(GetTimePrefix(), "[warning] Logger.ChangeLogFileName: Name of logfile is not changed - '", path, "'.");
                 return false;
             }
 
@@ -304,8 +299,7 @@ namespace analyzer::framework::log
                 // If error is occurred, then do not do anything.
                 else if (fileEntries == common::file::ErrorState)
                 {
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[warning] Logger.ChangeLogFileName: Name of logfile is not changed - '", path, "'.");
+                    CommonLogger(GetTimePrefix(), "[warning] Logger.ChangeLogFileName: Name of logfile is not changed - '", path, "'.");
                     return false;
                 }
                 // If logfile has a place for recording, then change engine.
@@ -314,12 +308,10 @@ namespace analyzer::framework::log
                     std::ofstream out_temp(path.c_str(), std::ios_base::app);
                     if (out_temp.fail() == true)
                     {
-                        const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                        CommonLogger(time, "[error] Logger.ChangeLogFileName: Could not open logfile - '", path, "'.");
+                        CommonLogger(GetTimePrefix(), "[error] Logger.ChangeLogFileName: Could not open logfile - '", path, "'.");
                         return false;
                     }
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[info] Logger.ChangeLogFileName: Name of logfile is changed to '", path, "'.");
+                    CommonLogger(GetTimePrefix(), "[info] Logger.ChangeLogFileName: Name of logfile is changed to '", path, "'.");
 
                     out.flush();
                     fd.close();
@@ -335,12 +327,10 @@ namespace analyzer::framework::log
                 std::ofstream out_temp(path.c_str(), std::ios_base::app);
                 if (out_temp.fail() == true)
                 {
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[error] Logger.ChangeLogFileName: Could not open logfile - '", path, "'.");
+                    CommonLogger(GetTimePrefix(), "[error] Logger.ChangeLogFileName: Could not open logfile - '", path, "'.");
                     return false;
                 }
-                const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                CommonLogger(time, "[info] Logger.ChangeLogFileName: Name of logfile is changed to '", path, "'.");
+                CommonLogger(GetTimePrefix(), "[info] Logger.ChangeLogFileName: Name of logfile is changed to '", path, "'.");
 
                 out.flush();
                 fd.close();
@@ -352,8 +342,7 @@ namespace analyzer::framework::log
         }
         catch (const std::ios_base::failure& err)
         {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.ChangeLogFileName: Exception occurred when change logfile name - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.ChangeLogFileName: Exception occurred when change logfile name - ", err.what(), '.');
             return false;
         }
         return true;
@@ -363,8 +352,7 @@ namespace analyzer::framework::log
     {
         try { std::lock_guard<std::mutex> lock { logMutex }; }
         catch (const std::system_error& err) {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.SwitchLoggingEngine: In function 'lock_guard' - ", err.what(), '.');
             return false;
         }
 
@@ -384,8 +372,7 @@ namespace analyzer::framework::log
                 if (fd.fail() == true)
                 {
                     out.rdbuf(std::clog.rdbuf());
-                    const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-                    CommonLogger(time, "[error] Logger.SwitchLoggingEngine: Could not open logfile - '", logFileName, "'.");
+                    CommonLogger(GetTimePrefix(), "[error] Logger.SwitchLoggingEngine: Could not open logfile - '", logFileName, "'.");
                     return false;
                 }
                 out.rdbuf(fd.rdbuf());
@@ -393,8 +380,7 @@ namespace analyzer::framework::log
         }
         catch (const std::ios_base::failure& err)
         {
-            const std::string time = '[' + common::clockToString(std::chrono::system_clock::now()) + "]  ---  ";
-            CommonLogger(time, "[error] Logger.SwitchLoggingEngine: When change log engine - ", err.what(), '.');
+            CommonLogger(GetTimePrefix(), "[error] Logger.SwitchLoggingEngine: When change log engine - ", err.what(), '.');
             return false;
         }
         return true;
