@@ -8,7 +8,7 @@
 
 #define PROTOCOL_ANALYZER_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_VERSION_MINOR 0
-#define PROTOCOL_ANALYZER_VERSION_PATCH 10
+#define PROTOCOL_ANALYZER_VERSION_PATCH 11
 
 
 #include "Log.hpp"  // In this header file also defined "Common.hpp".
@@ -17,7 +17,7 @@
 #include "LockedDeque.hpp"
 #include "BinaryStructuredDataEngine.hpp"  // In this header file also defined "BinaryDataEngine.hpp".
 #include "Parser.hpp"
-#include "Socket.hpp"
+#include "NetlinkInterface.hpp"  // In this header file also defined "Socket.hpp".
 #include "Utilities.hpp"
 #include "Notification.hpp"
 

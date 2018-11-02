@@ -3,7 +3,6 @@ project(ProtocolAnalyzer   CXX)
 
 # Select output binary paths.
 set(EXECUTABLE_OUTPUT_PATH   ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH      ${PROJECT_SOURCE_DIR}/lib)
 # Select input system paths.
 set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include)
 set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib)
@@ -39,7 +38,6 @@ else()  # If the custom build type is not defined.
     set(CMAKE_BUILD_TYPE   "Release")
 endif()
 
-
 set(DISABLE_WARNINGS_RELEASE   "-Wno-variadic-macros")
 set(DISABLE_WARNINGS_DEBUG   "-Wno-unused-result -Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-variable -Wno-padded -Wno-documentation")
 set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-c++98-compat -Wno-missing-prototypes -Wno-variadic-macros -Wno-exit-time-destructors -Wno-zero-as-null-pointer-constant")
@@ -52,10 +50,11 @@ set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefine
 set(CMAKE_CXX_FLAGS_RELEASE   "-std=c++17 -O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS_RELEASE}")
 string(FIND  ${CMAKE_CXX_COMPILER}  "clang"  POSITION)
 if (${POSITION}  GREATER  "-1")  # Build flags for Clang compiler only.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Weverything -Wthread-safety  ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG -fstandalone-debug   -Weverything -Wthread-safety  ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS_DEBUG}")
 else()  # Other compilers.
     set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS}")
 endif()
+
 
 # Output compile flags.
 message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
@@ -84,6 +83,7 @@ target_link_libraries(AnalyzerFramework   pthread ssl crypto)
 # Build test suites for Analyzer Framework library.
 set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
 set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(NETLINK_TEST              ${TESTS}/test_netlink.cpp              ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
 set(COMMON_TEST               ${TESTS}/test_common.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
 set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp   ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
 set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
@@ -96,6 +96,7 @@ set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${FRAMEWORK
 
 add_executable(test_ssl                  ${SSL_TEST})
 add_executable(test_socket               ${SOCKET_TEST})
+add_executable(test_netlink              ${NETLINK_TEST})
 add_executable(test_common               ${COMMON_TEST})
 add_executable(test_timing               ${TIMING_TEST})
 add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
@@ -109,6 +110,7 @@ add_executable(test_http2_negotiation    ${HTTP2_NEGOTIATION_TEST})
 set_target_properties(
         test_ssl
         test_socket
+        test_netlink
         test_common
         test_timing
         test_binary_data_engine
@@ -124,6 +126,7 @@ set_target_properties(
 
 target_link_libraries(test_ssl                 AnalyzerFramework)
 target_link_libraries(test_socket              AnalyzerFramework)
+target_link_libraries(test_netlink             AnalyzerFramework)
 target_link_libraries(test_common              AnalyzerFramework)
 target_link_libraries(test_binary_data_engine  AnalyzerFramework)
 target_link_libraries(test_timing              AnalyzerFramework)

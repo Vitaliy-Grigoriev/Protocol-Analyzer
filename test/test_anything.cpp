@@ -1,9 +1,13 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <chrono>
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
+
 #include <iostream>
-#include <algorithm>
 
 #include "../include/framework/AnalyzerApi.hpp"
 
@@ -12,24 +16,25 @@ using namespace analyzer::framework;
 
 int32_t main (int32_t size, char** data)
 {
-    /*uint8_t array[] = { 1, 2, 3, 4, 5 ,6, 7, 8, 9 };
-    auto head = reinterpret_cast<std::byte*>(array);
+    log::Logger::Instance().SwitchLoggingEngine();
+    log::Logger::Instance().SetLogLevel(log::LEVEL::INFORMATION);
 
-    common::types::BinaryDataEngine buffer = { };
-    buffer.AssignData(array, array + sizeof(array));
-    std::cout << buffer.Size() << std::endl;
 
-    std::cout << buffer.BitsTransform() << std::endl;
-    for (std::size_t idx = 0; idx < buffer.BitsTransform().Length(); ++idx) {
-        buffer.BitsTransform().Invert(idx);
+    auto sock = system::allocMemoryForObject<net::Socket>(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+    if (sock->Bind(12345) == false) {
+        std::cout << "[error] Bind fail..." << std::endl;
+        return EXIT_FAILURE;
     }
-    std::cout << buffer.BitsTransform() << std::endl;*/
 
-    parser::PortsParser parse;
-    parse.SetPorts("80;1-5;433;27-33;90", ';');
-    for (uint16_t port = parse.GetNextPort(); port != parser::PortsParser::end; port = parse.GetNextPort()) {
-        std::cerr << "[+] Next port: " << port << std::endl;
+    const char buff[] = "111222333444\0";
+    if (sock->SendTo("10.0.72.39", 138, buff, sizeof(buff)) == false) {
+        std::cout << "[error] SendTo fail..." << std::endl;
+        return EXIT_FAILURE;
     }
+
+    sock->Close();
+
 
     std::cerr << "[+] Exit." << std::endl;
     return EXIT_SUCCESS;
