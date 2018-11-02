@@ -243,7 +243,7 @@ namespace analyzer::framework::log
          * @brief Check and add volume to the logfile name.
          * @param [in,out] name - Logfile name.
          * @param [in] onlyCheck - Flag indicating whether to add a volume. Default: false.
-         * @return True - if logfile name already has volume name or if volume is added, otherwise - false.
+         * @return TRUE - if logfile name already has volume name or if volume is added, otherwise - FALSE.
          */
         bool CheckVolume (std::string & /*name*/, bool /*onlyCheck*/ = false) const noexcept;
 
@@ -251,14 +251,14 @@ namespace analyzer::framework::log
          * @fn bool Logger::GetNameWithNextVolume (std::string &) const noexcept;
          * @brief Change volume for the logfile name.
          * @param [in,out] name - Logfile name.
-         * @return True - if logfile volume is changed successfully, otherwise - false.
+         * @return TRUE - if logfile volume is changed successfully, otherwise - FALSE.
          */
         bool GetNameWithNextVolume (std::string & /*name*/) const noexcept;
 
         /**
          * @fn bool Logger::ChangeVolume() noexcept;
          * @brief Change volume the logfile.
-         * @return True - if logfile name is changed successfully, otherwise - false.
+         * @return TRUE - if logfile name is changed successfully, otherwise - FALSE.
          *
          * @note This method is strong exception safety.
          * @note This method change engine only if work logfile-oriented engine.
@@ -384,7 +384,7 @@ namespace analyzer::framework::log
          * @fn bool Logger::SetLogFileRecordsLimit (std::size_t) noexcept;
          * @brief Method that controls number of entries in logfile.
          * @param size - Number of entries.
-         * @return True - if logfile records limit is changed successfully, otherwise - false.
+         * @return TRUE - if logfile records limit is changed successfully, otherwise - FALSE.
          *
          * @note If number of records in logfile more then limit, then logging engine switch logfile to the next volume.
          * @note If enable console-oriented engine, then only logfile name and size of current records in it will be changed.
@@ -395,7 +395,7 @@ namespace analyzer::framework::log
          * @fn bool Logger::ChangeLogFileName (std::string) noexcept;
          * @brief Method that switches the output logfile.
          * @param [in] path - Full path to new logfile.
-         * @return True - if logfile name is changed successfully, otherwise - false.
+         * @return TRUE - if logfile name is changed successfully, otherwise - FALSE.
          *
          * @note If enable console-oriented engine, then mode will be changed to logfile-oriented engine.
          * @attention It is not mistake when the path is passed by value.
@@ -405,7 +405,7 @@ namespace analyzer::framework::log
         /**
          * @fn bool Logger::SwitchLoggingEngine() noexcept;
          * @brief Method that switches the output engine.
-         * @return True - if engine is switched successfully, otherwise - false.
+         * @return TRUE - if engine is switched successfully, otherwise - FALSE.
          */
         bool SwitchLoggingEngine(void) noexcept;
 

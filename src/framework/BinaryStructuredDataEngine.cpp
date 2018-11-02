@@ -117,7 +117,7 @@ namespace analyzer::framework::common::types
         if (pattern != nullptr)
         {
             const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
-            if (bitCount != data.BitsTransform().Length()) { return std::nullopt; }
+            if (bitCount != data.BitsInformation().Length()) { return std::nullopt; }
 
             if (start != 0) {
                 offset = static_cast<std::size_t>(std::accumulate(pattern, pattern + start, 0));
@@ -125,7 +125,7 @@ namespace analyzer::framework::common::types
 
             for (uint16_t field = start; field < size; ++field)
             {
-                if (data.BitsTransform().Any(offset, offset + pattern[field] - 1) == true) {
+                if (data.BitsInformation().Any(offset, offset + pattern[field] - 1) == true) {
                     return field;
                 }
                 offset += pattern[field];
@@ -139,7 +139,7 @@ namespace analyzer::framework::common::types
 
             for (uint16_t field = start; field < fieldsCount; ++field)
             {
-                if (data.BitsTransform().Any(offset, offset + dataPattern[field] * 8 - 1) == true) {
+                if (data.BitsInformation().Any(offset, offset + dataPattern[field] * 8 - 1) == true) {
                     return field;
                 }
                 offset += dataPattern[field] * 8;
@@ -187,10 +187,10 @@ namespace analyzer::framework::common::types
 
             if (dataEndianType == DATA_BIG_ENDIAN)
             {
-                for (std::size_t idx = 0; idx < data.BitsTransform().Length(); ++idx)
+                for (std::size_t idx = 0; idx < data.BitsInformation().Length(); ++idx)
                 {
                     if (idx % 8 == 0 && blockBitCount != 0) { result << ' '; }
-                    result << data.BitsTransform().GetBitValue(idx);
+                    result << data.BitsInformation().GetBitValue(idx);
                     if (++blockBitCount == dataPattern[patternBlock] * 8) {
                         if (++patternBlock == fieldsCount) { break; }
                         result << "\nField " << patternBlock + 1 << ":   ";
@@ -214,7 +214,7 @@ namespace analyzer::framework::common::types
                         for (std::size_t idx = offset; idx < offset + 8; ++idx)
                         {
                             if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { result << ' '; }
-                            result << data.BitsTransform().GetBitValue(idx);
+                            result << data.BitsInformation().GetBitValue(idx);
                             if (++blockBitCount == dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == fieldsCount) { break; }
                                 result << "\nField " << patternBlock + 1 << ":   ";

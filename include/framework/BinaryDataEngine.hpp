@@ -136,25 +136,26 @@ namespace analyzer::framework::common::types
 
     private:
         /**
-         * @class BitStreamEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
+         * @class BitStreamInformationEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
          * @brief Class that operates on a sequence of bits and offers an interface for working with them.
          *
          * @attention This class MUST BE initialized in all constructors of owner class.
          */
-        class BitStreamEngine
+        class BitStreamInformationEngine
         {
             friend class BinaryDataEngine;
+            friend class BitStreamTransformEngine;
             friend class BinaryStructuredDataEngine;
 
         private:
             /**
-             * @var const BinaryDataEngine & storedData;
-             * @brief Const lvalue reference of the BinaryDataEngine owner class.
+             * @var const BinaryDataEngine * const storedData;
+             * @brief Const pointer to the const BinaryDataEngine owner class.
              */
-            const BinaryDataEngine & storedData;
+            const BinaryDataEngine * const storedData;
 
             /**
-             * @fn std::pair<std::size_t, std::byte> BitStreamEngine::GetBitPosition (std::size_t) const noexcept;
+             * @fn std::pair<std::size_t, std::byte> BitStreamInformationEngine::GetBitPosition (std::size_t) const noexcept;
              * @brief Method that returns the correct position of selected bit in stored binary data in any data endian.
              * @param [in] index - Index of bit in stored binary data.
              * @return Index of element in array of binary stored data and shift to this bit in selected part.
@@ -164,7 +165,7 @@ namespace analyzer::framework::common::types
             std::pair<std::size_t, std::byte> GetBitPosition (std::size_t /*index*/) const noexcept;
 
             /**
-             * @fn bool BitStreamEngine::GetBitValue (std::size_t) const noexcept;
+             * @fn bool BitStreamInformationEngine::GetBitValue (std::size_t) const noexcept;
              * @brief Method that returns bit value under the specified index.
              * @param [in] index - Index of bit in stored binary data.
              * @return Value of the selected bit.
@@ -174,70 +175,36 @@ namespace analyzer::framework::common::types
             bool GetBitValue (std::size_t /*index*/) const noexcept;
 
         public:
-            BitStreamEngine(void) = delete;
-            BitStreamEngine (BitStreamEngine &&) = delete;
-            BitStreamEngine (const BitStreamEngine &) = delete;
-            BitStreamEngine & operator= (BitStreamEngine &&) = delete;
-            BitStreamEngine & operator= (const BitStreamEngine &) = delete;
+            BitStreamInformationEngine(void) = delete;
+            BitStreamInformationEngine (BitStreamInformationEngine &&) = delete;
+            BitStreamInformationEngine (const BitStreamInformationEngine &) = delete;
+            BitStreamInformationEngine & operator= (BitStreamInformationEngine &&) = delete;
+            BitStreamInformationEngine & operator= (const BitStreamInformationEngine &) = delete;
 
             /**
-             * @fn explicit BitStreamEngine::BitStreamEngine (const BinaryDataEngine &) noexcept;
-             * @brief Constructor of nested BitStreamEngine class.
-             * @param [in] owner - Const lvalue reference of BinaryDataEngine owner class.
+             * @fn explicit BitStreamInformationEngine::BitStreamInformationEngine (const BinaryDataEngine * const) noexcept;
+             * @brief Constructor of nested BitStreamInformationEngine class.
+             * @param [in] owner - Const poiner to the const BinaryDataEngine owner class.
              */
-            explicit BitStreamEngine (const BinaryDataEngine& owner) noexcept
-                    : storedData(owner)
+            explicit BitStreamInformationEngine (const BinaryDataEngine* const owner) noexcept
+                : storedData(owner)
             { }
 
             /**
-             * @fn BitStreamEngine::~BitStreamEngine() noexcept;
-             * @brief Default destructor of nested BitStreamEngine class.
+             * @fn BitStreamInformationEngine::~BitStreamInformationEngine() noexcept;
+             * @brief Default destructor of nested BitStreamInformationEngine class.
              */
-            ~BitStreamEngine(void) noexcept = default;
+            ~BitStreamInformationEngine(void) noexcept = default;
 
             /**
-             * @fn inline std::size_t BitStreamEngine::Length() const noexcept;
+             * @fn inline std::size_t BitStreamInformationEngine::Length() const noexcept;
              * @brief Method that returns the length of stored data in bits.
              * @return Length of bit sequence of stored data.
              */
-            inline std::size_t Length(void) const noexcept { return storedData.length * 8; }
+            inline std::size_t Length(void) const noexcept { return storedData->length * 8; }
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::ShiftLeft (std::size_t, bool) const noexcept;
-             * @brief Method that performs direct left bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for direct left bit shift.
-             * @param [in] fillBit - Value of the fill bit after the left shift. Default: false (0).
-             * @return Const lvalue reference of BitStreamEngine class.
-             */
-            const BitStreamEngine & ShiftLeft (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
-
-            /**
-             * @fn const BitStreamEngine & BitStreamEngine::ShiftRight (std::size_t, bool) const noexcept;
-             * @brief Method that performs direct right bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for direct right bit shift.
-             * @param [in] fillBit - Value of the fill bit after the right shift. Default: false (0).
-             * @return Const lvalue reference of BitStreamEngine class.
-             */
-            const BitStreamEngine & ShiftRight (std::size_t /*shift*/, bool /*fillBit*/ = false) const noexcept;
-
-            /**
-             * @fn const BitStreamEngine & BitStreamEngine::RoundShiftLeft (std::size_t) const noexcept;
-             * @brief Method that performs round left bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for round left bit shift.
-             * @return Const lvalue reference of BitStreamEngine class.
-             */
-            const BitStreamEngine & RoundShiftLeft (std::size_t /*shift*/) const noexcept;
-
-            /**
-             * @fn const BitStreamEngine & BitStreamEngine::RoundShiftRight (std::size_t) const noexcept;
-             * @brief Method that performs round right bit shift by a specified bit offset.
-             * @param [in] shift - Bit offset for round right bit shift.
-             * @return Const lvalue reference of BitStreamEngine class.
-             */
-            const BitStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
-
-            /**
-             * @fn bool BitStreamEngine::Test (std::size_t) const noexcept;
+             * @fn bool BitStreamInformationEngine::Test (std::size_t) const noexcept;
              * @brief Method that checks the bit under the specified index.
              * @param [in] index - Index of bit in binary sequence.
              * @return Boolean value that indicates about the value of the selected bit.
@@ -247,40 +214,40 @@ namespace analyzer::framework::common::types
             bool Test (std::size_t /*index*/) const noexcept;
 
             /**
-             * @fn bool BitStreamEngine::All (std::size_t, std::size_t) const noexcept;
+             * @fn bool BitStreamInformationEngine::All (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when all bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which (inclusive)bits will be checked. Default: npos.
-             * @return True - if all bits in block of stored data are set, otherwise - false.
+             * @return TRUE - if all bits in block of stored data are set, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
             bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
-             * @fn bool BitStreamEngine::Any (std::size_t, std::size_t) const noexcept;
+             * @fn bool BitStreamInformationEngine::Any (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which (inclusive) bits will be checked. Default: npos.
-             * @return True - if any of the bits in block of stored data are set, otherwise - false.
+             * @return TRUE - if any of the bits in block of stored data are set, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
             bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
-             * @fn bool BitStreamEngine::None (std::size_t, std::size_t) const noexcept;
+             * @fn bool BitStreamInformationEngine::None (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which (inclusive) bits will be checked. Default: npos.
-             * @return True - if none of the bits in block of stored data are set, otherwise - false.
+             * @return TRUE - if none of the bits in block of stored data are set, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
             bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
-             * @fn std::size_t BitStreamEngine::Count (std::size_t, std::size_t) const noexcept;
+             * @fn std::size_t BitStreamInformationEngine::Count (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns the number of bits that are set in the selected interval of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
@@ -291,7 +258,7 @@ namespace analyzer::framework::common::types
             std::size_t Count (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
-             * @fn std::optional<std::size_t> BitStreamEngine::GetFirstIndex (std::size_t, std::size_t) const noexcept;
+             * @fn std::optional<std::size_t> BitStreamInformationEngine::GetFirstIndex (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns position of the first set bit in the selected interval of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
@@ -303,7 +270,7 @@ namespace analyzer::framework::common::types
             std::optional<std::size_t> GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
 
             /**
-             * @fn std::optional<std::size_t> BitStreamEngine::GetLastIndex (std::size_t, std::size_t) const noexcept;
+             * @fn std::optional<std::size_t> BitStreamInformationEngine::GetLastIndex (std::size_t, std::size_t) const noexcept;
              * @brief Method that returns position of the last set bit in the selected interval of stored data.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
@@ -315,17 +282,165 @@ namespace analyzer::framework::common::types
             std::optional<std::size_t> GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::Set (std::size_t, bool) const noexcept;
+             * @fn std::string BitStreamInformationEngine::ToString (std::size_t, std::size_t) const noexcept;
+             * @brief Method that outputs internal binary data in string format.
+             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputted. Default: 0.
+             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputted. Default: npos.
+             * @return STL string object with sequence of the bit character representation of stored binary data.
+             *
+             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.
+             */
+            std::string ToString (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+
+            /**
+             * @fn inline bool BitStreamInformationEngine::operator[] (const std::size_t) const noexcept;
+             * @brief Operator that returns the value of bit under the specified index.
+             * @param [in] index - Index of bit in binary sequence of stored data.
+             * @return Value of the selected bit in stored binary data.
+             *
+             * @warning Method always returns 'false' if the index is out-of-range.
+             */
+            inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
+
+            /**
+             * @fn explicit operator BitStreamInformationEngine::bool() const noexcept;
+             * @brief Operator that returns bit sequence characteristic when all of the bits are set.
+             * @return TRUE - if all of the bits of stored data are set, otherwise - FALSE.
+             */
+            explicit operator bool(void) const noexcept { return All(); }
+
+            /**
+             * @fn friend inline std::ostream & operator<< (std::ostream &, const BitStreamInformationEngine &) noexcept;
+             * @brief Operator that outputs internal binary data in binary string format.
+             * @param [in,out] stream - Reference of the output stream engine.
+             * @param [in] engine - Const lvalue reference of the BitStreamTransformEngine class.
+             * @return Lvalue reference of the inputted STL std::ostream class.
+             *
+             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.
+             */
+            friend inline std::ostream& operator<< (std::ostream& stream, const BitStreamInformationEngine& engine) noexcept
+            {
+                try
+                {
+                    if (engine.storedData->IsEmpty() == false)
+                    {
+                        stream.unsetf(std::ios_base::boolalpha);
+                        if ((engine.storedData->DataModeType() & DATA_MODE_DEPENDENT) != 0U)
+                        {
+                            for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
+                                stream << engine.GetBitValue(idx);
+                                if (idx % 8 == 0) { stream << ' '; }
+                            }
+                            stream << engine.GetBitValue(0);
+                        }
+                        else  // If data handling mode type is DATA_MODE_INDEPENDENT.
+                        {
+                            for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
+                                if (idx % 8 == 0 && idx != 0) { stream << ' '; }
+                                stream << engine.GetBitValue(idx);
+                            }
+                        }
+                    }
+                }
+                catch (const std::ios_base::failure& /*err*/) { }
+                return stream;
+            }
+        };
+
+        /**
+         * @class BitStreamTransformEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
+         * @brief Class that operates on a sequence of bits and offers an interface for working with them.
+         *
+         * @attention This class MUST BE initialized in all constructors of owner class.
+         */
+        class BitStreamTransformEngine
+        {
+            friend class BinaryDataEngine;
+            friend class BitStreamInformationEngine;
+            friend class BinaryStructuredDataEngine;
+
+        private:
+            /**
+             * @var BinaryDataEngine * const storedData;
+             * @brief Const pointer to the BinaryDataEngine owner class.
+             */
+            BinaryDataEngine * const storedData;
+
+        public:
+            BitStreamTransformEngine(void) = delete;
+            BitStreamTransformEngine (BitStreamTransformEngine &&) = delete;
+            BitStreamTransformEngine (const BitStreamTransformEngine &) = delete;
+            BitStreamTransformEngine & operator= (BitStreamTransformEngine &&) = delete;
+            BitStreamTransformEngine & operator= (const BitStreamTransformEngine &) = delete;
+
+            /**
+             * @fn explicit BitStreamTransformEngine::BitStreamTransformEngine (BinaryDataEngine * const) noexcept;
+             * @brief Constructor of nested BitStreamTransformEngine class.
+             * @param [in] owner - Const pointer to the BinaryDataEngine owner class.
+             */
+            explicit BitStreamTransformEngine (BinaryDataEngine * const owner) noexcept
+                : storedData(owner)
+            { }
+
+            /**
+             * @fn BitStreamTransformEngine::~BitStreamTransformEngine() noexcept;
+             * @brief Default destructor of nested BitStreamTransformEngine class.
+             */
+            ~BitStreamTransformEngine(void) noexcept = default;
+
+            /**
+             * @fn inline std::size_t BitStreamTransformEngine::Length() const noexcept;
+             * @brief Method that returns the length of stored data in bits.
+             * @return Length of bit sequence of stored data.
+             */
+            inline std::size_t Length(void) const noexcept { return storedData->length * 8; }
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::ShiftLeft (std::size_t, bool) noexcept;
+             * @brief Method that performs direct left bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct left bit shift.
+             * @param [in] fillBit - Value of the fill bit after the left shift. Default: false (0).
+             * @return Const lvalue reference of BitStreamTransformEngine class.
+             */
+            BitStreamTransformEngine & ShiftLeft (std::size_t /*shift*/, bool /*fillBit*/ = false) noexcept;
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::ShiftRight (std::size_t, bool) noexcept;
+             * @brief Method that performs direct right bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for direct right bit shift.
+             * @param [in] fillBit - Value of the fill bit after the right shift. Default: false (0).
+             * @return Const lvalue reference of BitStreamTransformEngine class.
+             */
+            BitStreamTransformEngine & ShiftRight (std::size_t /*shift*/, bool /*fillBit*/ = false) noexcept;
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::RoundShiftLeft (std::size_t) noexcept;
+             * @brief Method that performs round left bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for round left bit shift.
+             * @return Lvalue reference of BitStreamTransformEngine class.
+             */
+            BitStreamTransformEngine & RoundShiftLeft (std::size_t /*shift*/) noexcept;
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::RoundShiftRight (std::size_t) noexcept;
+             * @brief Method that performs round right bit shift by a specified bit offset.
+             * @param [in] shift - Bit offset for round right bit shift.
+             * @return Lvalue reference of BitStreamTransformEngine class.
+             */
+            BitStreamTransformEngine & RoundShiftRight (std::size_t /*shift*/) noexcept;
+
+            /**
+             * @fn const BitStreamTransformEngine & BitStreamTransformEngine::Set (std::size_t, bool) const noexcept;
              * @brief Method that sets the bit under the specified index to new value.
              * @param [in] index - Index of bit in binary sequence.
              * @param [in] fillBit - New value of selected bit. Default: true (1).
-             * @return Const lvalue reference of modified BitStreamEngine class.
+             * @return Const lvalue reference of modified BitStreamTransformEngine class.
              */
-            const BitStreamEngine & Set (std::size_t /*index*/, bool /*fillBit*/ = true) const noexcept;
+            const BitStreamTransformEngine & Set (std::size_t /*index*/, bool /*fillBit*/ = true) const noexcept;
 
             /**
              * @fn template <uint8_t Mode, DATA_ENDIAN_TYPE Endian, typename Type>
-             * bool BitStreamEngine::SetBitSequence (const Type, std::size_t, std::size_t, const std::size_t) const noexcept;
+             * bool BitStreamTransformEngine::SetBitSequence (const Type, std::size_t, std::size_t, const std::size_t) const noexcept;
              * @brief Method that sets the sequence of bit under the specified indexes.
              * @tparam [in] Mode - Type of input data dependent mode. Default: DATA_MODE_DEPENDENT.
              * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
@@ -334,7 +449,7 @@ namespace analyzer::framework::common::types
              * @param [in] position - Index in stored data from which new data will be assigned. Default: 0.
              * @param [in] first - First index of bit in input value from which sequent bits will be copied. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be copied. Default: Last bit in value.
-             * @return True - if data assignment is successful, otherwise - false.
+             * @return TRUE - if data assignment is successful, otherwise - FALSE.
              */
             template <uint8_t Mode = DATA_MODE_DEPENDENT, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, typename Type>
             bool SetBitSequence (const Type value, std::size_t position = 0, std::size_t first = 0, const std::size_t last = sizeof(Type) * 8 - 1) const noexcept
@@ -347,36 +462,36 @@ namespace analyzer::framework::common::types
 
                 BinaryDataEngine wrapper(reinterpret_cast<std::byte*>(&value), sizeof(Type), (Endian == DATA_SYSTEM_ENDIAN) ? system_endian : Endian, Mode);
                 while (first <= last) {
-                    Set(position++, wrapper.BitsTransform().GetBitValue(first++));
+                    Set(position++, wrapper.BitsInformation().GetBitValue(first++));
                 }
                 return true;
             }
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::Reverse (std::size_t, std::size_t) const noexcept;
+             * @fn const BitStreamTransformEngine & BitStreamTransformEngine::Reverse (std::size_t, std::size_t) const noexcept;
              * @brief Method that reverses a sequence of bits under the specified first/last indexes.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be reversed. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be reversed. Default: npos.
-             * @return Const lvalue reference of BitStreamEngine class.
+             * @return Const lvalue reference of BitStreamTransformEngine class.
              */
-            const BitStreamEngine & Reverse (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            const BitStreamTransformEngine & Reverse (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::Invert (std::size_t) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::Invert (std::size_t) noexcept;
              * @brief Method that inverts the bit under the specified index.
              * @param [in] index - Index of bit in binary sequence.
-             * @return Const lvalue reference of BitStreamEngine class.
+             * @return Lvalue reference of BitStreamTransformEngine class.
              */
-            const BitStreamEngine & Invert (std::size_t /*index*/) const noexcept;
+            BitStreamTransformEngine & Invert (std::size_t /*index*/) noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::InvertBlock (std::size_t, std::size_t) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::InvertBlock (std::size_t, std::size_t) noexcept;
              * @brief Method that inverts the range of bits under the specified first/last indexes.
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be inverted. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be inverted. Default: npos.
-             * @return Const lvalue reference of BitStreamEngine class.
+             * @return Lvalue reference of BitStreamTransformEngine class.
              */
-            const BitStreamEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            BitStreamTransformEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) noexcept;
 
             /**
              * @fn template <typename, DATA_ENDIAN_TYPE Endian>
@@ -406,68 +521,40 @@ namespace analyzer::framework::common::types
 
                 std::size_t position = 0;
                 while (first <= last) {
-                    wrapper.BitsTransform().Set(position++, GetBitValue(first++));
+                    wrapper.BitsTransform().Set(position++, storedData->BitsInformation().GetBitValue(first++));
                 }
                 return result;
             }
 
             /**
-             * @fn std::string BitStreamEngine::ToString (std::size_t, std::size_t) const noexcept;
-             * @brief Method that outputs internal binary data in string format.
-             * @param [in] first - First index of bit in binary sequence from which sequent bits will be outputted. Default: 0.
-             * @param [in] last - Last index of bit in binary sequence to which previous bits will be outputted. Default: npos.
-             * @return STL string object with sequence of the bit character representation of stored binary data.
-             *
-             * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.
-             */
-            std::string ToString (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
-
-            /**
-             * @fn inline bool BitStreamEngine::operator[] (const std::size_t) const noexcept;
-             * @brief Operator that returns the value of bit under the specified index.
-             * @param [in] index - Index of bit in binary sequence of stored data.
-             * @return Value of the selected bit in stored binary data.
-             *
-             * @warning Method always returns 'false' if the index is out-of-range.
-             */
-            inline bool operator[] (const std::size_t index) const noexcept { return Test(index); }
-
-            /**
-             * @fn explicit operator BitStreamEngine::bool() const noexcept;
-             * @brief Operator that returns bit sequence characteristic when all of the bits are set.
-             * @return True - if all of the bits of stored data are set, otherwise - false.
-             */
-            explicit operator bool(void) const noexcept { return All(); }
-
-            /**
-             * @fn friend inline std::ostream & operator<< (std::ostream &, const BitStreamEngine &) noexcept;
+             * @fn friend inline std::ostream & operator<< (std::ostream &, const BitStreamTransformEngine &) noexcept;
              * @brief Operator that outputs internal binary data in binary string format.
              * @param [in,out] stream - Reference of the output stream engine.
-             * @param [in] engine - Const lvalue reference of the BitStreamEngine class.
+             * @param [in] engine - Const lvalue reference of the BitStreamTransformEngine class.
              * @return Lvalue reference of the inputted STL std::ostream class.
              *
              * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.
              */
-            friend inline std::ostream& operator<< (std::ostream& stream, const BitStreamEngine& engine) noexcept
+            friend inline std::ostream& operator<< (std::ostream& stream, const BitStreamTransformEngine& engine) noexcept
             {
                 try
                 {
-                    if (engine.storedData.IsEmpty() == false)
+                    if (engine.storedData->IsEmpty() == false)
                     {
                         stream.unsetf(std::ios_base::boolalpha);
-                        if ((engine.storedData.DataModeType() & DATA_MODE_DEPENDENT) != 0U)
+                        if ((engine.storedData->DataModeType() & DATA_MODE_DEPENDENT) != 0U)
                         {
                             for (std::size_t idx = engine.Length() - 1; idx != 0; --idx) {
-                                stream << engine.GetBitValue(idx);
+                                stream << engine.storedData->BitsInformation().GetBitValue(idx);
                                 if (idx % 8 == 0) { stream << ' '; }
                             }
-                            stream << engine.GetBitValue(0);
+                            stream << engine.storedData->BitsInformation().GetBitValue(0);
                         }
                         else  // If data handling mode type is DATA_MODE_INDEPENDENT.
                         {
                             for (std::size_t idx = 0; idx < engine.Length(); ++idx) {
                                 if (idx % 8 == 0 && idx != 0) { stream << ' '; }
-                                stream << engine.GetBitValue(idx);
+                                stream << engine.storedData->BitsInformation().GetBitValue(idx);
                             }
                         }
                     }
@@ -478,165 +565,109 @@ namespace analyzer::framework::common::types
 
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::operator<<= (std::size_t) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator<<= (const std::size_t) noexcept;
              * @brief Bitwise left shift assignment operator that performs direct left bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct left bit shift as right operand.
-             * @return Const lvalue reference of transformed BitStreamEngine class.
+             * @return Lvalue reference of transformed BitStreamTransformEngine class.
              */
-            const BitStreamEngine & operator<<= (std::size_t /*shift*/) const noexcept;
+            BitStreamTransformEngine& operator<<= (const std::size_t shift) noexcept { return ShiftLeft(shift, false); }
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::operator>>= (std::size_t) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator>>= (const std::size_t) noexcept;
              * @brief Bitwise right shift assignment operator that performs direct right bit shift by a specified bit offset.
              * @param [in] shift - Bit offset for direct right bit shift as right operand.
-             * @return Const lvalue reference of transformed BitStreamEngine class.
+             * @return Lvalue reference of transformed BitStreamTransformEngine class.
              */
-            const BitStreamEngine & operator>>= (std::size_t /*shift*/) const noexcept;
+            BitStreamTransformEngine& operator>>= (const std::size_t shift) noexcept { return ShiftRight(shift, false); }
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::operator&= (const BitStreamEngine &) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator&= (const BitStreamTransformEngine &) noexcept;
              * @brief Logical assignment bitwise AND operator that transforms internal binary data.
-             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed (by operation AND) BitStreamEngine class.
+             * @param [in] other - Const lvalue reference of the BitStreamTransformEngine class as right operand.
+             * @return Lvalue reference of transformed (by operation AND) BitStreamTransformEngine class.
              *
              * @note If operands have different data length then result data will be the length of the lesser among the operands.
              * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
              *
              * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
-            const BitStreamEngine & operator&= (const BitStreamEngine & /*other*/) const noexcept;
+            BitStreamTransformEngine & operator&= (const BitStreamTransformEngine & /*other*/) noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::operator|= (const BitStreamEngine &) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator&= (const BitStreamInformationEngine &) noexcept;
+             * @brief Logical assignment bitwise AND operator that transforms internal binary data.
+             * @param [in] other - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+             * @return Lvalue reference of transformed (by operation AND) BitStreamTransformEngine class.
+             *
+             * @note If operands have different data length then result data will be the length of the lesser among the operands.
+             * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             *
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
+             */
+            BitStreamTransformEngine& operator&= (const BitStreamInformationEngine& other) noexcept
+            {
+                *this &= other.storedData->bitStreamTransform;
+                return *this;
+            }
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator|= (const BitStreamTransformEngine &) noexcept;
              * @brief Logical assignment bitwise OR operator that transforms internal binary data.
-             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed (by operation OR) BitStreamEngine class.
+             * @param [in] other - Const lvalue reference of the BitStreamTransformEngine class as right operand.
+             * @return Lalue reference of transformed (by operation OR) BitStreamTransformEngine class.
              *
              * @note If operands have different data length then result data will be the length of the largest among the operands.
              * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
              *
              * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
-            const BitStreamEngine & operator|= (const BitStreamEngine & /*other*/) const noexcept;
+            BitStreamTransformEngine & operator|= (const BitStreamTransformEngine & /*other*/) noexcept;
 
             /**
-             * @fn const BitStreamEngine & BitStreamEngine::operator^= (const BitStreamEngine &) const noexcept;
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator|= (const BitStreamInformationEngine &) noexcept;
+             * @brief Logical assignment bitwise OR operator that transforms internal binary data.
+             * @param [in] other - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+             * @return Lvalue reference of transformed (by operation OR) BitStreamTransformEngine class.
+             *
+             * @note If operands have different data length then result data will be the length of the largest among the operands.
+             * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
+             *
+             * @attention The correct result can only be obtained if the data dependent modes are the same.
+             */
+            BitStreamTransformEngine& operator|= (const BitStreamInformationEngine& other) noexcept
+            {
+                *this |= other.storedData->bitStreamTransform;
+                return *this;
+            }
+
+            /**
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator^= (const BitStreamTransformEngine &) noexcept;
              * @brief Logical assignment bitwise XOR operator that transforms internal binary data.
-             * @param [in] other - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return Const lvalue reference of transformed (by operation XOR) BitStreamEngine class.
+             * @param [in] other - Const lvalue reference of the BitStreamTransformEngine class as right operand.
+             * @return Lvalue reference of transformed (by operation XOR) BitStreamTransformEngine class.
              *
              * @note If operands have different data length then result data will be the length of the largest among the operands.
              * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the length of result data will be preserved.
              *
              * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
-            const BitStreamEngine & operator^= (const BitStreamEngine & /*other*/) const noexcept;
+            BitStreamTransformEngine & operator^= (const BitStreamTransformEngine & /*other*/) noexcept;
 
             /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator& (const BitStreamEngine &, const BitStreamEngine &) noexcept;
-             * @brief Logical bitwise AND operator that transforms internal binary data.
-             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
-             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New temporary object of transformed (by operation AND) BinaryDataEngine class.
+             * @fn BitStreamTransformEngine & BitStreamTransformEngine::operator^= (const BitStreamInformationEngine &) noexcept;
+             * @brief Logical assignment bitwise XOR operator that transforms internal binary data.
+             * @param [in] other - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+             * @return Lvalue reference of transformed (by operation XOR) BitStreamTransformEngine class.
              *
-             * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length.
+             * @note If operands have different data length then result data will be the length of the largest among the operands.
+             * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the length of result data will be preserved.
              *
-             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
              * @attention The correct result can only be obtained if the data dependent modes are the same.
              */
-            friend inline BinaryDataEngine operator& (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
+            BitStreamTransformEngine& operator^= (const BitStreamInformationEngine& other) noexcept
             {
-                BinaryDataEngine result(left.storedData);
-                if (result == true) {
-                    result.BitsTransform() &= right;
-                }
-                return result;
-            }
-
-            /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator| (const BitStreamEngine &, const BitStreamEngine &) noexcept;
-             * @brief Logical bitwise OR operator that transforms internal binary data.
-             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
-             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New temporary object of transformed (by operation OR) BinaryDataEngine class.
-             *
-             * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
-             *
-             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
-             * @attention The correct result can only be obtained if the data dependent modes are the same.
-             */
-            friend inline BinaryDataEngine operator| (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
-            {
-                BinaryDataEngine result(left.storedData);
-                if (result == true) {
-                    result.BitsTransform() |= right;
-                }
-                return result;
-            }
-
-            /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator^ (const BitStreamEngine &, const BitStreamEngine &) noexcept;
-             * @brief Logical bitwise XOR operator that transforms internal binary data.
-             * @param [in] left - Const lvalue reference of the BitStreamEngine class as left operand.
-             * @param [in] right - Const lvalue reference of the BitStreamEngine class as right operand.
-             * @return New temporary object of transformed (by operation XOR) BinaryDataEngine class.
-             *
-             * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-             * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
-             *
-             * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
-             * @attention The correct result can only be obtained if the data dependent modes are the same.
-             */
-            friend inline BinaryDataEngine operator^ (const BitStreamEngine& left, const BitStreamEngine& right) noexcept
-            {
-                BinaryDataEngine result(left.storedData);
-                if (result == true) {
-                    result.BitsTransform() ^= right;
-                }
-                return result;
-            }
-
-            /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator<< (const BitStreamEngine &, const std::size_t) noexcept;
-             * @brief Bitwise left shift operator that performs direct left bit shift by a specified bit offset.
-             * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
-             * @param [in] shift - Bit offset for direct left bit shift as right operand.
-             * @return New temporary object of transformed BinaryDataEngine class.
-             */
-            friend inline BinaryDataEngine operator<< (const BitStreamEngine& engine, const std::size_t shift) noexcept
-            {
-                BinaryDataEngine result(engine.storedData);
-                result.BitsTransform().ShiftLeft(shift, false);
-                return result;
-            }
-
-            /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator>> (const BitStreamEngine &, const std::size_t) noexcept;
-             * @brief Bitwise right shift operator that performs direct right bit shift by a specified bit offset.
-             * @param [in] engine - Const lvalue reference of the BitStreamEngine class as left operand.
-             * @param [in] shift - Bit offset for direct right bit shift as right operand.
-             * @return New temporary object of transformed BinaryDataEngine class.
-             */
-            friend inline BinaryDataEngine operator>> (const BitStreamEngine& engine, const std::size_t shift) noexcept
-            {
-                BinaryDataEngine result(engine.storedData);
-                result.BitsTransform().ShiftRight(shift, false);
-                return result;
-            }
-
-            /**
-             * @fn friend inline BinaryDataEngine BitStreamEngine::operator~ (const BitStreamEngine &) const noexcept;
-             * @brief Logical bitwise complement operator that inverts each bit in internal binary data.
-             * @param [in] engine - Const lvalue reference of the BitStreamEngine class.
-             * @return New temporary object of transformed (by operation NOT) BinaryDataEngine class.
-             */
-            friend inline BinaryDataEngine operator~ (const BitStreamEngine& engine) noexcept
-            {
-                BinaryDataEngine result(engine.storedData);
-                result.BitsTransform().InvertBlock();
-                return result;
+                *this ^= other.storedData->bitStreamTransform;
+                return *this;
             }
 
         };
@@ -655,10 +686,10 @@ namespace analyzer::framework::common::types
 
         private:
             /**
-             * @var const BinaryDataEngine & storedData;
-             * @brief Const lvalue reference of the BinaryDataEngine owner class.
+             * @var BinaryDataEngine & storedData;
+             * @brief Lvalue reference of the BinaryDataEngine owner class.
              */
-            const BinaryDataEngine & storedData;
+            BinaryDataEngine & storedData;
 
             /**
              * @fn std::size_t ByteStreamEngine::GetBytePosition (std::size_t) const noexcept;
@@ -678,12 +709,12 @@ namespace analyzer::framework::common::types
             ByteStreamEngine & operator= (const ByteStreamEngine &) = delete;
 
             /**
-             * @fn explicit ByteStreamEngine::ByteStreamEngine (const BinaryDataEngine &) noexcept;
+             * @fn explicit ByteStreamEngine::ByteStreamEngine (BinaryDataEngine &) noexcept;
              * @brief Constructor of nested ByteStreamEngine class.
-             * @param [in] owner - Const lvalue reference of BinaryDataEngine owner class.
+             * @param [in] owner - Lvalue reference of BinaryDataEngine owner class.
              */
-            explicit ByteStreamEngine (const BinaryDataEngine& owner) noexcept
-                    : storedData(owner)
+            explicit ByteStreamEngine (BinaryDataEngine& owner) noexcept
+                : storedData(owner)
             { }
 
             /**
@@ -738,7 +769,7 @@ namespace analyzer::framework::common::types
              * @brief Method that checks the byte under the specified index.
              * @param [in] index - Index of byte in stored binary data.
              * @param [in] value - Value of the pattern byte for check.
-             * @return True - if byte under selected index of stored data has specified value, otherwise - false.
+             * @return TRUE - if byte under selected index of stored data has specified value, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -750,7 +781,7 @@ namespace analyzer::framework::common::types
              * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if all bytes in block of stored data have a specified value, otherwise - false.
+             * @return TRUE - if all bytes in block of stored data have a specified value, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -762,7 +793,7 @@ namespace analyzer::framework::common::types
              * @param [in] value - Value of the pattern byte for check. Default: 0xFF.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if any of the bytes in block of stored data have a specified value, otherwise - false.
+             * @return TRUE - if any of the bytes in block of stored data have a specified value, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -774,7 +805,7 @@ namespace analyzer::framework::common::types
              * @param [in] value - Value of the pattern byte for check. Default: 0x00.
              * @param [in] first - First index of byte in binary sequence from which sequent bytes will be checked. Default: 0.
              * @param [in] last - Last index of byte in binary sequence to which (inclusive) bytes will be checked. Default: npos.
-             * @return True - if all of the bytes in block of stored data have not a specified value, otherwise - false.
+             * @return TRUE - if all of the bytes in block of stored data have not a specified value, otherwise - FALSE.
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
@@ -807,30 +838,35 @@ namespace analyzer::framework::common::types
 
     private:
         /**
-         * @var mutable std::unique_ptr<std::byte[]> data;
+         * @var std::unique_ptr<std::byte[]> data;
          * @brief Internal variable that contains binary data.
          */
-        mutable std::unique_ptr<std::byte[]> data = nullptr;
+        std::unique_ptr<std::byte[]> data = nullptr;
         /**
-         * @var mutable std::size_t length;
+         * @var std::size_t length;
          * @brief Length of stored data in bytes.
          */
-        mutable std::size_t length = 0;
+        std::size_t length = 0;
         /**
-         * @var uint8_t dataModeType;
+         * @var mutable uint8_t dataModeType;
          * @brief Handling mode type of stored data.
          */
-        uint8_t dataModeType = DATA_MODE_DEFAULT;
+        mutable uint8_t dataModeType = DATA_MODE_DEFAULT;
         /**
-         * @var DATA_ENDIAN_TYPE dataEndianType;
+         * @var mutable DATA_ENDIAN_TYPE dataEndianType;
          * @brief Endian type of stored data.
          */
-        DATA_ENDIAN_TYPE dataEndianType = system_endian;
+        mutable DATA_ENDIAN_TYPE dataEndianType = system_endian;
         /**
-         * @var BitStreamEngine bitStreamTransform;
-         * @brief Engine for working with sequence of bits.
+         * @var BitStreamTransformEngine bitStreamTransform;
+         * @brief Transform engine for working with sequence of bits.
          */
-        BitStreamEngine bitStreamTransform;
+        BitStreamTransformEngine bitStreamTransform;
+        /**
+         * @var BitStreamInformationEngine bitStreamInformation;
+         * @brief Information engine for working with sequence of bits.
+         */
+        BitStreamInformationEngine bitStreamInformation;
         /**
          * @var ByteStreamEngine byteStreamTransform;
          * @brief Engine for working with sequence of bytes.
@@ -843,10 +879,12 @@ namespace analyzer::framework::common::types
          * @fn explicit BinaryDataEngine::BinaryDataEngine (const uint8_t, const DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor of BinaryDataEngine class.
          * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
-         * @param [in] endian - Endian of stored data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
+         * @param [in] endian - Endian of stored data. Default: Local System Endian Type (DATA_SYSTEM_ENDIAN).
          */
         explicit BinaryDataEngine (const uint8_t mode = DATA_MODE_DEFAULT, const DATA_ENDIAN_TYPE endian = system_endian) noexcept
-                : dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
+            : dataModeType(mode), dataEndianType(endian),
+              bitStreamTransform(this), bitStreamInformation(this),
+              byteStreamTransform(*this)
         { }
 
         /**
@@ -878,7 +916,7 @@ namespace analyzer::framework::common::types
          * @brief Constructor that allocates specified amount of bytes.
          * @param [in] size - Number of bytes for allocate.
          * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
-         * @param [in] endian - Endian of stored data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
+         * @param [in] endian - Endian of stored data. Default: Local System Endian Type (DATA_SYSTEM_ENDIAN).
          *
          * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          *
@@ -891,7 +929,7 @@ namespace analyzer::framework::common::types
          * @brief Constructor that accepts a pointer to allocated (or static) binary data.
          * @param [in] memory - Pointer to allocated (or static) data.
          * @param [in] size - Number of bytes in data.
-         * @param [in] endian - Endian of inputted data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
+         * @param [in] endian - Endian of inputted data. Default: Local System Endian Type (DATA_SYSTEM_ENDIAN).
          * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
          * @param [in] destruct - Flag that indicates about do need to delete an object in destructor or not. Default: false.
          *
@@ -905,6 +943,21 @@ namespace analyzer::framework::common::types
                           DATA_ENDIAN_TYPE /*endian*/   = system_endian,
                           uint8_t          /*mode*/     = DATA_MODE_DEFAULT,
                           bool             /*destruct*/ = false) noexcept;
+
+        /**
+         * @fn BinaryDataEngine::BinaryDataEngine (const std::byte *, std::size_t, DATA_ENDIAN_TYPE, uint8_t) noexcept;
+         * @brief Constructor that accepts a pointer to const allocated (or static) binary data.
+         * @param [in] memory - Pointer to const allocated (or static) data.
+         * @param [in] size - Number of bytes in data.
+         * @param [in] endian - Endian of inputted data. Default: Local System Endian Type (DATA_SYSTEM_ENDIAN).
+         * @param [in] mode - Type of the data handling mode. Default: DATA_DEFAULT_MODE.
+         *
+         * @attention Need to check existence of data after use this constructor.
+         */
+        BinaryDataEngine (const std::byte * /*memory*/,
+                          std::size_t       /*size*/,
+                          DATA_ENDIAN_TYPE  /*endian*/  = system_endian,
+                          uint8_t           /*mode*/    = DATA_MODE_DEFAULT) noexcept;
 
         /**
          * @fn BinaryDataEngine & BinaryDataEngine::operator= (const BinaryDataEngine &) noexcept;
@@ -933,7 +986,7 @@ namespace analyzer::framework::common::types
          * @tparam [in] Type - Typename of assigned data.
          * @param [in] memory - Pointer to the constant data of selected type.
          * @param [in] count - The number of elements in the input data of selected type.
-         * @return True - if data assignment is successful, otherwise - false.
+         * @return TRUE - if data assignment is successful, otherwise - FALSE.
          *
          * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          * @note Input type MUST be a POD type.
@@ -965,7 +1018,7 @@ namespace analyzer::framework::common::types
          * @tparam [in] Type - Typename of iterator of assigned data.
          * @param [in] begin - Iterator to the first element of const data of selected type.
          * @param [in] end - Iterator to the element following the last one of const data of selected type.
-         * @return True - if data assignment is successful, otherwise - false.
+         * @return TRUE - if data assignment is successful, otherwise - FALSE.
          *
          * @note After data assignment the data handling mode is changed to DATA_MODE_ALLOCATION.
          * @note Input type under iterator MUST be a POD type.
@@ -1007,18 +1060,25 @@ namespace analyzer::framework::common::types
         bool AssignReference (std::byte * /*memory*/, std::size_t /*size*/, bool /*destruct*/ = false) noexcept;
 
         /**
-         * @fn const BinaryDataEngine::BitStreamEngine & BinaryDataEngine::BitsTransform() const noexcept;
-         * @brief Method that returns const lvalue reference of the nested BitStreamEngine class for working with bits.
-         * @return Const lvalue reference of the BitStreamEngine class.
+         * @fn BinaryDataEngine::BitStreamTransformEngine & BinaryDataEngine::BitsTransform() noexcept;
+         * @brief Method that returns lvalue reference of the nested BitStreamTransformEngine class for working with bits.
+         * @return Lvalue reference of the BitStreamTransformEngine class.
          */
-        const BitStreamEngine& BitsTransform(void) const noexcept { return bitStreamTransform; }
+        BitStreamTransformEngine& BitsTransform(void) noexcept { return bitStreamTransform; }
 
         /**
-         * @fn const BinaryDataEngine::ByteStreamEngine & BinaryDataEngine::BytesTransform() const noexcept;
-         * @brief Method that returns const lvalue reference of the nested ByteStreamEngine class for working with bytes.
-         * @return Const lvalue reference of the ByteStreamEngine class.
+         * @fn const BinaryDataEngine::BitStreamInformationEngine & BinaryDataEngine::BitsInformation() const noexcept;
+         * @brief Method that returns const lvalue reference of the nested BitStreamInformationEngine class for working with bits.
+         * @return Const lvalue reference of the BitStreamInformationEngine class.
          */
-        const ByteStreamEngine& BytesTransform(void) const noexcept { return byteStreamTransform; }
+        const BitStreamInformationEngine& BitsInformation(void) const noexcept { return bitStreamInformation; }
+
+        /**
+         * @fn BinaryDataEngine::ByteStreamEngine & BinaryDataEngine::BytesTransform() noexcept;
+         * @brief Method that returns lvalue reference of the nested ByteStreamEngine class for working with bytes.
+         * @return Lvalue reference of the ByteStreamEngine class.
+         */
+        ByteStreamEngine& BytesTransform(void) noexcept { return byteStreamTransform; }
 
         /**
          * @fn inline std::size_t BinaryDataEngine::Size() const noexcept
@@ -1039,14 +1099,14 @@ namespace analyzer::framework::common::types
         /**
          * @fn inline bool BinaryDataEngine::IsEmpty() const noexcept;
          * @brief Method that returns the state of stored binary data in BinaryDataEngine class.
-         * @return True - if stored data is empty, otherwise - false.
+         * @return TRUE - if stored data is empty, otherwise - FALSE.
          */
         inline bool IsEmpty(void) const noexcept { return length == 0; }
 
         /**
          * @fn inline bool BinaryDataEngine::IsInitialized() const noexcept;
          * @brief Method that returns the initialize state of stored data in BinaryDataEngine class.
-         * @return True - if stored data is initialized, otherwise - false.
+         * @return TRUE - if stored data is initialized, otherwise - FALSE.
          */
         inline bool IsInitialized(void) const noexcept { return data != nullptr; }
 
@@ -1065,48 +1125,48 @@ namespace analyzer::framework::common::types
         inline DATA_ENDIAN_TYPE DataEndianType(void) const noexcept { return dataEndianType; }
 
         /**
-         * @fn void BinaryDataEngine::SetDataModeType (uint8_t) noexcept;
+         * @fn void BinaryDataEngine::SetDataModeType (uint8_t) const noexcept;
          * @brief Method that changes handling mode type of stored data in BinaryDataEngine class.
          * @param [in] mode - New data handling mode type.
          *
          * @note Changed only the method of processing data. Data representation does not changes.
          * @note After setting a new mode then the opposite mode will be automatically turned off.
          */
-        void SetDataModeType (uint8_t /*mode*/) noexcept;
+        void SetDataModeType (uint8_t /*mode*/) const noexcept;
 
         /**
-         * @fn void BinaryDataEngine::SetDataEndianType (DATA_ENDIAN_TYPE, bool) noexcept;
+         * @fn void BinaryDataEngine::SetDataEndianType (DATA_ENDIAN_TYPE, bool) const noexcept;
          * @brief Method that changes endian type of stored data in BinaryDataEngine class.
          * @param [in] endian - New data endian type.
          * @param [in] convert - Flag indicating whether to change the presentation of the stored data or not. Default: true.
          */
-        void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) noexcept;
+        void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/, bool /*convert*/ = true) const noexcept;
 
         /**
          * @fn inline bool BinaryDataEngine::IsDependentDataMode() const noexcept;
          * @brief Method that returns the data dependent mode type.
-         * @return True - if the data handling mode consist of the DATA_MODE_DEPENDENT flag, otherwise - false.
+         * @return TRUE - if the data handling mode consist of the DATA_MODE_DEPENDENT flag, otherwise - FALSE.
          */
         inline bool IsDependentDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_DEPENDENT) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsSafeOperatorDataMode() const noexcept;
          * @brief Method that returns the binary operators behavior type when transformed the stored data.
-         * @return True - if the data handling mode consist of the DATA_MODE_SAFE_OPERATOR flag, otherwise - false.
+         * @return TRUE - if the data handling mode consist of the DATA_MODE_SAFE_OPERATOR flag, otherwise - FALSE.
          */
         inline bool IsSafeOperatorDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_SAFE_OPERATOR) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsAllocationDataMode() const noexcept;
          * @brief Method that returns the data allocation mode type.
-         * @return True - if the data handling mode consist of the DATA_MODE_ALLOCATION flag, otherwise - false.
+         * @return TRUE - if the data handling mode consist of the DATA_MODE_ALLOCATION flag, otherwise - FALSE.
          */
         inline bool IsAllocationDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_ALLOCATION) != 0U); }
 
         /**
          * @fn inline bool BinaryDataEngine::IsOperatorAlignLowOrderDataMode() const noexcept;
          * @brief Method that returns the binary operators behavior type when transformed the stored data.
-         * @return True - if the data handling mode consist of the DATA_MODE_OPERATOR_ALIGN_LOW_ORDER flag, otherwise - false.
+         * @return TRUE - if the data handling mode consist of the DATA_MODE_OPERATOR_ALIGN_LOW_ORDER flag, otherwise - FALSE.
          */
         inline bool IsOperatorAlignLowOrderDataMode(void) const noexcept { return ((dataModeType & DATA_MODE_OPERATOR_ALIGN_LOW_ORDER) != 0U); }
 
@@ -1144,7 +1204,7 @@ namespace analyzer::framework::common::types
         /**
          * @fn inline operator BinaryDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryDataEngine class.
-         * @return True - if BinaryDataEngine class is not empty, otherwise - false.
+         * @return TRUE - if BinaryDataEngine class is not empty, otherwise - FALSE.
          */
         inline operator bool(void) const noexcept { return (data != nullptr && length != 0); }
 
@@ -1159,112 +1219,288 @@ namespace analyzer::framework::common::types
         std::optional<std::byte> operator[] (std::size_t /*index*/) const noexcept;
 
         /**
-         * @fn const BinaryDataEngine & BinaryDataEngine::operator&= (const BinaryDataEngine &) const noexcept;
+         * @fn BinaryDataEngine & BinaryDataEngine::operator&= (const BinaryDataEngine &) noexcept;
          * @brief Logical assignment bitwise AND operator that transforms internal binary data.
          * @param [in] other - Const lvalue reference of the BinaryDataEngine class as right operand.
-         * @return Const lvalue reference of transformed (by operation AND) BinaryDataEngine class.
+         * @return Lvalue reference of transformed (by operation AND) BinaryDataEngine class.
          *
          * @note If operands have different data length then result data will be the length of the lesser among the operands.
          * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
          *
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        const BinaryDataEngine & operator&= (const BinaryDataEngine & /*other*/) const noexcept;
+        BinaryDataEngine & operator&= (const BinaryDataEngine & /*other*/) noexcept;
 
         /**
-         * @fn const BinaryDataEngine & BinaryDataEngine::operator|= (const BinaryDataEngine &) const noexcept;
+         * @fn BinaryDataEngine & BinaryDataEngine::operator|= (const BinaryDataEngine &) noexcept;
          * @brief Logical assignment bitwise OR operator that transforms internal binary data.
          * @param [in] other - Const lvalue reference of the BinaryDataEngine class as right operand.
-         * @return Const lvalue reference of transformed (by operation OR) BinaryDataEngine class.
+         * @return Lvalue reference of transformed (by operation OR) BinaryDataEngine class.
          *
          * @note If operands have different data length then result data will be the length of the largest among the operands.
          * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the size of result data will be preserved.
          *
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        const BinaryDataEngine & operator|= (const BinaryDataEngine & /*other*/) const noexcept;
+        BinaryDataEngine & operator|= (const BinaryDataEngine & /*other*/) noexcept;
 
         /**
-         * @fn const BinaryDataEngine & BinaryDataEngine::operator^= (const BinaryDataEngine &) const noexcept;
+         * @fn BinaryDataEngine & BinaryDataEngine::operator^= (const BinaryDataEngine &) noexcept;
          * @brief Logical assignment bitwise XOR operator that transforms internal binary data.
          * @param [in] other - Const lvalue reference of the BinaryDataEngine class as right operand.
-         * @return Const lvalue reference of transformed (by operation XOR) BinaryDataEngine class.
+         * @return Lvalue reference of transformed (by operation XOR) BinaryDataEngine class.
          *
          * @note If operands have different data length then result data will be the length of the largest among the operands.
          * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the length of result data will be preserved.
          *
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        const BinaryDataEngine & operator^= (const BinaryDataEngine & /*other*/) const noexcept;
+        BinaryDataEngine & operator^= (const BinaryDataEngine & /*other*/) noexcept;
+
+
 
         /**
-         * @fn friend inline BinaryDataEngine BinaryDataEngine::operator& (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
+         * @fn friend inline BinaryDataEngine operator& (const BitStreamTransformEngine &, const BitStreamTransformEngine &) noexcept;
          * @brief Logical bitwise AND operator that transforms internal binary data.
-         * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
-         * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
+         * @param [in] left - Const lvalue reference of the BitStreamTransformEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamTransformEngine class as right operand.
          * @return New temporary object of transformed (by operation AND) BinaryDataEngine class.
          *
          * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length.
          *
          * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        friend inline BinaryDataEngine operator& (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+        friend inline BinaryDataEngine operator& (const BitStreamTransformEngine& left, const BitStreamTransformEngine& right) noexcept
         {
-            BinaryDataEngine result(left);
+            BinaryDataEngine result(*left.storedData);
             if (result == true) {
-                result.BitsTransform() &= right.BitsTransform();
+                result.BitsTransform() &= right;
             }
             return result;
         }
 
         /**
-         * @fn friend inline BinaryDataEngine BinaryDataEngine::operator| (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
+         * @fn friend inline BinaryDataEngine operator& (const BitStreamInformationEngine &, const BitStreamInformationEngine &) noexcept;
+         * @brief Logical bitwise AND operator that transforms internal binary data.
+         * @param [in] left - Const lvalue reference of the BitStreamInformationEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+         * @return New temporary object of transformed (by operation AND) BinaryDataEngine class.
+         *
+         * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length.
+         *
+         * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         */
+        friend inline BinaryDataEngine operator& (const BitStreamInformationEngine& left, const BitStreamInformationEngine& right) noexcept
+        {
+            BinaryDataEngine result(*left.storedData);
+            if (result == true) {
+                result.BitsTransform() &= right;
+            }
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator| (const BitStreamTransformEngine &, const BitStreamTransformEngine &) noexcept;
          * @brief Logical bitwise OR operator that transforms internal binary data.
-         * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
-         * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
+         * @param [in] left - Const lvalue reference of the BitStreamTransformEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamTransformEngine class as right operand.
          * @return New temporary object of transformed (by operation OR) BinaryDataEngine class.
          *
          * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
          *
          * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        friend inline BinaryDataEngine operator| (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+        friend inline BinaryDataEngine operator| (const BitStreamTransformEngine& left, const BitStreamTransformEngine& right) noexcept
         {
-            BinaryDataEngine result(left);
+            BinaryDataEngine result(*left.storedData);
             if (result == true) {
-                result.BitsTransform() |= right.BitsTransform();
+                result.BitsTransform() |= right;
             }
             return result;
         }
 
         /**
-         * @fn friend inline BinaryDataEngine BinaryDataEngine::operator^ (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
-         * @brief Logical bitwise XOR operator that transforms internal binary data.
-         * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
-         * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
-         * @return New temporary object of transformed (by operation XOR) BinaryDataEngine class.
+         * @fn friend inline BinaryDataEngine operator| (const BitStreamInformationEngine &, const BitStreamInformationEngine &) noexcept;
+         * @brief Logical bitwise OR operator that transforms internal binary data.
+         * @param [in] left - Const lvalue reference of the BitStreamInformationEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+         * @return New temporary object of transformed (by operation OR) BinaryDataEngine class.
          *
          * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
          *
          * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
-        friend inline BinaryDataEngine operator^ (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+        friend inline BinaryDataEngine operator| (const BitStreamInformationEngine& left, const BitStreamInformationEngine& right) noexcept
         {
-            BinaryDataEngine result(left);
+            BinaryDataEngine result(*left.storedData);
             if (result == true) {
-                result.BitsTransform() ^= right.BitsTransform();
+                result.BitsTransform() |= right;
             }
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator^ (const BitStreamTransformEngine &, const BitStreamTransformEngine &) noexcept;
+         * @brief Logical bitwise XOR operator that transforms internal binary data.
+         * @param [in] left - Const lvalue reference of the BitStreamTransformEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamTransformEngine class as right operand.
+         * @return New temporary object of transformed (by operation XOR) BinaryDataEngine class.
+         *
+         * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
+         *
+         * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         */
+        friend inline BinaryDataEngine operator^ (const BitStreamTransformEngine& left, const BitStreamTransformEngine& right) noexcept
+        {
+            BinaryDataEngine result(*left.storedData);
+            if (result == true) {
+                result.BitsTransform() ^= right;
+            }
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator^ (const BitStreamInformationEngine &, const BitStreamInformationEngine &) noexcept;
+         * @brief Logical bitwise XOR operator that transforms internal binary data.
+         * @param [in] left - Const lvalue reference of the BitStreamInformationEngine class as left operand.
+         * @param [in] right - Const lvalue reference of the BitStreamInformationEngine class as right operand.
+         * @return New temporary object of transformed (by operation XOR) BinaryDataEngine class.
+         *
+         * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length.
+         *
+         * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         */
+        friend inline BinaryDataEngine operator^ (const BitStreamInformationEngine& left, const BitStreamInformationEngine& right) noexcept
+        {
+            BinaryDataEngine result(*left.storedData);
+            if (result == true) {
+                result.BitsTransform() ^= right;
+            }
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator<< (const BitStreamTransformEngine &, const std::size_t) noexcept;
+         * @brief Bitwise left shift operator that performs direct left bit shift by a specified bit offset.
+         * @param [in] engine - Const lvalue reference of the BitStreamTransformEngine class as left operand.
+         * @param [in] shift - Bit offset for direct left bit shift as right operand.
+         * @return New temporary object of transformed BinaryDataEngine class.
+         */
+        friend inline BinaryDataEngine operator<< (const BitStreamTransformEngine& engine, const std::size_t shift) noexcept
+        {
+            BinaryDataEngine result(*engine.storedData);
+            result.BitsTransform().ShiftLeft(shift, false);
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator>> (const BitStreamTransformEngine &, const std::size_t) noexcept;
+         * @brief Bitwise right shift operator that performs direct right bit shift by a specified bit offset.
+         * @param [in] engine - Const lvalue reference of the BitStreamTransformEngine class as left operand.
+         * @param [in] shift - Bit offset for direct right bit shift as right operand.
+         * @return New temporary object of transformed BinaryDataEngine class.
+         */
+        friend inline BinaryDataEngine operator>> (const BitStreamTransformEngine& engine, const std::size_t shift) noexcept
+        {
+            BinaryDataEngine result(*engine.storedData);
+            result.BitsTransform().ShiftRight(shift, false);
+            return result;
+        }
+
+        /**
+         * @fn friend inline BinaryDataEngine operator~ (const BitStreamTransformEngine &) noexcept;
+         * @brief Logical bitwise complement operator that inverts each bit in internal binary data.
+         * @param [in] engine - Const lvalue reference of the BitStreamTransformEngine class.
+         * @return New temporary object of transformed (by operation NOT) BinaryDataEngine class.
+         */
+        friend inline BinaryDataEngine operator~ (const BitStreamTransformEngine& engine) noexcept
+        {
+            BinaryDataEngine result(*engine.storedData);
+            result.BitsTransform().InvertBlock();
             return result;
         }
 
     };
 
+
+
+    /**
+     * @fn inline BinaryDataEngine operator& (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
+     * @brief Logical bitwise AND operator that transforms internal binary data.
+     * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
+     * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
+     * @return New temporary object of transformed (by operation AND) BinaryDataEngine class.
+     *
+     * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+     * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length (DATA_MODE_UNSAFE_OPERATOR mode).
+     *
+     * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+     * @attention The correct result can only be obtained if the data dependent modes are the same.
+     */
+    inline BinaryDataEngine operator& (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+    {
+        BinaryDataEngine result(left);
+        if (result == true) {
+            result.BitsTransform() &= right.BitsInformation();
+        }
+        return result;
+    }
+
+    /**
+     * @fn inline BinaryDataEngine operator| (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
+     * @brief Logical bitwise OR operator that transforms internal binary data.
+     * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
+     * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
+     * @return New temporary object of transformed (by operation OR) BinaryDataEngine class.
+     *
+     * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+     * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+     *
+     * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+     * @attention The correct result can only be obtained if the data dependent modes are the same.
+     */
+    inline BinaryDataEngine operator| (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+    {
+        BinaryDataEngine result(left);
+        if (result == true) {
+            result.BitsTransform() |= right.BitsInformation();
+        }
+        return result;
+    }
+
+    /**
+     * @fn inline BinaryDataEngine operator^ (const BinaryDataEngine &, const BinaryDataEngine &) noexcept;
+     * @brief Logical bitwise XOR operator that transforms internal binary data.
+     * @param [in] left - Const lvalue reference of the BinaryDataEngine class as left operand.
+     * @param [in] right - Const lvalue reference of the BinaryDataEngine class as right operand.
+     * @return New temporary object of transformed (by operation XOR) BinaryDataEngine class.
+     *
+     * @note If operands have different endian and mode then result BinaryDataEngine will have endian and mode of the left operand.
+     * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+     *
+     * @attention Result BinaryDataEngine class is always processing in data mode type of left operand.
+     * @attention The correct result can only be obtained if the data dependent modes are the same.
+     */
+    inline BinaryDataEngine operator^ (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
+    {
+        BinaryDataEngine result(left);
+        if (result == true) {
+            result.BitsTransform() ^= right.BitsInformation();
+        }
+        return result;
+    }
 
 }  // namespace types.
 

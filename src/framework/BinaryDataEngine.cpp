@@ -6,6 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #include <utility>  // std::move.
 
 #include "../../include/framework/BinaryDataEngine.hpp"
@@ -19,7 +20,8 @@ namespace analyzer::framework::common::types
 
     // Copy constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine& other) noexcept
-            : bitStreamTransform(*this), byteStreamTransform(*this)
+        : bitStreamTransform(this), bitStreamInformation(this),
+          byteStreamTransform(*this)
     {
         if (other == true)
         {
@@ -36,7 +38,8 @@ namespace analyzer::framework::common::types
 
     // Move assignment constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (BinaryDataEngine&& other) noexcept
-            : bitStreamTransform(*this), byteStreamTransform(*this)
+        : bitStreamTransform(this), bitStreamInformation(this),
+          byteStreamTransform(*this)
     {
         if (other == true)
         {
@@ -50,7 +53,9 @@ namespace analyzer::framework::common::types
 
     // Constructor that allocates specified amount of bytes.
     BinaryDataEngine::BinaryDataEngine (const std::size_t size, const uint8_t mode, const DATA_ENDIAN_TYPE endian) noexcept
-            : dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
+        : dataModeType(mode), dataEndianType(endian),
+          bitStreamTransform(this), bitStreamInformation(this),
+          byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr) {
@@ -62,11 +67,27 @@ namespace analyzer::framework::common::types
 
     // Constructor that accepts a pointer to allocated binary data.
     BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode, bool destruct) noexcept
-            : data(memory), dataModeType(mode), dataEndianType(endian), bitStreamTransform(*this), byteStreamTransform(*this)
+        : data(memory), dataModeType(mode), dataEndianType(endian),
+          bitStreamTransform(this), bitStreamInformation(this),
+          byteStreamTransform(*this)
     {
-        if (data != nullptr && size != 0) {
+        if (data != nullptr && size != 0)
+        {
             length = size;
             if (destruct == false) { SetDataModeType(DATA_MODE_NO_ALLOCATION); }
+        }
+    }
+
+    // Constructor that accepts a pointer to const allocated binary data.
+    BinaryDataEngine::BinaryDataEngine (const std::byte* const memory, const std::size_t size, DATA_ENDIAN_TYPE endian, const uint8_t mode) noexcept
+        : data(const_cast<std::byte*>(memory)), dataModeType(mode), dataEndianType(endian),
+          bitStreamTransform(this), bitStreamInformation(this),
+          byteStreamTransform(*this)
+    {
+        if (data != nullptr && size != 0)
+        {
+            length = size;
+            SetDataModeType(DATA_MODE_NO_ALLOCATION);
         }
     }
 
@@ -113,7 +134,7 @@ namespace analyzer::framework::common::types
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
-    void BinaryDataEngine::SetDataModeType (const uint8_t mode) noexcept
+    void BinaryDataEngine::SetDataModeType (const uint8_t mode) const noexcept
     {
         if ((mode & DATA_MODE_DEPENDENT) != 0U) {
             dataModeType &= ~DATA_MODE_INDEPENDENT;
@@ -153,7 +174,7 @@ namespace analyzer::framework::common::types
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
-    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, const bool convert) noexcept
+    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, const bool convert) const noexcept
     {
         if (dataEndianType == endian) { return; }
         dataEndianType = endian;
@@ -207,23 +228,23 @@ namespace analyzer::framework::common::types
     }
 
     // Logical assignment bitwise AND operator that transforms internal binary data.
-    const BinaryDataEngine& BinaryDataEngine::operator&= (const BinaryDataEngine& other) const noexcept
+    BinaryDataEngine& BinaryDataEngine::operator&= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform &= other.BitsTransform();
+        bitStreamTransform &= other.BitsInformation();
         return *this;
     }
 
     // Logical assignment bitwise OR operator that transforms internal binary data.
-    const BinaryDataEngine& BinaryDataEngine::operator|= (const BinaryDataEngine& other) const noexcept
+    BinaryDataEngine& BinaryDataEngine::operator|= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform |= other.BitsTransform();
+        bitStreamTransform |= other.BitsInformation();
         return *this;
     }
 
     // Logical assignment bitwise XOR operator that transforms internal binary data.
-    const BinaryDataEngine& BinaryDataEngine::operator^= (const BinaryDataEngine& other) const noexcept
+    BinaryDataEngine& BinaryDataEngine::operator^= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform ^= other.BitsTransform();
+        bitStreamTransform ^= other.BitsInformation();
         return *this;
     }
 

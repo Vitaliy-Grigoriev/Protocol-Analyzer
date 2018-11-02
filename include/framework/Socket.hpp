@@ -343,7 +343,7 @@ namespace analyzer::framework::net
          * @param [in] port - Destination port number.
          * @param [in] data - Pointer to data for sending.
          * @param [in] length - Length of sending data.
-         * @return True - if sending data is successful, otherwise - false.
+         * @return TRUE - if sending data is successful, otherwise - FALSE.
          */
         virtual bool SendTo (const char * /*host*/, uint16_t /*port*/, const char * /*data*/, std::size_t /*length*/) noexcept;
 

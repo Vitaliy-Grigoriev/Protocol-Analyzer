@@ -174,7 +174,7 @@ namespace analyzer::framework::common::types
         /**
          * @fn bool LockedDeque::IsEmpty() noexcept;
          * @brief Method that returns the internal state of deque.
-         * @return True - if the container size is 0, otherwise - false.
+         * @return TRUE - if the container size is 0, otherwise - FALSE.
          */
         bool IsEmpty(void) noexcept
         {
@@ -189,7 +189,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::Push (const Type &) noexcept;
          * @brief Method that push new value to front of deque.
          * @tparam [in] value - New value for insert.
-         * @return True - if push is successful, otherwise - false.
+         * @return TRUE - if push is successful, otherwise - FALSE.
          */
         bool Push (const Type& value) noexcept
         {
@@ -207,7 +207,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::PopBack (Type &) noexcept;
          * @brief Method that pop value from back of deque.
          * @tparam [out] result - Returned value.
-         * @return True - if pop back element is successful, otherwise - false.
+         * @return TRUE - if pop back element is successful, otherwise - FALSE.
          *
          * @note Use this method for pop the oldest value in the deque.
          */
@@ -230,7 +230,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::PopFront (Type &) noexcept;
          * @brief Method that pop value from front of deque.
          * @tparam [out] result - Returned value.
-         * @return True - if pop the front element is successful, otherwise - false.
+         * @return TRUE - if pop the front element is successful, otherwise - FALSE.
          */
         bool PopFront (Type& result) noexcept
         {
@@ -251,7 +251,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::Move (std::deque<Type> &) noexcept;
          * @brief Method that moves all internal values to outside STL std::deque<Type>.
          * @tparam [out] result - Returned value.
-         * @return True - if at least one element has been moved, otherwise - false.
+         * @return TRUE - if at least one element has been moved, otherwise - FALSE.
          */
         bool Move (std::deque<Type>& result) noexcept
         {
@@ -271,7 +271,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::Swap (LockedDeque<Type> &) noexcept;
          * @brief Method that swaps internal value with outside LockedDeque<Type> object.
          * @tparam [in,out] other - Swapped value reference.
-         * @return True - if swap is successful, otherwise - false.
+         * @return TRUE - if swap is successful, otherwise - FALSE.
          */
         bool Swap (LockedDeque<Type>& other) noexcept
         {
@@ -290,7 +290,7 @@ namespace analyzer::framework::common::types
          * @fn bool LockedDeque::Swap (std::deque<Type> &) noexcept;
          * @brief Method that swaps internal value with outside STL std::deque<Type>.
          * @tparam [in,out] other - Swapped value reference.
-         * @return True - if swap is successful, otherwise - false.
+         * @return TRUE - if swap is successful, otherwise - FALSE.
          */
         bool Swap (std::deque<Type>& other) noexcept
         {
@@ -305,7 +305,7 @@ namespace analyzer::framework::common::types
         /**
          * @fn bool LockedDeque::Clear() noexcept;
          * @brief Method that clears the deque.
-         * @return True - if clear is successful, otherwise - false.
+         * @return TRUE - if clear is successful, otherwise - FALSE.
          */
         bool Clear(void) noexcept
         {

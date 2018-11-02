@@ -6,6 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #include <utility>  // std::swap.
 
 #include "../../include/framework/BinaryDataEngine.hpp"

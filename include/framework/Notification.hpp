@@ -89,7 +89,7 @@ namespace analyzer::framework::task
          * @brief Method that expects the event signal until some time and then return the expected value.
          * @tparam [out] output - Output value of selected type if the event signal has arrived.
          * @tparam [in] time - The time to which the thread will wait the event signal.
-         * @return True - if the event signal has arrived and the expected value can be obtained, otherwise - false.
+         * @return TRUE - if the event signal has arrived and the expected value can be obtained, otherwise - FALSE.
          */
         template <typename Duration>
         bool WaitUntil (Type& output, const std::chrono::time_point<std::chrono::system_clock, Duration>& time) noexcept
@@ -108,7 +108,7 @@ namespace analyzer::framework::task
          * @brief Method that expects the event signal within the specified time and then return the expected value.
          * @tparam [out] output - Output value of selected type if the event signal has arrived.
          * @tparam [in] time - The time to which the thread will wait the event signal.
-         * @return True - if the event signal has arrived and the expected value can be obtained, otherwise - false.
+         * @return TRUE - if the event signal has arrived and the expected value can be obtained, otherwise - FALSE.
          */
         template <typename Rep, typename Period>
         bool WaitFor (Type& output, const std::chrono::duration<Rep, Period>& time) noexcept

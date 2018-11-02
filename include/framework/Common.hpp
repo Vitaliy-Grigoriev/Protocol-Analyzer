@@ -204,7 +204,7 @@ namespace analyzer::framework::common
          * @fn static inline bool isPrintable (const char) noexcept;
          * @brief Function that checks the char value on printable.
          * @param [in] symbol - One value in char type.
-         * @return True - if character is printable, otherwise - false.
+         * @return TRUE - if character is printable, otherwise - FALSE.
          */
         static inline bool isPrintable (const char symbol) noexcept {
             return (symbol >= 0x20 && symbol < 0x7f);
@@ -214,7 +214,7 @@ namespace analyzer::framework::common
          * @fn static inline bool isNumber (const char) noexcept;
          * @brief Function that checks the char value on number.
          * @param [in] symbol - One value in char type.
-         * @return True - if character is number, otherwise - false.
+         * @return TRUE - if character is number, otherwise - FALSE.
          */
         static inline bool isNumber (const char symbol) noexcept {
             return (symbol >= 0x30 && symbol <= 0x39);
@@ -244,7 +244,7 @@ namespace analyzer::framework::common
          * @fn bool checkFileExistence (const std::string_view &) noexcept;
          * @brief Function that checks file existence.
          * @param [in] path - Full or relative path to the file.
-         * @return True - if file is exist, otherwise - false.
+         * @return TRUE - if file is exist, otherwise - FALSE.
          */
         bool checkFileExistence (std::string_view /*path*/) noexcept;
 
@@ -261,7 +261,7 @@ namespace analyzer::framework::common
          * @brief Function that reads all data from file.
          * @param [in] path - Path to file.
          * @param [in,out] data - String value for assign.
-         * @return True - if the data is read from the file successfully, otherwise - false.
+         * @return TRUE - if the data is read from the file successfully, otherwise - FALSE.
          */
         bool readFileToEnd (std::string_view /*path*/, std::string & /*data*/) noexcept;
 
@@ -381,7 +381,7 @@ namespace analyzer::framework::common
      * struct is_supports_binary_operations<Type, typename, typename, typename, typename, typename, typename>;
      * @brief Structure that checks that variable has binary operators.
      * @tparam [in] Type - Typename of checked data type.
-     * @return True - if variable has binary operators, otherwise - false.
+     * @return TRUE - if variable has binary operators, otherwise - FALSE.
      */
     template <typename Type>
     struct is_supports_binary_operations<Type,

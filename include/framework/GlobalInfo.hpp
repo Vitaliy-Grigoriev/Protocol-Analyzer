@@ -97,7 +97,7 @@ namespace analyzer::framework::storage
          * @param [in] functor - Pointer to callback functor.
          * @param [in] module - Type of framework module (FRAMEWORK_MODULE_TYPES).
          * @param [in] callback - Type of module callback (MODULE_***_TYPES).
-         * @return True - if callback functor is set successfully, otherwise - false.
+         * @return TRUE - if callback functor is set successfully, otherwise - FALSE.
          *
          * @note This method is thread-safe.
          */

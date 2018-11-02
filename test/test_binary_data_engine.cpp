@@ -32,16 +32,19 @@ int32_t main (int32_t size, char** data)
         uint16_t WindowSize;
         uint16_t Checksum;
         uint16_t UrgentPointer;
-    } tcp { 0x00000000, 0x00000000, 0x0C, 0x00, 0x00FF, 0xAAAA, 0x0000 };
+    } const tcp { 0x00000000, 0x00000000, 0x0C, 0x00, 0x00FF, 0xAAAA, 0x0000 };
 #pragma pack(pop)
 
-    /*BinaryDataEngine buffer(sizeof(tcp), types::DATA_MODE_DEFAULT);
-    //buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
-    buffer.AssignReference(reinterpret_cast<std::byte*>(&tcp), sizeof(tcp));
-    uint32_t value = buffer.BitsTransform().Convert<uint32_t>(1000, 1100);
-    std::cout << value << std::endl;*/
 
-    //return EXIT_FAILURE;
+    /*const BinaryDataEngine buffer(reinterpret_cast<const std::byte*>(&tcp), sizeof(tcp));
+    buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
+    buffer.SetDataEndianType(types::DATA_BIG_ENDIAN, true);
+    auto value = buffer.BitsTransform().Convert<uint32_t>(1000, 1100);
+    buffer.BitsTransform().Invert(5);
+    std::cout << value.value() << std::endl;
+
+    return EXIT_FAILURE;*/
+
     const uint16_t field = 0x00FF;
     const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
     const uint16_t bit_pattern[10] = { 32, 32, 4, 3, 3, 6, 9, 7, 16, 16 };
@@ -166,7 +169,7 @@ int32_t main (int32_t size, char** data)
     const uint32_t value_9 = value_2 | value_3;
 
     BinaryDataEngine buffer_1;
-    const auto& engine_1 = buffer_1.BitsTransform();
+    const auto& engine_1 = buffer_1.BitsInformation();
     buffer_1.AssignData(&value_1, 1);
     std::cout << "Count 1: " << engine_1.Count() << "   " << engine_1 << std::endl;
     buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
@@ -174,12 +177,12 @@ int32_t main (int32_t size, char** data)
     buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
     BinaryDataEngine buffer_2;
-    const auto& engine_2 = buffer_2.BitsTransform();
+    const auto& engine_2 = buffer_2.BitsInformation();
     buffer_2.AssignData(&value_2, 1);
     std::cout << "Count 2: " << engine_2.Count() << "   " << engine_2 << std::endl;
 
     BinaryDataEngine buffer_3;
-    const auto& engine_3 = buffer_3.BitsTransform();
+    const auto& engine_3 = buffer_3.BitsInformation();
     buffer_3.AssignData(&value_3, 1);
     std::cout << "Count 3: " << engine_3.Count() << "   " << engine_3 << std::endl;
 
@@ -188,32 +191,32 @@ int32_t main (int32_t size, char** data)
 
 
     BinaryDataEngine buffer_r1;
-    const auto& engine_r1 = buffer_r1.BitsTransform();
+    const auto& engine_r1 = buffer_r1.BitsInformation();
     buffer_r1.AssignData(&value_4, 1);
     std::cout << "Count 4: " << engine_r1.Count() << "   " << engine_r1 << std::endl;
 
     BinaryDataEngine buffer_r2;
-    const auto& engine_r2 = buffer_r2.BitsTransform();
+    const auto& engine_r2 = buffer_r2.BitsInformation();
     buffer_r2.AssignData(&value_5, 1);
     std::cout << "Count 5: " << engine_r2.Count() << "   " << engine_r2 << std::endl;
 
     BinaryDataEngine buffer_r3;
-    const auto& engine_r3 = buffer_r3.BitsTransform();
+    const auto& engine_r3 = buffer_r3.BitsInformation();
     buffer_r3.AssignData(&value_6, 1);
     std::cout << "Count 6: " << engine_r3.Count() << "   " << engine_r3 << std::endl;
 
     BinaryDataEngine buffer_r4;
-    const auto& engine_r4 = buffer_r4.BitsTransform();
+    const auto& engine_r4 = buffer_r4.BitsInformation();
     buffer_r4.AssignData(&value_7, 1);
     std::cout << "Count 7: " << engine_r4.Count() << "   " << engine_r4 << std::endl;
 
     BinaryDataEngine buffer_r5;
-    const auto& engine_r5 = buffer_r5.BitsTransform();
+    const auto& engine_r5 = buffer_r5.BitsInformation();
     buffer_r5.AssignData(&value_8, 1);
     std::cout << "Count 8: " << engine_r5.Count() << "   " << engine_r5 << std::endl;
 
     BinaryDataEngine buffer_r6;
-    const auto& engine_r6 = buffer_r6.BitsTransform();
+    const auto& engine_r6 = buffer_r6.BitsInformation();
     buffer_r6.AssignData(&value_9, 1);
     std::cout << "Count 9: " << engine_r6.Count() << "   " << engine_r6 << std::endl;
 
@@ -222,22 +225,22 @@ int32_t main (int32_t size, char** data)
 
 
     BinaryDataEngine buffer_4 = engine_1 ^ engine_2;
-    const auto& engine_4 = buffer_4.BitsTransform();
+    const auto& engine_4 = buffer_4.BitsInformation();
     std::cout << "Count 4: " << engine_4.Count() << "   " << engine_4 << std::endl;
 
     BinaryDataEngine buffer_5 = engine_2 ^ engine_3;
-    const auto& engine_5 = buffer_5.BitsTransform();
+    const auto& engine_5 = buffer_5.BitsInformation();
     std::cout << "Count 5: " << engine_5.Count() << "   " << engine_5 << std::endl;
 
     buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_6 = engine_1 ^ engine_2;
-    const auto& engine_6 = buffer_6.BitsTransform();
+    const auto& engine_6 = buffer_6.BitsInformation();
     std::cout << "Count 4: " << engine_6.Count() << "   " << engine_6 << std::endl;
     buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
     buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_7 = engine_2 ^ engine_3;
-    const auto& engine_7 = buffer_7.BitsTransform();
+    const auto& engine_7 = buffer_7.BitsInformation();
     std::cout << "Count 5: " << engine_7.Count() << "   " << engine_7 << std::endl;
     buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
@@ -246,22 +249,22 @@ int32_t main (int32_t size, char** data)
 
 
     BinaryDataEngine buffer_8 = engine_1 & engine_2;
-    const auto& engine_8 = buffer_8.BitsTransform();
+    const auto& engine_8 = buffer_8.BitsInformation();
     std::cout << "Count 6: " << engine_8.Count() << "   " << engine_8 << std::endl;
 
     BinaryDataEngine buffer_9 = engine_2 & engine_3;
-    const auto& engine_9 = buffer_9.BitsTransform();
+    const auto& engine_9 = buffer_9.BitsInformation();
     std::cout << "Count 7: " << engine_9.Count() << "   " << engine_9 << std::endl;
 
     buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_10 = engine_1 & engine_2;
-    const auto& engine_10 = buffer_10.BitsTransform();
+    const auto& engine_10 = buffer_10.BitsInformation();
     std::cout << "Count 6: " << engine_10.Count() << "   " << engine_10 << std::endl;
     buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
     buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_11 = engine_2 & engine_3;
-    const auto& engine_11 = buffer_11.BitsTransform();
+    const auto& engine_11 = buffer_11.BitsInformation();
     std::cout << "Count 7: " << engine_11.Count() << "   " << engine_11 << std::endl;
     buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
@@ -270,22 +273,22 @@ int32_t main (int32_t size, char** data)
 
 
     BinaryDataEngine buffer_12 = engine_1 | engine_2;
-    const auto& engine_12 = buffer_12.BitsTransform();
+    const auto& engine_12 = buffer_12.BitsInformation();
     std::cout << "Count 8: " << engine_12.Count() << "   " << engine_12 << std::endl;
 
     BinaryDataEngine buffer_13 = engine_2 | engine_3;
-    const auto& engine_13 = buffer_13.BitsTransform();
+    const auto& engine_13 = buffer_13.BitsInformation();
     std::cout << "Count 9: " << engine_13.Count() << "   " << engine_13 << std::endl;
 
     buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_14 = engine_1 | engine_2;
-    const auto& engine_14 = buffer_14.BitsTransform();
+    const auto& engine_14 = buffer_14.BitsInformation();
     std::cout << "Count 8: " << engine_14.Count() << "   " << engine_14 << std::endl;
     buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 
     buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_15 = engine_2 | engine_3;
-    const auto& engine_15 = buffer_15.BitsTransform();
+    const auto& engine_15 = buffer_15.BitsInformation();
     std::cout << "Count 9: " << engine_15.Count() << "   " << engine_15 << std::endl;
     buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
 

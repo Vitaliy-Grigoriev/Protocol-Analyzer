@@ -138,7 +138,7 @@ namespace analyzer::framework::common::types
          * @tparam [in] memory - POD type structure for assignment.
          * @param [in] pattern - Array that contains the byte-pattern of inputted structured data.
          * @param [in] size - Size of the pattern array.
-         * @return True - if data assignment is successful, otherwise - false.
+         * @return TRUE - if data assignment is successful, otherwise - FALSE.
          *
          * @note Input type MUST be a POD type.
          */
@@ -181,7 +181,7 @@ namespace analyzer::framework::common::types
          * @brief Method that creates empty structured data template.
          * @param [in] pattern - Array that contains the byte-pattern of inputted structured data.
          * @param [in] size - Size of the byte-pattern array.
-         * @return True - if creating the data structure template successfully, otherwise - false.
+         * @return TRUE - if creating the data structure template successfully, otherwise - FALSE.
          */
         bool CreateTemplate (const uint16_t * /*pattern*/, uint16_t /*size*/) noexcept;
 
@@ -196,7 +196,7 @@ namespace analyzer::framework::common::types
          * @fn void BinaryStructuredDataEngine::SetDataEndianType (DATA_ENDIAN_TYPE) noexcept;
          * @brief Method that changes endian type of stored data in BinaryStructuredDataEngine class.
          * @param [in] endian - New data endian type.
-         * @return True - if endian type is changed successfully, otherwise - false.
+         * @return TRUE - if endian type is changed successfully, otherwise - FALSE.
          */
         void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/) noexcept;
 
@@ -205,14 +205,14 @@ namespace analyzer::framework::common::types
          * @brief Method that returns the size of structured data in bytes.
          * @return Size of stored structured data in bytes.
          */
-        inline std::size_t ByteSize(void) const noexcept { return data.BytesTransform().Length(); }
+        inline std::size_t ByteSize(void) const noexcept { return data.Size(); }
 
         /**
          * @fn inline std::size_t BinaryStructuredDataEngine::BitSize() const noexcept;
          * @brief Method that returns the size of structured data in bits.
          * @return Size of stored structured data in bits.
          */
-        inline std::size_t BitSize(void) const noexcept { return data.BitsTransform().Length(); }
+        inline std::size_t BitSize(void) const noexcept { return data.BitsInformation().Length(); }
 
         /**
          * @fn template <DATA_ENDIAN_TYPE Endian, typename Type>
@@ -222,7 +222,7 @@ namespace analyzer::framework::common::types
          * @tparam [in] Type - Typename of copied structured data.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] value - Field value for assignment to selected field of structured data in specified data endian type.
-         * @return True - if value assignment is successful, otherwise - false.
+         * @return TRUE - if value assignment is successful, otherwise - FALSE.
          *
          * @note Input type MUST be a POD type.
          */
@@ -302,7 +302,7 @@ namespace analyzer::framework::common::types
                 {
                     const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex + idx);
                     if (bitOffset != BinaryDataEngine::npos) {
-                        result = static_cast<Type>((result << 1) | (data.BitsTransform().GetBitValue(bitOffset) == true ? 0x01 : 0x00));
+                        result = static_cast<Type>((result << 1) | (data.BitsInformation().GetBitValue(bitOffset) == true ? 0x01 : 0x00));
                     }
                 }
                 return result;
@@ -324,16 +324,16 @@ namespace analyzer::framework::common::types
 
         /**
          * @fn template <uint8_t Mode>
-         * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) const noexcept;
+         * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
          * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @param [in] value - Bit value for assignment to selected field bit offset of structured data. Default: true.
-         * @return True - if value assignment is successful, otherwise - false.
+         * @return TRUE - if value assignment is successful, otherwise - FALSE.
          */
         template <uint8_t Mode = DATA_MODE_DEPENDENT>
-        bool SetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex, const bool value = true) const noexcept
+        bool SetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex, const bool value = true) noexcept
         {
             if (fieldIndex < fieldsCount && bitIndex < dataPattern[fieldIndex] * 8)
             {
@@ -364,7 +364,7 @@ namespace analyzer::framework::common::types
             {
                 const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
                 if (bitOffset != BinaryDataEngine::npos) {
-                    return data.BitsTransform().GetBitValue(bitOffset);
+                    return data.BitsInformation().GetBitValue(bitOffset);
                 }
             }
             return false;
@@ -425,7 +425,7 @@ namespace analyzer::framework::common::types
         /**
          * @fn inline operator BinaryStructuredDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryStructuredDataEngine class.
-         * @return True - if BinaryStructuredDataEngine class is not empty, otherwise - false.
+         * @return TRUE - if BinaryStructuredDataEngine class is not empty, otherwise - FALSE.
          */
         inline operator bool(void) const noexcept { return data == true; }
 
@@ -467,10 +467,10 @@ namespace analyzer::framework::common::types
 
                     if (engine.DataEndianType() == DATA_BIG_ENDIAN)
                     {
-                        for (std::size_t idx = 0; idx < engine.data.BitsTransform().Length(); ++idx)
+                        for (std::size_t idx = 0; idx < engine.data.BitsInformation().Length(); ++idx)
                         {
                             if (idx % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                            stream << engine.data.BitsTransform().Test(idx);
+                            stream << engine.data.BitsInformation().Test(idx);
                             if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                 if (++patternBlock == engine.fieldsCount) { break; }
                                 stream << "    ";
@@ -494,7 +494,7 @@ namespace analyzer::framework::common::types
                                 for (std::size_t idx = offset; idx < offset + 8; ++idx)
                                 {
                                     if (commonBitCount++ % 8 == 0 && blockBitCount != 0) { stream << ' '; }
-                                    stream << engine.data.BitsTransform().Test(idx);
+                                    stream << engine.data.BitsInformation().Test(idx);
                                     if (++blockBitCount == engine.dataPattern[patternBlock] * 8) {
                                         if (++patternBlock == engine.fieldsCount) { break; }
                                         stream << "    ";
