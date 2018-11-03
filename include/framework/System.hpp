@@ -3,6 +3,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_SYSTEM_HPP
 #define PROTOCOL_ANALYZER_SYSTEM_HPP
 
@@ -32,9 +33,6 @@ namespace analyzer::framework::system
     std::unique_ptr<Type> allocMemoryForObject (Args&&... args) noexcept
     {
         try {
-            if (sizeof...(args) == 0) {
-                return std::make_unique<Type>();
-            }
             return std::make_unique<Type>(std::forward<Args>(args)...);
         }
         catch (const std::exception& /*err*/) {
@@ -97,7 +95,10 @@ namespace analyzer::framework::system
         try {
             auto array = std::make_unique<std::unique_ptr<Type>[]>(size);
 
-            auto construct = [&]() noexcept { return std::make_unique<Type>(std::forward<Args>(args)...); };
+            auto construct = [tup = std::make_tuple(std::move(args)...)] () -> decltype(auto) {
+                return std::make_unique<Type>(std::forward<Args>(tup)...);
+            };
+
             std::generate(array.get(), array.get() + size, construct);
             return array;
         }

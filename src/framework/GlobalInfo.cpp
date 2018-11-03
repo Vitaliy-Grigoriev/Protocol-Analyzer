@@ -6,8 +6,9 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include "../../include/framework/GlobalInfo.hpp"
+
 #include "../../include/framework/System.hpp"  // system::allocMemoryForArray.
+#include "../../include/framework/GlobalInfo.hpp"
 
 
 namespace analyzer::framework::storage
@@ -40,7 +41,7 @@ namespace analyzer::framework::storage
     }
 
     // Method that sets callback functor of selected type.
-    bool GlobalInfo::SetCallback (BaseCallbackFunctor* const functor, const uint16_t module, const uint16_t callback) noexcept
+    bool GlobalInfo::SetCallback (callbacks::BaseCallbackFunctor* const functor, const uint16_t module, const uint16_t callback) noexcept
     {
         if (module >= modules::FRAMEWORK_MODULE_TYPES_SIZE) {
             LOG_ERROR("GlobalInfo.SetCallback: Incorrect input module type - ", module, '.');
@@ -56,7 +57,7 @@ namespace analyzer::framework::storage
             }
 
             if (callbacks[module] == nullptr) {
-                callbacks[module] = system::allocMemoryForArray<std::unique_ptr<BaseCallbackFunctor>>(callbacksSize);
+                callbacks[module] = system::allocMemoryForArray<std::unique_ptr<callbacks::BaseCallbackFunctor>>(callbacksSize);
             }
 
             if (callbacks[module][callback] != nullptr) {

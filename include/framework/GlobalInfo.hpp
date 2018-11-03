@@ -17,8 +17,6 @@
 
 namespace analyzer::framework::storage
 {
-    using callbacks::BaseCallbackFunctor;
-
     /**
      * @class GlobalInfo   GlobalInfo.hpp   "include/framework/GlobalInfo.hpp"
      * @brief This class defined the interface for storing global information through the framework.
@@ -35,7 +33,7 @@ namespace analyzer::framework::storage
          * @var std::array<std::unique_ptr<std::unique_ptr<BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
          * @brief Variable that consist of various global callbacks.
          */
-        std::array<std::unique_ptr<std::unique_ptr<BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
+        std::array<std::unique_ptr<std::unique_ptr<callbacks::BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
 
         /**
          * @fn static uint16_t GlobalInfo::GetModuleCallbacksSize (uint16_t) noexcept;
@@ -73,7 +71,7 @@ namespace analyzer::framework::storage
          * @param [in] callback - Type of module callback (MODULE_***_TYPES).
          * @return Pointer to the BaseCallbackFunctor functor of selected type if it exists, otherwise - nullptr.
          */
-        template <typename Type, typename = std::enable_if_t<std::is_base_of_v<BaseCallbackFunctor, Type>>>
+        template <typename Type, typename = std::enable_if_t<std::is_base_of_v<callbacks::BaseCallbackFunctor, Type>>>
         Type* GetCallback (const uint16_t module, const uint16_t callback) const noexcept
         {
             if (module >= modules::FRAMEWORK_MODULE_TYPES_SIZE) {
@@ -92,7 +90,7 @@ namespace analyzer::framework::storage
         }
 
         /**
-         * @fn bool GlobalInfo::SetCallback (BaseCallbackFunctor *, uint16_t, uint16_t) noexcept;
+         * @fn bool GlobalInfo::SetCallback (callbacks::BaseCallbackFunctor *, uint16_t, uint16_t) noexcept;
          * @brief Method that sets callback functor of selected type.
          * @param [in] functor - Pointer to callback functor.
          * @param [in] module - Type of framework module (FRAMEWORK_MODULE_TYPES).
@@ -101,7 +99,7 @@ namespace analyzer::framework::storage
          *
          * @note This method is thread-safe.
          */
-        bool SetCallback (BaseCallbackFunctor * /*functor*/, uint16_t /*module*/, uint16_t /*callback*/) noexcept;
+        bool SetCallback (callbacks::BaseCallbackFunctor * /*functor*/, uint16_t /*module*/, uint16_t /*callback*/) noexcept;
 
         /**
          * @fn GlobalInfo::~GlobalInfo();

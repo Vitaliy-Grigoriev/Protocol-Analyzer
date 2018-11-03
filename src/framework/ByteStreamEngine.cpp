@@ -49,7 +49,7 @@ namespace analyzer::framework::common::types
      */
     static void rightRoundBytesShiftBE (const std::byte* head, std::byte* end, std::byte* newEnd) noexcept
     {
-        if (head >= end || newEnd < head || newEnd >= --end) { return; }
+        if (head >= end || newEnd < head || (newEnd >= --end)) { return; }
         std::byte* prev = newEnd;
         const std::byte* const rend = std::prev(head);
 
@@ -97,7 +97,7 @@ namespace analyzer::framework::common::types
      */
     static void rightDirectBytesShiftBE (std::byte* head, std::byte* end, std::byte* newEnd, const std::byte fillByte = std::byte(0x00)) noexcept
     {
-        if (head >= end || newEnd < head || newEnd >= --end) { return; }
+        if (head >= end || newEnd < head || (newEnd >= --end)) { return; }
         std::byte* prev = newEnd;
         const std::byte* const rend = std::prev(head);
 

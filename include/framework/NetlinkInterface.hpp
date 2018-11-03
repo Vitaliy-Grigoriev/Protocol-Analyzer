@@ -203,11 +203,11 @@ namespace analyzer::framework::net
         NetlinkRequester & operator= (const NetlinkRequester &) = delete;
 
         /**
-         * @fn NetlinkRequester::NetlinkRequester (uint8_t) noexcept;
+         * @fn explicit NetlinkRequester::NetlinkRequester (uint8_t) noexcept;
          * @brief Constructor of NetlinkRequester class.
          * @param [in] family - Family of network interface. Default: AF_UNSPEC.
          */
-        NetlinkRequester (uint8_t /*family*/ = AF_UNSPEC) noexcept;
+        explicit NetlinkRequester (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
         /**
          * @fn bool NetworkRequester::GetNetworkInterfaces (std::list<InterfaceInfo> &, uint8_t) noexcept;
