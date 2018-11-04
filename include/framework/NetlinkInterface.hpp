@@ -154,11 +154,10 @@ namespace analyzer::framework::net
          */
         bool Bind (uint32_t /*groups*/ = DEFAULT_NETLINK_GROUPS) noexcept;
 
-
         /**
          * @brief Default destructor of NetlinkSocket class.
          */
-        ~NetlinkSocket(void) = default;
+        ~NetlinkSocket(void) noexcept;
     };
 
 

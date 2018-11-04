@@ -14,8 +14,13 @@
 
 namespace analyzer::framework::common::types
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+
     // Variable that stores system endian.
     inline const DATA_ENDIAN_TYPE BinaryDataEngine::system_endian = CheckSystemEndian();
+
+#pragma clang diagnostic pop
 
 
     // Copy constructor of BinaryDataEngine class.

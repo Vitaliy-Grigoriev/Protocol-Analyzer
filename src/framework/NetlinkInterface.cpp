@@ -44,6 +44,12 @@ namespace analyzer::framework::net
         return false;
     }
 
+    // Default destructor of NetlinkSocket class.
+    // Avoidance warning "-Wweak-vtables".
+    NetlinkSocket::~NetlinkSocket(void) noexcept { }
+
+
+
     bool NetlinkReceiveFunctor (const char* const data, std::size_t length) noexcept
     {
         const struct nlmsghdr* msg = reinterpret_cast<const struct nlmsghdr*>(data);
@@ -112,7 +118,7 @@ namespace analyzer::framework::net
                 }
 
                 // Check active status of the interface.
-                if (iface->ifi_flags & IFF_UP == 0u)
+                if ((iface->ifi_flags & IFF_UP) == 0U)
                 {
                     LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Skip the following interface because its status is DOWN.");
                     continue;

@@ -38,7 +38,7 @@ const net::InterfaceRoutesInfo* GetBestRouteForIpAddress (const net::IpAddress& 
             {
                 if (rt->isDefault == true) { continue; }
 
-                if (((rt->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & rt->destinationMask.ipv4.s_addr) == 0u)
+                if (((rt->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & rt->destinationMask.ipv4.s_addr) == 0U)
                 {
                     routes.push_back(&*rt);
                 }

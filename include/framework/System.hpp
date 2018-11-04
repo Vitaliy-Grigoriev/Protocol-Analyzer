@@ -92,9 +92,9 @@ namespace analyzer::framework::system
         try {
             auto array = std::make_unique<std::unique_ptr<Type>[]>(size);
 
-            auto construct = [tup = std::make_tuple(std::move(args)...)] () -> decltype(auto)
+            auto construct = [tup = std::make_tuple(std::move(args)...)]()
             {
-                return std::apply([] (const auto&... parameters) -> decltype(auto) {
+                return std::apply([](const auto&... parameters) {
                     return std::make_unique<Type>(parameters...);
                 }, tup);
             };

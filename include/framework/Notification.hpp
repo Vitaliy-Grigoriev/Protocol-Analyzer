@@ -6,6 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_NOTIFICATION_HPP
 #define PROTOCOL_ANALYZER_NOTIFICATION_HPP
 
@@ -20,8 +21,9 @@ namespace analyzer::framework::task
     class NotificationSubject;
 
     /**
-     * @class Notification Notification.hpp "include/framework/Notification.hpp"
+     * @class Notification   Notification.hpp   "include/framework/Notification.hpp"
      * @brief Class that defines a notification template.
+     *
      * @tparam [in] Type - The internal expected value type.
      *
      * @warning Previously initialize the NotificationInit class for correct work the notification template.
@@ -47,7 +49,7 @@ namespace analyzer::framework::task
          * @tparam [in] value - Init value.
          */
         explicit Notification (const Type& value) noexcept
-                : internalValue(value)
+            : internalValue(value)
         { }
 
     public:
@@ -113,8 +115,9 @@ namespace analyzer::framework::task
 
 
     /**
-     * @class NotificationObserver Notification.hpp "include/framework/Notification.hpp"
+     * @class NotificationObserver   Notification.hpp   "include/framework/Notification.hpp"
      * @brief Class that defines an interface for observer part for event signal wait.
+     *
      * @tparam [in] Type - The internal expected value type.
      *
      * @warning Previously initialize the NotificationInit class for correct work the notification template.
@@ -142,8 +145,9 @@ namespace analyzer::framework::task
 
 
     /**
-     * @class NotificationSubject Notification.hpp "include/framework/Notification.hpp"
+     * @class NotificationSubject   Notification.hpp   "include/framework/Notification.hpp"
      * @brief Class that defines an interface for subject part for sent event signal.
+     *
      * @tparam [in] Type - The internal expected value type.
      *
      * @warning Previously initialize the NotificationInit class for correct work the notification template.
@@ -171,7 +175,7 @@ namespace analyzer::framework::task
         }
 
         explicit NotificationSubject (const Type& value) noexcept
-                : Notification<Type>(value)
+            : Notification<Type>(value)
         {
             Notification<Type>::mutex.Lock();
         }
@@ -185,13 +189,13 @@ namespace analyzer::framework::task
         {
             Notification<Type>::mutex.ResetFlag();
             Notification<Type>::mutex.Unlock();
-            while (Notification<Type>::mutex.IsAlreadyLocked() == false) { }
+            while (Notification<Type>::mutex.IsAlreadyLocked() == false);
             Notification<Type>::mutex.Lock();
         }
 
         virtual NotificationObserver<Type>* ToObserver(void) noexcept
         {
-            auto base = static_cast<Notification<Type> *>(this);
+            auto base = static_cast<Notification<Type>*>(this);
             return dynamic_cast<NotificationObserver<Type> *>(base);
         }
     };
@@ -223,8 +227,8 @@ namespace analyzer::framework::task
 
 
         explicit NotificationInit (const Type& value) noexcept
-                : NotificationSubject<Type>(value),
-                  NotificationObserver<Type>()
+            : NotificationSubject<Type>(value),
+              NotificationObserver<Type>()
         { }
 
         inline NotificationObserver<Type>* ToObserver(void) noexcept final
