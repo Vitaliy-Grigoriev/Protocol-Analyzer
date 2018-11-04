@@ -21,17 +21,14 @@ namespace analyzer::framework::common::types
     {
     private:
         /**
-         * @var const BinaryDataEngine & storedData;
          * @brief Const lvalue reference of the BinaryDataEngine owner class.
          */
         const BinaryDataEngine & storedData;
         /**
-         * @var std::size_t startBitPosition;
          * @brief Start bit position in BinaryDataEngine data.
          */
         std::size_t startBitPosition = 0;
         /**
-         * @var std::size_t endPosition;
          * @brief Length of the bit sequence in BinaryDataEngine data.
          */
         std::size_t sequenceLength = 0;
@@ -44,8 +41,8 @@ namespace analyzer::framework::common::types
         BitReferenceContainer & operator= (const BitReferenceContainer &) = delete;
 
         /**
-         * @fn explicit BitReferenceContainer::BitReferenceContainer (const BinaryDataEngine &, const std::size_t, const std::size_t) noexcept;
          * @brief Constructor of BitReferenceContainer class.
+         *
          * @param [in] owner - Const lvalue reference of BinaryDataEngine owner class.
          * @param [in] start - Start bit position in BinaryDataEngine data. Default: 0.
          * @param [in] length - Length of the bit sequence in BinaryDataEngine data. Default: 1.
@@ -55,14 +52,13 @@ namespace analyzer::framework::common::types
         { }
 
         /**
-         * @fn BitReferenceContainer::~BitReferenceContainer(void) noexcept;
          * @brief Default destructor.
          */
         ~BitReferenceContainer(void) noexcept = default;
 
         /**
-         * @fn inline void BitReferenceContainer::SetRange (const std::size_t, const std::size_t) noexcept;
          * @brief Method that sets new range of bits in BinaryDataEngine class.
+         *
          * @param [in] start - Start bit position in BinaryDataEngine data.
          * @param [in] length - Length of the bit sequence in BinaryDataEngine data. Default: 0.
          *
@@ -77,15 +73,15 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn inline std::size_t BitReferenceContainer::Length(void) const noexcept;
          * @brief Method that returns the length of the referenced bit sequence.
+         *
          * @return Length of the referenced bit sequence.
          */
         inline std::size_t Length(void) const noexcept { return sequenceLength; }
 
         /**
-         * @fn bool BitReferenceContainer::operator[] (std::size_t) const noexcept;
          * @brief Operator that returns the value of bit under the specified index.
+         *
          * @param [in] index - Index of bit in the referenced bit sequence.
          * @return Boolean value that indicates about the value of the selected bit.
          */

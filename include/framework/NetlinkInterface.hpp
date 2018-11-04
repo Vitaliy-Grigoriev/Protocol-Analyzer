@@ -140,15 +140,15 @@ namespace analyzer::framework::net
         NetlinkSocket & operator= (const NetlinkSocket &) = delete;
 
         /**
-         * @fn explicit NetlinkSocket::NetlinkSocket (uint32_t) noexcept;
          * @brief Constructor of NetlinkSocket class.
+         *
          * @param [in] timeout - Timeout (in seconds) during which data will be read from the socket. Default: DEFAULT_NETLINK_TIMEOUT.
          */
         explicit NetlinkSocket (uint32_t /*timeout*/ = DEFAULT_NETLINK_TIMEOUT) noexcept;
 
         /**
-         * @fn bool NetlinkSocket::Bind (uint32_t) noexcept;
          * @brief Method that associates a Netlink socket PID with a Netlink multicast groups.
+         *
          * @param [in] groups - Multicast groups for listening. Default: DEFAULT_NETLINK_GROUPS.
          * @return Boolean value that indicates the binding status.
          */
@@ -156,7 +156,6 @@ namespace analyzer::framework::net
 
 
         /**
-         * @fn NetlinkSocket::~NetlinkSocket();
          * @brief Default destructor of NetlinkSocket class.
          */
         ~NetlinkSocket(void) = default;
@@ -174,17 +173,14 @@ namespace analyzer::framework::net
     {
     private:
         /**
-         * @var std::unique_ptr<NetlinkSocket> sock;
          * @brief Pointer to Netlink socket for interact with kernel space.
          */
         std::unique_ptr<NetlinkSocket> sock = nullptr;
         /**
-         * @var uint32_t sequenceNumber;
          * @brief Variable that indicates the sequence number in Netlink header.
          */
         uint32_t sequenceNumber = 0;
         /**
-         * @var uint8_t interfaceFamily;
          * @brief Variable that indicates the family of the network interfaces.
          */
         uint8_t interfaceFamily = AF_UNSPEC;
@@ -203,38 +199,37 @@ namespace analyzer::framework::net
         NetlinkRequester & operator= (const NetlinkRequester &) = delete;
 
         /**
-         * @fn explicit NetlinkRequester::NetlinkRequester (uint8_t) noexcept;
          * @brief Constructor of NetlinkRequester class.
+         *
          * @param [in] family - Family of network interface. Default: AF_UNSPEC.
          */
         explicit NetlinkRequester (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
         /**
-         * @fn bool NetworkRequester::GetNetworkInterfaces (std::list<InterfaceInfo> &, uint8_t) noexcept;
          * @brief Method that returns the list of network interfaces of selected family in the system.
+         *
          * @param [in] interfaces - List of InterfaceInfo structures for filling.
          * @return Boolean value that indicates about the status of the request.
          */
         bool GetNetworkInterfaces (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
 
         /**
-         * @fn bool NetworkRequester::GetInterfacesAddresses (std::list<InterfaceInfo> &, uint8_t) noexcept;
          * @brief Method that fills the InterfaceInfo structures by network interface addresses.
+         *
          * @param [in] interfaces - List of InterfaceInfo structures which received from 'GetNetworkInterfaces' method.
          * @return Boolean value that indicates about the status of the request.
          */
         bool GetInterfacesAddresses (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
 
         /**
-         * @fn bool NetworkRequester::GetInterfacesRoutes (std::list<InterfaceInfo> &, uint8_t) noexcept;
          * @brief Method that fills the InterfaceInfo structures by network interface routes.
+         *
          * @param [in] interfaces - List of InterfaceInfo structures which received from 'GetNetworkInterfaces' method.
          * @return Boolean value that indicates about the status of the request.
          */
         bool GetInterfacesRoutes (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
 
         /**
-         * @fn NetlinkRequester::~NetlinkRequester();
          * @brief Default destructor of NetlinkRequester class.
          */
         ~NetlinkRequester(void) = default;

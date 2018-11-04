@@ -18,9 +18,8 @@
 namespace analyzer::framework::system
 {
     /**
-      * @fn template <typename Type, typename... Args>
-      * std::unique_ptr<Type> allocMemoryForObject (Args &&...) noexcept;
       * @brief Function that allocates memory for object of selected type and constructs it.
+      *
       * @tparam [in] Type - Typename of allocated data.
       * @tparam [in] args - Arguments for construct the object.
       * @return Smart pointer to allocated object of selected type object.
@@ -41,9 +40,8 @@ namespace analyzer::framework::system
     }
 
     /**
-      * @fn template <typename Type>
-      * std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t, const void *, const std::size_t) noexcept;
       * @brief Function that allocates memory for array of selected type and if needed fills it.
+      *
       * @tparam [in] Type - Typename of allocated data.
       * @param [in] count - The number of elements of selected type.
       * @param [in] data - Pointer to any data for copy. Default: nullptr.
@@ -77,9 +75,8 @@ namespace analyzer::framework::system
     }
 
     /**
-      * @fn template <typename Type, typename... Args>
-      * std::unique_ptr<std::unique_ptr<Type>[]> allocMemoryForArrayOfObjects (const std::size_t, Args &&...) noexcept;
       * @brief Function that allocates memory for array of selected pointer type and then allocates memory for each object and constructs them.
+      *
       * @tparam [in] Type - Typename of allocated data.
       * @param [in] size - Size of array of selected smart pointer type.
       * @tparam [in] args - Arguments for construct each object in array.
@@ -95,8 +92,11 @@ namespace analyzer::framework::system
         try {
             auto array = std::make_unique<std::unique_ptr<Type>[]>(size);
 
-            auto construct = [tup = std::make_tuple(std::move(args)...)] () -> decltype(auto) {
-                return std::make_unique<Type>(std::forward<Args>(tup)...);
+            auto construct = [tup = std::make_tuple(std::move(args)...)] () -> decltype(auto)
+            {
+                return std::apply([] (const auto&... parameters) -> decltype(auto) {
+                    return std::make_unique<Type>(parameters...);
+                }, tup);
             };
 
             std::generate(array.get(), array.get() + size, construct);

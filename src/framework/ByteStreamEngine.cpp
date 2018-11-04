@@ -18,8 +18,8 @@ namespace analyzer::framework::common::types
     /* ************************************************** Support ************************************************** */
 
     /**
-     * @fn static void leftRoundBytesShiftBE (std::byte *, const std::byte *, std::byte *) noexcept;
      * @brief Support function that performs left byte round shift to the selected byte.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] newHead - Byte to which the left round byte shift is performed.
@@ -41,8 +41,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static void rightRoundBytesShiftBE (const std::byte *, std::byte *, std::byte *) noexcept;
      * @brief Support function that performs right byte round shift to the selected byte.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] newEnd - Byte to which the right round byte shift is performed.
@@ -65,8 +65,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static void leftDirectBytesShiftBE (std::byte *, const std::byte *, std::byte *, const std::byte) noexcept;
      * @brief Support function that performs left byte direct shift to the selected byte in big-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] newHead - Byte to which the left direct byte shift is performed.
@@ -88,8 +88,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static void rightDirectBytesShiftBE (std::byte *, std::byte *, std::byte *, const std::byte) noexcept;
      * @brief Support function that performs right byte direct shift to the selected byte in big-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] newEnd - Byte to which the right direct byte shift is performed.
@@ -112,8 +112,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void leftRoundBytesShiftBE (std::byte *, const std::byte *, const std::size_t) noexcept;
      * @brief Support function that performs left byte round shift by a specified byte offset in big-endian format.
+     *
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for left round byte shift.
@@ -124,8 +124,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void leftRoundBytesShiftLE (const std::byte *, std::byte *, const std::size_t) noexcept;
      * @brief Support function that performs left byte round shift by a specified byte offset in little-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for left round byte shift.
@@ -136,8 +136,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void rightRoundBytesShiftBE (const std::byte *, std::byte *, const std::size_t) noexcept;
      * @brief Support function that performs right byte round shift by a specified byte offset in big-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for right round byte shift.
@@ -148,8 +148,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void rightRoundBytesShiftLE (std::byte *, const std::byte *, const std::size_t) noexcept;
      * @brief Support function that performs right byte round shift by a specified byte offset in little-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for right round byte shift.
@@ -160,8 +160,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void leftDirectBytesShiftBE (std::byte *, const std::byte *, const std::size_t, const std::byte) noexcept;
      * @brief Support function that performs left byte direct shift by a specified byte offset in big-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for left direct byte shift.
@@ -173,8 +173,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void leftDirectBytesShiftLE (std::byte *, std::byte *, const std::size_t, const std::byte) noexcept;
      * @brief Support function that performs left byte direct shift by a specified byte offset in little-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for left direct byte shift.
@@ -186,8 +186,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void rightDirectBytesShiftBE (std::byte *, std::byte *, const std::size_t, const std::byte) noexcept;
      * @brief Support function that performs right byte direct shift by a specified byte offset in big-endian format.
+     *
      * @param [in] head - Pointer to start position in byte sequence.
      * @param [in] end - Pointer to end position in byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for right direct byte shift.
@@ -199,8 +199,8 @@ namespace analyzer::framework::common::types
     }
 
     /**
-     * @fn static inline void rightDirectBytesShiftLE (std::byte *, const std::byte *, const std::size_t, const std::byte) noexcept;
      * @brief Support function that performs right byte direct shift by a specified byte offset in little-endian format.
+     *
      * @param [in] head - Start position of the byte sequence.
      * @param [in] end - End position of the byte sequence (the element following the last one).
      * @param [in] shift - Byte offset for right direct byte shift.

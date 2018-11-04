@@ -19,17 +19,15 @@ namespace analyzer::framework::log
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 
     /**
-      * @var static std::unordered_map<int32_t, std::string> errors;
-      * @brief Container that consists of string definitions of linux system errors.
-      */
+     * @brief Container that consists of string definitions of linux system errors.
+     */
     static std::unordered_map<int32_t, std::string> errors;
 
 #pragma clang diagnostic pop
 
     /**
-      * @fn static void SetErrorStrings() noexcept;
-      * @brief Function that fills the container of the linux system errors.
-      */
+     * @brief Function that fills the container which consists of linux system errors.
+     */
     static void SetErrorStrings(void) noexcept;
 
 

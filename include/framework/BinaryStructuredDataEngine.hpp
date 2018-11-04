@@ -32,33 +32,28 @@ namespace analyzer::framework::common::types
     {
     private:
         /**
-         * @var BinaryDataEngine data;
          * @brief Variable that stores binary structured data.
          *
          * @note This variable is always represents in STRUCTURED_DATA_HANDLING_MODE mode.
          */
         BinaryDataEngine data;
         /**
-         * @var uint16_t fieldsCount;
          * @brief Count of fields in stored structured data.
          */
         uint16_t fieldsCount = 0;
         /**
-         * @var std::unique_ptr<uint16_t[]> dataPattern;
          * @brief Array that contains the pattern of stored structured data in bits.
          */
         std::unique_ptr<uint16_t[]> dataPattern = nullptr;
         /**
-         * @var DATA_ENDIAN_TYPE dataEndianType;
          * @brief Endian type of stored structured data.
          */
         DATA_ENDIAN_TYPE dataEndianType = BinaryDataEngine::system_endian;
 
 
         /**
-         * @fn template <uint8_t Mode>
-         * std::size_t BinaryStructuredDataEngine::GetBitOffset (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit offset in selected field bit index of structured data.
+         *
          * @tparam [in] Mode - Type of input data handling mode. Default: DATA_MODE_INDEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
@@ -89,23 +84,22 @@ namespace analyzer::framework::common::types
     public:
 
         /**
-         * @fn BinaryStructuredDataEngine::BinaryStructuredDataEngine (const DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor of BinaryStructuredDataEngine class.
+         *
          * @param [in] endian - Endian of stored structured data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          */
         BinaryStructuredDataEngine (const DATA_ENDIAN_TYPE endian = BinaryDataEngine::system_endian) noexcept
-                : data(BinaryDataEngine(STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN)), dataEndianType(endian)
+            : data(BinaryDataEngine(STRUCTURED_DATA_HANDLING_MODE, DATA_BIG_ENDIAN)), dataEndianType(endian)
         { }
 
         /**
-         * @fn BinaryStructuredDataEngine::~BinaryStructuredDataEngine() noexcept;
          * @brief Destructor of BinaryStructuredDataEngine class.
          */
         ~BinaryStructuredDataEngine(void) noexcept { Reset(); }
 
         /**
-         * @fn BinaryStructuredDataEngine::BinaryStructuredDataEngine (BinaryDataEngine &, const uint16_t *, uint16_t, DATA_ENDIAN_TYPE) noexcept;
          * @brief Constructor of BinaryStructuredDataEngine class with prepared structured data.
+         *
          * @param [in] input - Lvalue reference of moved BinaryDataEngine class.
          * @param [in] pattern - Array that contains the pattern of inputted structure data in bytes.
          * @param [in] size - Size of the pattern array.
@@ -114,7 +108,6 @@ namespace analyzer::framework::common::types
         BinaryStructuredDataEngine (BinaryDataEngine & /*input*/, const uint16_t * /*pattern*/, uint16_t /*size*/, DATA_ENDIAN_TYPE endian = BinaryDataEngine::system_endian) noexcept;
 
         /**
-         * @fn BinaryStructuredDataEngine::BinaryStructuredDataEngine (const BinaryStructuredDataEngine &) noexcept;
          * @brief Copy assignment constructor of BinaryStructuredDataEngine class.
          * @param [in] other - Const lvalue reference of copied BinaryStructuredDataEngine class.
          *
@@ -123,16 +116,15 @@ namespace analyzer::framework::common::types
         BinaryStructuredDataEngine (const BinaryStructuredDataEngine & /*other*/) noexcept;
 
         /**
-         * @fn BinaryStructuredDataEngine::BinaryStructuredDataEngine (BinaryStructuredDataEngine &&) noexcept;
          * @brief Move assignment constructor of BinaryStructuredDataEngine class.
+         *
          * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
          */
         BinaryStructuredDataEngine (BinaryStructuredDataEngine && /*other*/) noexcept;
 
         /**
-         * @fn template <DATA_ENDIAN_TYPE Endian, typename Type>
-         * bool BinaryStructuredDataEngine::AssignData (const Type *, const uint16_t * const, const uint16_t) noexcept;
          * @brief Method that assign binary data into internal state of structured data.
+         *
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
          * @tparam [in] memory - POD type structure for assignment.
@@ -177,8 +169,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool BinaryStructuredDataEngine::CreateTemplate (const uint16_t *, uint16_t) noexcept;
          * @brief Method that creates empty structured data template.
+         *
          * @param [in] pattern - Array that contains the byte-pattern of inputted structured data.
          * @param [in] size - Size of the byte-pattern array.
          * @return TRUE - if creating the data structure template successfully, otherwise - FALSE.
@@ -186,38 +178,37 @@ namespace analyzer::framework::common::types
         bool CreateTemplate (const uint16_t * /*pattern*/, uint16_t /*size*/) noexcept;
 
         /**
-         * @fn inline DATA_ENDIAN_TYPE BinaryStructuredDataEngine::DataEndianType() const noexcept;
          * @brief Method that returns the endian type of stored data in BinaryStructuredDataEngine class.
+         *
          * @return DATA_LITTLE_ENDIAN(0x02) - if on the system little endian, otherwise - DATA_BIG_ENDIAN(0x01).
          */
         inline DATA_ENDIAN_TYPE DataEndianType(void) const noexcept { return dataEndianType; }
 
         /**
-         * @fn void BinaryStructuredDataEngine::SetDataEndianType (DATA_ENDIAN_TYPE) noexcept;
          * @brief Method that changes endian type of stored data in BinaryStructuredDataEngine class.
+         *
          * @param [in] endian - New data endian type.
          * @return TRUE - if endian type is changed successfully, otherwise - FALSE.
          */
         void SetDataEndianType (DATA_ENDIAN_TYPE /*endian*/) noexcept;
 
         /**
-         * @fn inline std::size_t BinaryStructuredDataEngine::ByteSize() const noexcept;
          * @brief Method that returns the size of structured data in bytes.
+         *
          * @return Size of stored structured data in bytes.
          */
         inline std::size_t ByteSize(void) const noexcept { return data.Size(); }
 
         /**
-         * @fn inline std::size_t BinaryStructuredDataEngine::BitSize() const noexcept;
          * @brief Method that returns the size of structured data in bits.
+         *
          * @return Size of stored structured data in bits.
          */
         inline std::size_t BitSize(void) const noexcept { return data.BitsInformation().Length(); }
 
         /**
-         * @fn template <DATA_ENDIAN_TYPE Endian, typename Type>
-         * bool BinaryStructuredDataEngine::SetField (const uint16_t, const Type) const noexcept;
          * @brief Method that sets new value to the selected field of structured data.
+         *
          * @tparam [in] Endian - Endian of input data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @tparam [in] Type - Typename of copied structured data.
          * @param [in] fieldIndex - Index of field in structured data.
@@ -250,9 +241,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn template <uint8_t Mode, DATA_ENDIAN_TYPE Endian>
-         * BinaryDataEngine BinaryStructuredDataEngine::GetField (const uint16_t) const noexcept;
          * @brief Method that returns field value of structured data under selected index.
+         *
          * @tparam [in] Mode - Type of output data handling mode. Default: DATA_MODE_DEFAULT.
          * @tparam [in] Endian - Endian of output data. Default: Local System Type (DATA_SYSTEM_ENDIAN).
          * @param [in] fieldIndex - Index of field in structured data.
@@ -279,9 +269,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn template <typename Type, uint8_t Mode>
-         * Type BinaryStructuredDataEngine::GetSubField (const uint16_t, const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns subfield value of structured data under selected index from low to high bit order.
+         *
          * @tparam [in] Type - Typename of variable to which subfield will be converted.
          * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
@@ -311,8 +300,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn BinaryDataEngine BinaryStructuredDataEngine::GetFieldByReference (uint16_t) const noexcept;
          * @brief Method that returns field value of structured data under selected index by reference.
+         *
          * @param [in] fieldIndex - Index of field in structured data.
          * @return Field value under selected index with referenced data in BinaryDataEngine format.
          *
@@ -323,9 +312,8 @@ namespace analyzer::framework::common::types
         BinaryDataEngine GetFieldByReference (uint16_t /*fieldIndex*/) const noexcept;
 
         /**
-         * @fn template <uint8_t Mode>
-         * bool BinaryStructuredDataEngine::SetFieldBit (const uint16_t, const uint16_t, const bool) noexcept;
          * @brief Method that sets new bit value to the selected field bit offset of structured data.
+         *
          * @tparam [in] Mode - Type of input data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
@@ -347,9 +335,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn template <uint8_t Mode>
-         * bool BinaryStructuredDataEngine::GetFieldBit (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns bit field value of structured data under selected indexes.
+         *
          * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
@@ -371,8 +358,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn std::optional<uint16_t> BinaryStructuredDataEngine::GetNonemptyFieldIndex (uint16_t, const uint16_t *, uint16_t) const noexcept;
          * @brief Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
+         *
          * @param [in] start - Start index in pattern from which nonempty field will be searched. Default: 0.
          * @param [in] pattern - Array that contains the bit-pattern of data. Default: nullptr.
          * @param [in] size - Size of the bit-pattern array. Default: 0.
@@ -386,35 +373,33 @@ namespace analyzer::framework::common::types
         std::optional<uint16_t> GetNonemptyFieldIndex (uint16_t start = 0, const uint16_t * /*pattern*/ = nullptr, uint16_t /*size*/ = 0) const noexcept;
 
         /**
-         * @fn std::pair<uint16_t, const uint16_t *> BinaryStructuredDataEngine::GetPattern (uint16_t) const noexcept;
          * @brief Method that returns the internal byte-pattern with length from the specified position.
+         *
          * @param [in] fieldIndex - Index of field from which the internal byte-pattern will be returned. Default: 0.
          * @return Internal byte-pattern with it's length from the specified position or nullptr if an error occurred.
          */
         std::pair<uint16_t, const uint16_t *> GetPattern (uint16_t /*fieldIndex*/ = 0) const noexcept;
 
         /**
-         * @fn inline const BinaryDataEngine & BinaryStructuredDataEngine::Data() const noexcept;
          * @brief Method that returns the reference to the internal structured data.
+         *
          * @return Const lvalue reference of internal structured data in BinaryDataEngine format.
          */
         inline const BinaryDataEngine& Data(void) const noexcept { return data; }
 
         /**
-         * @fn void BinaryStructuredDataEngine::Clear() noexcept;
          * @brief Method that clears the internal binary structured data.
          */
         void Clear(void) noexcept;
 
         /**
-         * @fn void BinaryStructuredDataEngine::Reset() noexcept;
          * @brief Method that resets the internal state of BinaryStructuredDataEngine class to default state.
          */
         void Reset(void) noexcept;
 
         /**
-         * @fn std::string BinaryStructuredDataEngine::ToFormattedString() const noexcept;
          * @brief Method that outputs internal binary structured data by pattern in formatted string.
+         *
          * @return STL string object with sequence of the bit character representation of stored structured data.
          *
          * @note Data is always outputs in DATA_BIG_ENDIAN endian type.
@@ -423,15 +408,15 @@ namespace analyzer::framework::common::types
 
 
         /**
-         * @fn inline operator BinaryStructuredDataEngine::bool() const noexcept;
          * @brief Operator that returns the internal state of BinaryStructuredDataEngine class.
+         *
          * @return TRUE - if BinaryStructuredDataEngine class is not empty, otherwise - FALSE.
          */
         inline operator bool(void) const noexcept { return data == true; }
 
         /**
-         * @fn BinaryStructuredDataEngine & BinaryStructuredDataEngine::operator= (const BinaryStructuredDataEngine &) noexcept;
          * @brief Copy assignment operator of BinaryStructuredDataEngine class.
+         *
          * @param [in] other - Const lvalue reference of copied BinaryStructuredDataEngine class.
          * @return Lvalue reference of copied BinaryStructuredDataEngine class.
          *
@@ -440,15 +425,14 @@ namespace analyzer::framework::common::types
         BinaryStructuredDataEngine & operator= (const BinaryStructuredDataEngine & /*other*/) noexcept;
 
         /**
-         * @fn BinaryStructuredDataEngine & BinaryStructuredDataEngine::operator= (BinaryStructuredDataEngine &&) noexcept;
          * @brief Move assignment operator of BinaryStructuredDataEngine class.
+         *
          * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
          * @return Lvalue reference of moved BinaryStructuredDataEngine class.
          */
         BinaryStructuredDataEngine & operator= (BinaryStructuredDataEngine && /*other*/) noexcept;
 
         /**
-         * @fn friend inline std::ostream & operator<< (std::ostream &, const BinaryStructuredDataEngine &) noexcept;
          * @brief Operator that outputs internal binary structured data in binary string format.
          * @param [in,out] stream - Reference of the output stream engine.
          * @param [in] engine - Const lvalue reference of the BinaryStructuredDataEngine class.
@@ -512,8 +496,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn friend inline BinaryStructuredDataEngine BinaryStructuredDataEngine::operator& (const BinaryStructuredDataEngine &, const BinaryStructuredDataEngine &) noexcept;
          * @brief Logical bitwise AND operator that transforms internal binary structured data.
+         *
          * @param [in] left - Const lvalue reference of the BinaryStructuredDataEngine class as left operand.
          * @param [in] right - Const lvalue reference of the BinaryStructuredDataEngine class as right operand.
          * @return New temporary object of transformed (by operation AND) BinaryStructuredDataEngine class.
@@ -534,8 +518,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn friend inline BinaryStructuredDataEngine BinaryStructuredDataEngine::operator| (const BinaryStructuredDataEngine &, const BinaryStructuredDataEngine &) noexcept;
          * @brief Logical bitwise OR operator that transforms internal binary structured data.
+         *
          * @param [in] left - Const lvalue reference of the BinaryStructuredDataEngine class as left operand.
          * @param [in] right - Const lvalue reference of the BinaryStructuredDataEngine class as right operand.
          * @return New temporary object of transformed (by operation OR) BinaryStructuredDataEngine class.
@@ -556,8 +540,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn friend inline BinaryStructuredDataEngine BinaryStructuredDataEngine::operator^ (const BinaryStructuredDataEngine &, const BinaryStructuredDataEngine &) noexcept;
          * @brief Logical bitwise XOR operator that transforms internal binary structured data.
+         *
          * @param [in] left - Const lvalue reference of the BinaryStructuredDataEngine class as left operand.
          * @param [in] right - Const lvalue reference of the BinaryStructuredDataEngine class as right operand.
          * @return New temporary object of transformed (by operation XOR) BinaryStructuredDataEngine class.

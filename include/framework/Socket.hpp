@@ -71,7 +71,6 @@ namespace analyzer::framework::net
     {
     private:
         /**
-         * @var int32_t epoll_fd;
          * @brief The Epoll descriptor.
          *
          * @note Epoll is thread-safe.
@@ -79,28 +78,23 @@ namespace analyzer::framework::net
         int32_t epoll_fd = INVALID_SOCKET;
 
         /**
-         * @var struct epoll_event * events;
          * @brief The Epoll event structures.
          *
          * @note The size of this structures defined as MAXIMUM_SOCKET_DESCRIPTORS.
          */
         std::unique_ptr<struct epoll_event[]> events = nullptr;
-
         /**
-         * @var std::atomic<uint16_t> countOfDescriptors;
          * @brief The number of all socket descriptors under observation in current time.
          */
         std::atomic<uint16_t> countOfDescriptors = 0;
 
     protected:
         /**
-         * @fn SocketStatePool::SocketStatePool() noexcept;
          * @brief Protect constructor.
          */
         SocketStatePool(void) noexcept;
 
         /**
-         * @fn SocketStatePool::~SocketStatePool();
          * @brief Protect default destructor.
          */
         ~SocketStatePool(void) = default;
@@ -173,15 +167,15 @@ namespace analyzer::framework::net
         };
 
         /**
-         * @fn static SocketsStatePool & SocketStatePool::Instance() noexcept;
          * @brief Method that returns the instance of the singleton class.
+         *
          * @return The instance of singleton SocketStatePool class.
          */
         static SocketStatePool & Instance(void) noexcept;
 
         /**
-         * @fn bool SocketStatePool::RegisterSocket (int32_t, SOCKET_TYPE, uint32_t) noexcept;
          * @brief Method that adds new socket descriptor to common set.
+         *
          * @param [in] fd - Socket descriptor.
          * @param [in] type - Type of socket descriptor. Default: TEST_ON_REQUEST.
          * @param [in] liveTime - Time (in seconds) during which the socket descriptor is registered. Default: UNLIMITED_LIVE_TIME.
@@ -190,8 +184,8 @@ namespace analyzer::framework::net
         //bool RegisterSocket (int32_t /*fd*/, SOCKET_TYPE /*type*/ = TEST_ON_REQUEST, uint32_t /*liveTime*/ = UNLIMITED_LIVE_TIME) noexcept;
 
         /**
-         * @fn bool SocketStatePool::ChangeSocketType (int32_t, SOCKET_TYPE) noexcept;
          * @brief Method that change the type of socket descriptor in common set.
+         *
          * @param [in] fd - Socket descriptor.
          * @param [in] type - Type of socket descriptor.
          * @return Boolean value that indicates the changing status.
@@ -201,8 +195,8 @@ namespace analyzer::framework::net
         //bool ChangeSocketType (int32_t /*fd*/, SOCKET_TYPE /*type*/) noexcept;
 
         /**
-         * @fn SOCKET_STATUS SocketStatePool::CheckSocketStatus (int32_t) noexcept;
          * @brief Method that checks socket status.
+         *
          * @param [in] fd - Socket descriptor.
          * @return SOCKET_STATUS value that indicates the status of socket descriptor.
          *
@@ -212,8 +206,8 @@ namespace analyzer::framework::net
         //SOCKET_STATUS CheckSocketStatus (int32_t /*fd*/) noexcept;
 
         /**
-         * @fn NotificationObserver<SOCKET_STATUS> * SocketStatePool::SetOrderNotification (int32_t) noexcept;
          * @brief Method that checks socket status.
+         *
          * @param [in] fd - Socket descriptor.
          * @return NotificationObserver pointer that offers an interface for waiting and obtaining the result.
          *
@@ -228,8 +222,8 @@ namespace analyzer::framework::net
         //NotificationObserver<SOCKET_STATUS> * SetOrderNotification (int32_t /*fd*/) noexcept;
 
         /**
-         * @fn NotificationObserver<SOCKET_STATUS> * SocketStatePool::RegisterTask (int32_t, TASK_TYPE) noexcept;
          * @brief Method that set request for socket descriptor.
+         *
          * @param [in] fd - Socket descriptor.
          * @param [in] task - The task for current descriptor. Default: TASK_TYPE_ALL.
          * @return NotificationObserver pointer that offers an interface for waiting and obtaining the result.
@@ -242,8 +236,8 @@ namespace analyzer::framework::net
         //NotificationObserver<SOCKET_STATUS> * RegisterTask (int32_t /*fd*/, TASK_TYPE /*task*/ = TASK_TYPE_ALL) noexcept;
 
         /**
-         * @fn void SocketStatePool::DeleteDescriptor (int32_t);
          * @brief Method that removes socket descriptor from epoll set.
+         *
          * @param [in] fd - Socket descriptor.
          * @return Boolean value that indicates the removal status.
          *
@@ -337,8 +331,8 @@ namespace analyzer::framework::net
         virtual int32_t RecvToEnd (char * /*data*/, std::size_t /*length*/) noexcept;
 
         /**
-         * @fn bool Socket::SendTo (const char *, uint16_t, const char *, std::size_t) noexcept;
          * @brief Method that sends message to external host over UDP protocol.
+         *
          * @param [in] host - Name or IPv4/IPv6 address of external host.
          * @param [in] port - Destination port number.
          * @param [in] data - Pointer to data for sending.
@@ -348,8 +342,8 @@ namespace analyzer::framework::net
         virtual bool SendTo (const char * /*host*/, uint16_t /*port*/, const char * /*data*/, std::size_t /*length*/) noexcept;
 
         /**
-         * @fn int32_t Socket::RecvFrom (const char *, uint16_t, const char *, std::size_t) noexcept;
          * @brief Method that receives message from external host over UDP protocol.
+         *
          * @param [in] host - Name or IPv4/IPv6 address of external host.
          * @param [in] port - Destination port number.
          * @param [in] data - Pointer to data buffer for receiving.

@@ -25,19 +25,17 @@ namespace analyzer::framework::storage
     {
     private:
         /**
-         * @var std::mutex mutex;
          * @brief Mutex value for thread-safe class working.
          */
         std::mutex mutex = { };
         /**
-         * @var std::array<std::unique_ptr<std::unique_ptr<BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
          * @brief Variable that consist of various global callbacks.
          */
         std::array<std::unique_ptr<std::unique_ptr<callbacks::BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
 
         /**
-         * @fn static uint16_t GlobalInfo::GetModuleCallbacksSize (uint16_t) noexcept;
          * @brief Function that returns size of the selected module callbacks.
+         *
          * @param [in] module - Type of framework module (FRAMEWORK_MODULE_TYPES).
          * @return Size of the selected module callbacks.
          */
@@ -50,22 +48,20 @@ namespace analyzer::framework::storage
         GlobalInfo & operator= (const GlobalInfo &) = delete;
 
         /**
-         * @fn GlobalInfo::GlobalInfo() noexcept;
          * @brief Constructor of GlobalInfo class.
          */
         GlobalInfo(void) noexcept;
 
         /**
-         * @fn static GlobalInfo & GlobalInfo::Instance() noexcept;
          * @brief Method that returns the instance of the GlobalInfo singleton class.
+         *
          * @return The instance of GlobalInfo singleton class.
          */
         static GlobalInfo & Instance(void) noexcept;
 
         /**
-         * @fn template <typename Type, typename>
-         * Type * GlobalInfo::GetCallback (const uint16_t, const uint16_t) const noexcept;
          * @brief Method that returns pointer to callback functor of selected type.
+         *
          * @tparam [in,out] Type - Functor type to which result will be converted.
          * @param [in] module - Type of framework module (FRAMEWORK_MODULE_TYPES).
          * @param [in] callback - Type of module callback (MODULE_***_TYPES).
@@ -90,8 +86,8 @@ namespace analyzer::framework::storage
         }
 
         /**
-         * @fn bool GlobalInfo::SetCallback (callbacks::BaseCallbackFunctor *, uint16_t, uint16_t) noexcept;
          * @brief Method that sets callback functor of selected type.
+         *
          * @param [in] functor - Pointer to callback functor.
          * @param [in] module - Type of framework module (FRAMEWORK_MODULE_TYPES).
          * @param [in] callback - Type of module callback (MODULE_***_TYPES).
@@ -102,26 +98,29 @@ namespace analyzer::framework::storage
         bool SetCallback (callbacks::BaseCallbackFunctor * /*functor*/, uint16_t /*module*/, uint16_t /*callback*/) noexcept;
 
         /**
-         * @fn GlobalInfo::~GlobalInfo();
          * @brief Default destructor of GlobalInfo class.
          */
         ~GlobalInfo(void) = default;
     };
 
 
+
     /*********************************************** Global Variables ***********************************************/
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+
     /**
-     * @var inline static GlobalInfo & GI;
      * @brief Global variable that consist of the instance of the GlobalInfo singleton class.
      */
     inline static GlobalInfo& GI = GlobalInfo::Instance();
 
     /**
-     * @var inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime;
      * @brief Global variable that consist of the start time of Protocol Analyzer Framework.
      */
     inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime = std::chrono::system_clock::now();
+
+#pragma clang diagnostic pop
 
 }  // namespace storage.
 

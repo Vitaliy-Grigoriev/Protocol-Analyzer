@@ -25,8 +25,8 @@ public:
     ~SocketCallbackFunctorBeforeSendImpl(void) = default;
 
     /**
-     * @fn void SocketCallbackFunctorBeforeSendImpl::operator() (char *, std::size_t *) const noexcept override;
      * @brief Function call operator.
+     *
      * @param [in] data - Pointer to the raw data.
      * @param [in] length - Pointer to the length of the inputted raw data.
      */
@@ -48,8 +48,8 @@ public:
     ~SocketCallbackFunctorAfterReceiveImpl(void) = default;
 
     /**
-     * @fn void SocketCallbackFunctorAfterReceiveImpl::operator() (const char *, const std::size_t) const noexcept;
      * @brief Function call operator of SocketCallbackFunctorAfterReceiveImpl class-functor.
+     *
      * @param [in] data - Pointer to the constant raw data.
      * @param [in] length - Length of the inputted raw data.
      */

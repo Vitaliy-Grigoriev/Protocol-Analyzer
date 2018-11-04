@@ -21,6 +21,7 @@ namespace analyzer::framework::common::types
     /**
      * @class LockedDeque   LockedDeque.hpp   "include/framework/LockedDeque.hpp"
      * @brief This class defined concurrency wrapper over STL deque class to work in parallel threads.
+     *
      * @tparam [in] Type - Typename of stored data in STL deque.
      *
      * @note This deque container if type-protected and provides a convenient RAII-style mechanism.
@@ -32,19 +33,16 @@ namespace analyzer::framework::common::types
     {
     private:
         /**
-         * @var std::mutex mutex;
          * @brief Mutex value for thread-safe class working.
          */
         std::mutex mutex = { };
         /**
-         * @var std::deque<Type> deque;
          * @brief STL deque for stored data;
          */
         std::deque<Type> deque = { };
 
     public:
         /**
-         * @fn LockedDeque::LockedDeque() noexcept(true/false);
          * @brief Default constructor.
          *
          * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
@@ -52,14 +50,13 @@ namespace analyzer::framework::common::types
         LockedDeque(void) noexcept(std::is_nothrow_default_constructible_v<std::deque<Type>>) = default;
 
         /**
-         * @fn LockedDeque::~LockedDeque() noexcept;
          * @brief Default destructor.
          */
         ~LockedDeque(void) noexcept = default;
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &) noexcept(true/false);
          * @brief Copy assignment constructor with LockedDeque<Type>.
+         *
          * @tparam [in] other - The const reference of copied LockedDeque<Type>.
          *
          * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
@@ -74,8 +71,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &) noexcept(true/false);
          * @brief Copy assignment constructor with STL std::deque<Type>.
+         *
          * @tparam [in] other - The const reference of copied STL std::deque<Type>.
          *
          * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
@@ -90,8 +87,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn LockedDeque::LockedDeque (const LockedDeque<Type> &&) noexcept;
          * @brief Move assignment constructor with LockedDeque<Type>.
+         *
          * @tparam [in] other - The rvalue reference of moved LockedDeque<Type>.
          */
         LockedDeque (LockedDeque<Type>&& other) noexcept
@@ -104,8 +101,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn explicit LockedDeque::LockedDeque (const std::deque<Type> &&) noexcept;
          * @brief Move assignment constructor with STL std::deque<Type>.
+         *
          * @tparam [in] other - The rvalue reference of moved STL std::deque<Type>.
          */
         explicit LockedDeque (std::deque<Type>&& other) noexcept
@@ -118,8 +115,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn LockedDeque<Type> & LockedDeque::operator= (const LockedDeque<Type> &) noexcept(true/false);
          * @brief Copy assignment operator.
+         *
          * @tparam [in] other - The const reference of copied LockedDeque<Type> class.
          * @return Reference of the current LockedDeque<Type> class.
          *
@@ -139,8 +136,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn LockedDeque<Type> & LockedDeque::operator= (LockedDeque<Type> &&) noexcept;
          * @brief Move assignment operator.
+         *
          * @tparam [in] other - The rvalue reference of moved LockedDeque<Type> class.
          * @return Reference of the current LockedDeque<Type> class.
          */
@@ -158,8 +155,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn std::size_t LockedDeque::Size() noexcept;
          * @brief Method that returns the size of deque.
+         *
          * @return Size of deque.
          */
         std::size_t Size(void) noexcept
@@ -172,8 +169,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::IsEmpty() noexcept;
          * @brief Method that returns the internal state of deque.
+         *
          * @return TRUE - if the container size is 0, otherwise - FALSE.
          */
         bool IsEmpty(void) noexcept
@@ -186,8 +183,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Push (const Type &) noexcept;
          * @brief Method that push new value to front of deque.
+         *
          * @tparam [in] value - New value for insert.
          * @return TRUE - if push is successful, otherwise - FALSE.
          */
@@ -204,8 +201,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::PopBack (Type &) noexcept;
          * @brief Method that pop value from back of deque.
+         *
          * @tparam [out] result - Returned value.
          * @return TRUE - if pop back element is successful, otherwise - FALSE.
          *
@@ -227,8 +224,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::PopFront (Type &) noexcept;
          * @brief Method that pop value from front of deque.
+         *
          * @tparam [out] result - Returned value.
          * @return TRUE - if pop the front element is successful, otherwise - FALSE.
          */
@@ -248,8 +245,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Move (std::deque<Type> &) noexcept;
          * @brief Method that moves all internal values to outside STL std::deque<Type>.
+         *
          * @tparam [out] result - Returned value.
          * @return TRUE - if at least one element has been moved, otherwise - FALSE.
          */
@@ -268,8 +265,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Swap (LockedDeque<Type> &) noexcept;
          * @brief Method that swaps internal value with outside LockedDeque<Type> object.
+         *
          * @tparam [in,out] other - Swapped value reference.
          * @return TRUE - if swap is successful, otherwise - FALSE.
          */
@@ -287,8 +284,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Swap (std::deque<Type> &) noexcept;
          * @brief Method that swaps internal value with outside STL std::deque<Type>.
+         *
          * @tparam [in,out] other - Swapped value reference.
          * @return TRUE - if swap is successful, otherwise - FALSE.
          */
@@ -303,8 +300,8 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @fn bool LockedDeque::Clear() noexcept;
          * @brief Method that clears the deque.
+         *
          * @return TRUE - if clear is successful, otherwise - FALSE.
          */
         bool Clear(void) noexcept

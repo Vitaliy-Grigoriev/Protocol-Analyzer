@@ -33,19 +33,17 @@ namespace analyzer::framework::task
 
     private:
         /**
-         * @var Type internalValue;
          * @brief Expected value.
          */
         Type internalValue;
         /**
-         * @var system::LocalMutex mutex;
          * @brief The expected event.
          */
         system::LocalMutex mutex = { };
 
         /**
-         * @fn explicit Notification::Notification (const Type &) noexcept;
          * @brief Private constructor of Notification class.
+         *
          * @tparam [in] value - Init value.
          */
         explicit Notification (const Type& value) noexcept
@@ -54,12 +52,10 @@ namespace analyzer::framework::task
 
     public:
         /**
-         * @fn Notification::Notification(void);
          * @brief Default constructor.
          */
         Notification(void) = default;
         /**
-         * @fn Notification::~Notification(void);
          * @brief Default destructor of Notification class.
          */
         virtual ~Notification(void) = default;
@@ -71,8 +67,8 @@ namespace analyzer::framework::task
 
 
         /**
-         * @fn Type Notification::Wait(void) noexcept;
          * @brief Method that returns the expected value when the event signal comes.
+         *
          * @return The expected value of selected type.
          *
          * @warning This method blocks the thread causing it until the event signal arrives.
@@ -84,9 +80,8 @@ namespace analyzer::framework::task
         }
 
         /**
-         * @fn template <typename Duration>
-         * bool Notification::WaitUntil (Type &, const std::chrono::time_point<std::chrono::system_clock, Duration> &) noexcept;
          * @brief Method that expects the event signal until some time and then return the expected value.
+         *
          * @tparam [out] output - Output value of selected type if the event signal has arrived.
          * @tparam [in] time - The time to which the thread will wait the event signal.
          * @return TRUE - if the event signal has arrived and the expected value can be obtained, otherwise - FALSE.
@@ -103,9 +98,8 @@ namespace analyzer::framework::task
         }
 
         /**
-         * @fn template <typename Rep, typename Period>
-         * bool Notification::WaitFor (Type &, const std::chrono::duration<Rep, Period> &) noexcept;
          * @brief Method that expects the event signal within the specified time and then return the expected value.
+         *
          * @tparam [out] output - Output value of selected type if the event signal has arrived.
          * @tparam [in] time - The time to which the thread will wait the event signal.
          * @return TRUE - if the event signal has arrived and the expected value can be obtained, otherwise - FALSE.
@@ -130,12 +124,10 @@ namespace analyzer::framework::task
     {
     public:
         /**
-         * @fn NotificationObserver::NotificationObserver(void);
          * @brief Default constructor of NotificationObserver class.
          */
         NotificationObserver(void) = default;
         /**
-         * @fn NotificationObserver::~NotificationObserver(void);
          * @brief Default constructor of NotificationObserver class.
          */
         ~NotificationObserver(void) = default;
@@ -161,7 +153,6 @@ namespace analyzer::framework::task
     {
     public:
         /**
-         * @fn NotificationSubject::~NotificationSubject(void);
          * @brief Default destructor of NotificationSubject class.
          */
         ~NotificationSubject(void) = default;
@@ -172,7 +163,6 @@ namespace analyzer::framework::task
         NotificationSubject & operator= (const NotificationSubject &) = delete;
 
         /**
-         * @fn NotificationSubject::NotificationSubject(void) noexcept;
          * @brief Constructor of NotificationSubject class.
          */
         NotificationSubject(void) noexcept
@@ -208,8 +198,9 @@ namespace analyzer::framework::task
 
 
     /**
-     * @class NotificationInit Notification.hpp "include/framework/Notification.hpp"
+     * @class NotificationInit   Notification.hpp   "include/framework/Notification.hpp"
      * @brief Class that defines an interface for init all notification template.
+     *
      * @tparam [in] Type - The internal expected value type.
      */
     template <typename Type>
@@ -217,12 +208,10 @@ namespace analyzer::framework::task
     {
     public:
         /**
-         * @fn NotificationInit::NotificationInit(void);
          * @brief Default constructor of NotificationInit class.
          */
         NotificationInit(void) = default;
         /**
-         * @fn NotificationInit::~NotificationInit(void);
          * @brief Default destructor of NotificationInit class.
          */
         ~NotificationInit(void) = default;

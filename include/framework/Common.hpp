@@ -26,10 +26,8 @@
 namespace analyzer::framework::common
 {
     /**
-     * @fn template <typename Type>
-     * std::enable_if_t<std::is_integral<Type>::value, Type>
-     * GetRandomValue() noexcept;
      * @brief Function that returns the sequence of pseudo-random integral numbers.
+     *
      * @tparam [in] Type - Typename of the integral value for the random generating engine. Default: uint32_t.
      * @tparam [in] begin - Start value from which random value will be generated.
      * @tparam [in] end - End value to which random value will be generated.
@@ -48,8 +46,8 @@ namespace analyzer::framework::common
 
 
     /**
-     * @fn std::string clockToString (const std::chrono::system_clock::time_point &) noexcept;
      * @brief Function that converts time point to calendar datetime in string ISO-8601 format.
+     *
      * @param [in] time - The time point in processes clock ticks.
      * @return Calendar datetime in string ISO-8601 format.
      */
@@ -59,24 +57,24 @@ namespace analyzer::framework::common
     namespace text
     {
         /**
-         * @fn std::string & trimLeft (std::string &) noexcept;
          * @brief Trim string value from start in place.
+         *
          * @param [in,out] str - Reference of target string.
          * @return Reference of the trimmed string.
          */
         std::string & trimLeft (std::string & /*str*/) noexcept;
 
         /**
-         * @fn std::string & trimRight (std::string &) noexcept;
          * @brief Trim string value from end in place.
+         *
          * @param [in,out] str - Reference of target string.
          * @return Reference of the trimmed string.
          */
         std::string & trimRight (std::string & /*str*/) noexcept;
 
         /**
-         * @fn std::string & trim (std::string &) noexcept;
          * @brief Trim string value from both ends in place.
+         *
          * @param [in,out] str - Reference of target string.
          * @return Reference of the trimmed string.
          */
@@ -84,8 +82,8 @@ namespace analyzer::framework::common
 
 
         /**
-         * @fn static inline std::string trimLeftCopy (std::string) noexcept;
          * @brief Copying trim string value from start.
+         *
          * @param [in] str - Target string.
          * @return Trimmed string.
          */
@@ -94,8 +92,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn static inline std::string trimRightCopy (std::string) noexcept;
          * @brief Copying trim string value from end.
+         *
          * @param [in] str - Target string.
          * @return Trimmed string.
          */
@@ -104,8 +102,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn static inline std::string trimCopy (std::string) noexcept;
          * @brief Copying trim string value from both sides.
+         *
          * @param [in] str - Target string.
          * @return Trimmed string from both sides.
          */
@@ -115,9 +113,8 @@ namespace analyzer::framework::common
 
 
         /**
-         * @fn template <typename Out>
-         * void split (const std::string &, char, std::back_insert_iterator<Out>) noexcept;
          * @brief Function that splits the input string into substrings separated by the delimiter.
+         *
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
          * @tparam [out] result - Back insert iterator of selected type for adding new values.
@@ -133,8 +130,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn std::vector<std::string> split (const std::string &, char) noexcept;
          * @brief Split string into a vector of strings using the delimiter.
+         *
          * @param [in] str - Input string.
          * @param [in] delimiter - Parsing separator.
          * @return The vector of string values.
@@ -142,8 +139,8 @@ namespace analyzer::framework::common
         std::vector<std::string> split (const std::string & /*str*/, char /*delimiter*/) noexcept;
 
         /**
-         * @fn std::vector<std::string_view> splitInPlace (std::string_view, char) noexcept;
          * @brief Unallocated split string into a vector of strings using the delimiter.
+         *
          * @param [in] str - Unallocated input string reference.
          * @param [in] delimiter - Parsing separator.
          * @return The vector of unallocated string values.
@@ -152,9 +149,8 @@ namespace analyzer::framework::common
 
 
         /**
-         * @fn template <typename Type, typename>
-         * std::string getHexValue (const Type, const uint16_t, bool) noexcept;
          * @brief Function that converts any data to hex format.
+         *
          * @tparam [in] data - Input data of selected type.
          * @param [in] width - Width of hex value. Default: 2.
          * @param [in] upper - In what case the data will present in hex format. Default: true.
@@ -170,9 +166,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn template <typename Type, typename>
-         * std::string getHexString (const Type *, const std::size_t, const uint16_t, bool) noexcept;
          * @brief Function that converts string data to hex format.
+         *
          * @tparam [in] data - Input data of selected type.
          * @param [in] length - Length of the data.
          * @param [in] width - Width of hex value for each type. Default: 2.
@@ -191,8 +186,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn static inline unsigned char charToUChar (const char) noexcept;
          * @brief Function that converts one value of char type to unsigned char type.
+         *
          * @param [in] symbol - Value of char type.
          * @return Unsigned char type value.
          */
@@ -201,8 +196,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn static inline bool isPrintable (const char) noexcept;
          * @brief Function that checks the char value on printable.
+         *
          * @param [in] symbol - One value in char type.
          * @return TRUE - if character is printable, otherwise - FALSE.
          */
@@ -211,8 +206,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn static inline bool isNumber (const char) noexcept;
          * @brief Function that checks the char value on number.
+         *
          * @param [in] symbol - One value in char type.
          * @return TRUE - if character is number, otherwise - FALSE.
          */
@@ -221,8 +216,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn void replaceNonPrintableToSymbol (void *, std::size_t, char) noexcept;
          * @brief Function that replaces all non-printable values to symbol.
+         *
          * @param [in,out] data - Pointer to input data.
          * @param [in] size - Size of input data.
          * @param [in] symbol - One value in char type for insert. Default: '.' (0x2E).
@@ -235,30 +230,29 @@ namespace analyzer::framework::common
     namespace file
     {
         /**
-         * @var static const std::size_t file_error;
          * @brief Define the error code of file functions.
          */
         static const std::size_t ErrorState = std::numeric_limits<std::size_t>::max();
 
         /**
-         * @fn bool checkFileExistence (const std::string_view &) noexcept;
          * @brief Function that checks file existence.
+         *
          * @param [in] path - Full or relative path to the file.
          * @return TRUE - if file is exist, otherwise - FALSE.
          */
         bool checkFileExistence (std::string_view /*path*/) noexcept;
 
         /**
-         * @fn std::size_t getFileSize (const std::string_view &) noexcept;
          * @brief Function that returns file size.
+         *
          * @param [in] path - Path to file.
          * @return File size in bytes or maximum value of std::size_t if an error.
          */
         std::size_t getFileSize (std::string_view /*path*/) noexcept;
 
         /**
-         * @fn bool readFileToEnd (const std::string_view &, std::string &) noexcept;
          * @brief Function that reads all data from file.
+         *
          * @param [in] path - Path to file.
          * @param [in,out] data - String value for assign.
          * @return TRUE - if the data is read from the file successfully, otherwise - FALSE.
@@ -266,8 +260,8 @@ namespace analyzer::framework::common
         bool readFileToEnd (std::string_view /*path*/, std::string & /*data*/) noexcept;
 
         /**
-         * @fn std::size_t getFileLines (const std::string_view &) noexcept;
          * @brief Function that returns number of file lines.
+         *
          * @param [in] path - Path to file.
          * @return Number of file lines or maximum value of std::size_t if an error.
          */
@@ -279,9 +273,8 @@ namespace analyzer::framework::common
     namespace convert
     {
         /**
-         * @fn template <std::size_t I, std::size_t J, typename Type>
-         * auto toPair (const Type &) -> decltype(std::make_pair(std::get<I>(...), std::get<J>(...)))
          * @brief Function that converts two indexes container value to pair type in compile time.
+         *
          * @param [in] I - Index of the first element in input container.
          * @param [in] J - Index of the second element in input container.
          * @tparam [in] Type - Container type (for example: tuple);
@@ -308,20 +301,18 @@ namespace analyzer::framework::common
     {
     private:
         /**
-         * @var std::unique_ptr<Type[]> data;
          * @brief Variable that contains unique pointer to data.
          */
         std::unique_ptr<Type[]> data = nullptr;
         /**
-         * @var std::size_t length;
          * @brief Variable that contains length of stored data.
          */
         std::size_t length = 0;
 
     public:
         /**
-         * @fn Data::Data (Type *, const std::size_t) noexcept;
          * @brief Constructor of Data class.
+         *
          * @tparam [in] in - Any data for sharing.
          * @param [in] size - Size of this data.
          */
@@ -330,8 +321,8 @@ namespace analyzer::framework::common
         { }
 
         /**
-         * @fn Data::Data (std::unique_ptr<Type[]> &, const std::size_t) noexcept;
          * @brief Constructor of Data class.
+         *
          * @tparam [in] in - Any data for sharing.
          * @param [in] size - Size of this data.
          */
@@ -340,8 +331,8 @@ namespace analyzer::framework::common
         { }
 
         /**
-         * @fn inline std::size_t Data::Size() const noexcept;
          * @brief Method that returns size of the internal data.
+         *
          * @return Size of the internal data.
          */
         inline std::size_t Size(void) const noexcept
@@ -350,8 +341,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn inline Type * Data::Get() const noexcept;
          * @brief Method that returns pointer to the internal data.
+         *
          * @return Pointer to the internal data.
          */
         inline Type* Get(void) const noexcept
@@ -360,8 +351,8 @@ namespace analyzer::framework::common
         }
 
         /**
-         * @fn inline Type * Data::GetAt (const std::size_t) const noexcept;
          * @brief Method that returns a pointer to an element by selected index.
+         *
          * @param [in] index - Index of element in data.
          * @return Return a pointer to an element by selected index or nullptr in an error occurred.
          */

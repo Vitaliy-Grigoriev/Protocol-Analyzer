@@ -3,6 +3,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
+
 #ifndef PROTOCOL_ANALYZER_FRAMEWORK_CALLBACK_FUNCTORS_HPP
 #define PROTOCOL_ANALYZER_FRAMEWORK_CALLBACK_FUNCTORS_HPP
 
@@ -20,7 +21,7 @@ namespace analyzer::framework::callbacks
     {
     public:
         BaseCallbackFunctor(void) = default;
-        virtual ~BaseCallbackFunctor(void) = default;
+        virtual ~BaseCallbackFunctor(void);
 
         BaseCallbackFunctor (BaseCallbackFunctor &&) = delete;
         BaseCallbackFunctor (const BaseCallbackFunctor &) = delete;
@@ -57,8 +58,8 @@ namespace analyzer::framework::callbacks
         ~SocketCallbackFunctorBeforeSend(void) = default;
 
         /**
-         * @fn virtual void SocketCallbackFunctorBeforeSend::operator() (char *, std::size_t *) const noexcept;
          * @brief Function call operator for SocketCallbackFunctorBeforeSend class-functor.
+         *
          * @param [in] data - Pointer to the raw data.
          * @param [in] length - Pointer to the length of the inputted raw data.
          */
@@ -78,8 +79,8 @@ namespace analyzer::framework::callbacks
         ~SocketCallbackFunctorAfterReceive(void) = default;
 
         /**
-         * @fn virtual void SocketCallbackFunctorBeforeSend::operator() (const char *, const std::size_t) const noexcept;
          * @brief Function call operator for SocketCallbackFunctorAfterReceive class-functor.
+         *
          * @param [in] data - Pointer to the constant raw data.
          * @param [in] length - Length of the inputted raw data.
          */

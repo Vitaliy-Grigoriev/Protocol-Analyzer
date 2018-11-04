@@ -55,25 +55,21 @@ namespace analyzer::framework::diagnostic
 
         private:
             /**
-             * @var timepoint_t totalTime;
              * @brief Variable that indicates the overall time.
              */
             timepoint_t totalTime = { };
             /**
-             * @var timepoint_t lastStartTime;
              * @brief Variable that indicates the current time.
              */
             timepoint_t lastStartTime = { };
             /**
-             * @var bool state;
              * @brief Flag that indicates the status of timer: work or not.
              */
             bool state = false;
 
             /**
-             * @fn template <typename Type>
-             * typename Type::rep Timer::TimerCount::GetTime() const noexcept;
              * @brief Method that returns the time in the corresponding form.
+             *
              * @tparam [in] Type - The object of the std::chrono::duration.
              * @return Return time value in the corresponding form.
              */
@@ -89,58 +85,58 @@ namespace analyzer::framework::diagnostic
 
         public:
             /**
-             * @fn std::size_t Timer::TimerCount::TimeSinceEpoch() const noexcept;
              * @brief Method that returns the amount of time between current and the clock's epoch.
+             *
              * @return Time interval in raw count.
              */
             std::size_t TimeSinceEpoch(void) const noexcept;
 
             /**
-             * @fn std::size_t Timer::TimerCount::NanoSeconds() const noexcept;
              * @brief Method that returns time in nanoseconds.
+             *
              * @return Time interval in nanoseconds.
              */
             std::size_t NanoSeconds(void) const noexcept;
 
             /**
-             * @fn std::size_t Timer::TimerCount::MicroSeconds() const noexcept;
              * @brief Method that returns time in microseconds.
+             *
              * @return Time interval in microseconds.
              */
             std::size_t MicroSeconds(void) const noexcept;
 
             /**
-             * @fn std::size_t Timer::TimerCount::MilliSeconds() const noexcept;
              * @brief Method that returns time in milliseconds.
+             *
              * @return Time interval in milliseconds.
              */
             std::size_t MilliSeconds(void) const noexcept;
 
             /**
-             * @fn double Timer::TimerCount::Seconds() const noexcept;
              * @brief Method that returns time in seconds.
+             *
              * @return Time interval in seconds.
              */
             double Seconds(void) const noexcept;
 
             /**
-             * @fn double Timer::TimerCount::Minutes() const noexcept;
              * @brief Method that returns time in minutes.
+             *
              * @return Time interval in minutes.
              */
             double Minutes(void) const noexcept;
 
             /**
-             * @fn double Timer::TimerCount::Hours() const noexcept;
              * @brief Method that returns time in hours.
+             *
              * @return Time interval in hours.
              */
             double Hours(void) const noexcept;
 
 
             /**
-             * @fn friend std::ostream & operator<< (std::ostream &, const Timer::TimerCount &) noexcept;
              * @brief An overloaded operator in the output stream.
+             *
              * @param [in,out] out - Reference of the 'std::ostream' type.
              * @param [in] in - Reference of the 'Timer::TimerCount' type.
              * @return Return time interval in seconds.
@@ -154,40 +150,40 @@ namespace analyzer::framework::diagnostic
             explicit operator size_t(void) const noexcept;
 
             /**
-             * @fn Timer::TimerCount Timer::TimerCount::operator+ (const Timer::TimerCount &) const noexcept;
              * @brief An overloaded member addition operator that modifies the internal time point.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return New object of the 'Timer::TimerCount' class.
              */
             TimerCount operator+ (const TimerCount & /*other*/) const noexcept;
 
             /**
-             * @fn Timer::TimerCount Timer::TimerCount::operator- (const Timer::TimerCount &) const noexcept;
              * @brief An overloaded member subtraction operator that modifies the internal time point.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return New object of the 'Timer::TimerCount' class.
              */
             TimerCount operator- (const TimerCount & /*other*/) const noexcept;
 
             /**
-             * @fn Timer::TimerCount & Timer::TimerCount::operator+= (const Timer::TimerCount &) noexcept;
              * @brief An overloaded member addition assignment operator that modifies the internal time point.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return Reference of the current 'Timer::TimerCount' class.
              */
             TimerCount & operator+= (const TimerCount & /*other*/) noexcept;
 
             /**
-             * @fn Timer::TimerCount & Timer::TimerCount::operator-= (const Timer::TimerCount &) noexcept;
              * @brief An overloaded member subtraction assignment operator that modifies the internal time point.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return Reference of the current 'Timer::TimerCount' class.
              */
             TimerCount & operator-= (const TimerCount & /*other*/) noexcept;
 
             /**
-             * @fn bool Timer::TimerCount::operator== (const Timer::TimerCount &) const noexcept;
              * @brief An overloaded member equal compare operator.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return Boolean value that indicates about of compare result.
              *
@@ -196,16 +192,16 @@ namespace analyzer::framework::diagnostic
             bool operator== (const TimerCount & /*other*/) const noexcept;
 
             /**
-             * @fn bool Timer::TimerCount::operator< (const Timer::TimerCount &) const noexcept;
              * @brief An overloaded member less compare operator.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return Boolean value that indicates about of compare result.
              */
             bool operator< (const TimerCount & /*other*/) const noexcept;
 
             /**
-             * @fn bool Timer::TimerCount::operator> (const Timer::TimerCount &) const noexcept;
              * @brief An overloaded member greater compare operator.
+             *
              * @param [in] other - Reference of the 'Timer::TimerCount' type.
              * @return Boolean value that indicates about of compare result.
              */
@@ -215,14 +211,13 @@ namespace analyzer::framework::diagnostic
 
     private:
         /**
-         * @var TimerCount count;
          * @brief The object of the TimerCount class.
          */
         TimerCount count = { };
 
         /**
-         * @fn static inline std::chrono::time_point Timer::GetCurrentTime() noexcept;
          * @brief Method that returns current time in ticks.
+         *
          * @return Current time in process ticks.
          */
         static inline timepoint_t GetCurrentTime(void) noexcept {
@@ -236,55 +231,53 @@ namespace analyzer::framework::diagnostic
         Timer & operator= (const Timer &) = delete;
 
         /**
-         * @fn explicit Timer::Timer (bool) noexcept;
          * @brief Constructor of Timer diagnostic class.
+         *
          * @param [in] start - Flag that indicates status of the timer. Default: false.
          */
         explicit Timer (bool /*start*/ = false) noexcept;
 
         /**
-         * @fn void Timer::Start() noexcept;
          * @brief Method that starts the timer.
          */
         void Start(void) noexcept;
 
         /**
-         * @fn Timer & Timer::Pause() noexcept;
          * @brief Method that pauses the timer and updates the total time in timer.
-         * @return Timer - Reference of the 'Timer' class.
+         *
+         * @return Reference of the 'Timer' class.
          */
         Timer & Pause(void) noexcept;
 
         /**
-         * @fn void Timer::Reset (bool) noexcept;
          * @brief Method that resets the timer and starts it if needed.
+         *
          * @param [in] start - Flag that indicates status of the timer. Default: false.
          */
         void Reset (bool /*start*/ = false) noexcept;
 
         /**
-         * @fn Timer::TimerCount & Timer::PauseAndGetCount() noexcept;
          * @brief Method that pauses the timer, updates the total time in timer and return a process ticks.
-         * @return Timer::TimerCount - Reference of the 'Timer::TimerCount' class.
+         *
+         * @return Reference of the 'Timer::TimerCount' class.
          */
         Timer::TimerCount & PauseAndGetCount(void) noexcept;
 
         /**
-         * @fn const Timer::TimerCount & Timer::UpdateAndGetCount() noexcept;
          * @brief Method that updates the total time in timer and return a process ticks.
-         * @return Timer::TimerCount - Reference of the 'Timer::TimerCount' class.
+         *
+         * @return Reference of the 'Timer::TimerCount' class.
          */
         const Timer::TimerCount & UpdateAndGetCount(void) noexcept;
 
         /**
-         * @fn const Timer::TimerCount & Timer::GetCount() const noexcept;
          * @brief Method that returns the reference of the 'Timer::TimerCount' class.
-         * @return Timer::TimerCount - Reference of the 'Timer::TimerCount' class.
+         *
+         * @return Reference of the 'Timer::TimerCount' class.
          */
         const Timer::TimerCount & GetCount(void) const noexcept;
 
         /**
-         * @fn Timer::~Timer();
          * @brief Default destructor of the Timer diagnostic class.
          */
         ~Timer(void) = default;

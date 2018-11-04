@@ -12,26 +12,23 @@
 namespace analyzer::framework::system
 {
     /**
-     * @class LocalMutex Mutex.hpp "include/framework/Mutex.hpp"
+     * @class LocalMutex   Mutex.hpp   "include/framework/Mutex.hpp"
      * @brief This class defined the interface for exception-free POSIX-oriented mutex for specific usages.
      */
     class LocalMutex
     {
     private:
         /**
-         * @var pthread_mutex_t mutex;
          * @brief A POSIX mutex value for thread-safe program working.
          */
         pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
         /**
-         * @var std::atomic_bool isAlreadyLockable;
          * @brief Boolean flag that indicates that this mutex was locked.
          */
         std::atomic_bool isAlreadyLocked = false;
 
     public:
         /**
-         * @fn LocalMutex::LocalMutex(void);
          * @brief Default constructor.
          */
         LocalMutex(void) = default;
@@ -89,7 +86,6 @@ namespace analyzer::framework::system
     {
     private:
         /**
-         * @var LocalMutex & mutex;
          * @brief Stored lvalue reference of LocalMutex class.
          */
         LocalMutex & mutex;
@@ -102,8 +98,8 @@ namespace analyzer::framework::system
         LockGuard & operator= (const LockGuard &) = delete;
 
         /**
-         * @fn explicit LockGuard::LockGuard (LocalMutex &) noexcept;
          * @brief Constructor of LockGuard class.
+         *
          * @param [in] input - The lvalue reference of LocalMutex class.
          */
         explicit LockGuard (LocalMutex& input) noexcept
@@ -113,7 +109,6 @@ namespace analyzer::framework::system
         }
 
         /**
-         * @fn LockGuard::~LockGuard(void) noexcept;
          * @brief Destructor of LockGuard class.
          */
         ~LockGuard(void) noexcept {

@@ -20,29 +20,24 @@ namespace analyzer::framework::parser
     {
     private:
         /**
-         * @var uint16_t rangeState;
          * @brief Variable that contains the current value of range.
          */
         uint16_t rangeState = 0;
         /**
-         * @var uint16_t rangeEnd;
          * @brief Variable that contains the last value of range.
          */
         uint16_t rangeEnd = 0;
         /**
-         * @var std::vector<std::string_view> inputStates;
          * @brief Vector of strings that contains the split values on input.
          */
         std::vector<std::string_view> inputStates = { };
 
     public:
         /**
-         * @fn PortsParser::PortsParser();
          * @brief Default constructor of PortsParser class.
          */
         PortsParser(void) = default;
         /**
-         * @fn PortsParser::~PortsParser();
          * @brief Default destructor of PortsParser class.
          */
         ~PortsParser(void) = default;
@@ -53,13 +48,11 @@ namespace analyzer::framework::parser
         PortsParser & operator= (const PortsParser &) = delete;
 
         /**
-         * @var static const uint16_t end;
          * @brief Static variable that indicates the end of parsing or error.
          */
         static const uint16_t end = 0;
 
         /**
-         * @fn explicit PortsParser::PortsParser (std::string_view, char) noexcept;
          * @brief Constructor of PortParser class.
          * @param [in] ports - The sequence of ports listed through a separator.
          * @param [in] delimiter - The separator. Default: ','.
@@ -69,7 +62,6 @@ namespace analyzer::framework::parser
         explicit PortsParser (std::string_view /*ports*/, char /*delimiter*/ = ',') noexcept;
 
         /**
-         * @fn void PortsParser::SetPorts (std::string_view, char) noexcept;
          * @brief Method that sets internal state of port parser.
          * @param [in] ports - The sequence of ports listed through a separator.
          * @param [in] delimiter - The separator. Default: ','.
@@ -77,7 +69,6 @@ namespace analyzer::framework::parser
         void SetPorts (std::string_view /*ports*/, char /*delimiter*/ = ',') noexcept;
 
         /**
-         * @fn uint16_t PortsParser::GetNextPort() noexcept;
          * @brief Method that gets next port value in input range.
          * @return Port number or PortsParser::end value if port enumeration is complete or an error occurred.
          *
