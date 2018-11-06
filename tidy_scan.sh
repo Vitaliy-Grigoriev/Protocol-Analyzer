@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-clang-tidy src/*.cpp include/analyzer/*.hpp -checks=*,\
+clang-tidy src/framework/*.cpp include/framework/*.hpp -checks=*,\
 -hicpp-use-auto,\
 -modernize-use-auto,\
 -google-default-arguments,\
