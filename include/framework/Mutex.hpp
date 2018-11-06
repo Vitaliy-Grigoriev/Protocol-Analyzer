@@ -1,10 +1,16 @@
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
+
 #ifndef PROTOCOL_ANALYZER_MUTEX_HPP
 #define PROTOCOL_ANALYZER_MUTEX_HPP
 
 #include <atomic>  // std::atomic_bool.
-#include <chrono>
+#include <chrono>  // system_clock::time_point, system_clock::now, duration, seconds, time_point_cast, duration_cast.
 #include <cerrno>
-#include <pthread.h>  // pthread_mutex_t,
+#include <pthread.h>  // pthread_mutex_t.
 
 // In System library MUST NOT use any another functional framework libraries because it is a core library.
 
@@ -23,9 +29,17 @@ namespace analyzer::framework::system
          */
         pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
         /**
-         * @brief Boolean flag that indicates that this mutex was locked.
+         * @brief Boolean flag that indicates that there was a request for a mutex.
+         */
+        std::atomic_bool isRequestForMutexLock = false;
+        /**
+         * @brief Boolean flag that indicates that mutex was locked.
          */
         std::atomic_bool isAlreadyLocked = false;
+        /**
+         * @brief Boolean flag that indicates that mutex was unlocked.
+         */
+        std::atomic_bool isAlreadyUnlocked = false;
 
     public:
         /**
@@ -44,12 +58,12 @@ namespace analyzer::framework::system
         [[nodiscard]]
         bool TryLock(void) noexcept;
 
-        [[nodiscard]]
-        bool Unlock(void) noexcept;
+        void Unlock(void) noexcept;
 
         template <typename Duration>
         bool TryLockUntil (const std::chrono::time_point<std::chrono::system_clock, Duration>& time) noexcept
         {
+            isRequestForMutexLock.store(true, std::memory_order_seq_cst);
             const auto sec = std::chrono::time_point_cast<std::chrono::seconds>(time);
             const auto nanosec = std::chrono::duration_cast<std::chrono::nanoseconds>(time - sec);
             const struct timespec ts =
@@ -59,8 +73,12 @@ namespace analyzer::framework::system
             };
 
             const int32_t result = pthread_mutex_timedlock(&mutex, &ts);
-            isAlreadyLocked.store(true, std::memory_order_seq_cst);
-            return (result == 0 || result == EDEADLK);
+            if (result == 0 || result == EDEADLK)
+            {
+                isAlreadyLocked.store(true, std::memory_order_seq_cst);
+                return true;
+            }
+            return false;
         }
 
         template <typename Rep, typename Period>
@@ -69,15 +87,21 @@ namespace analyzer::framework::system
             return TryLockUntil(std::chrono::system_clock::now() + time);
         }
 
-        inline void ResetFlag(void) noexcept { isAlreadyLocked.store(false, std::memory_order_seq_cst); }
+        inline void ResetLockedFlag(void) noexcept { isAlreadyLocked.store(false, std::memory_order_seq_cst); }
         inline bool IsAlreadyLocked(void) const noexcept { return isAlreadyLocked.load(std::memory_order_seq_cst); }
+
+        inline void ResetUnlockedFlag(void) noexcept { isAlreadyUnlocked.store(false, std::memory_order_seq_cst); }
+        inline bool IsAlreadyUnlocked(void) const noexcept { return isAlreadyUnlocked.load(std::memory_order_seq_cst); }
+
+        inline void ResetRequestFlag(void) noexcept { isRequestForMutexLock.store(false, std::memory_order_seq_cst); }
+        inline bool IsRequestForLock(void) const noexcept { return isRequestForMutexLock.load(std::memory_order_seq_cst); }
 
         ~LocalMutex(void) noexcept;
     };
 
 
     /**
-     * @class LockGuard Mutex.hpp "include/framework/Mutex.hpp"
+     * @class LockGuard   Mutex.hpp   "include/framework/Mutex.hpp"
      * @brief This class defined the interface for lock mutex in constructor and automatically unlock in destructor.
      *
      * @note This class only for LocalMutex class as original the std::lock_guard class in STL.
@@ -100,12 +124,12 @@ namespace analyzer::framework::system
         /**
          * @brief Constructor of LockGuard class.
          *
-         * @param [in] input - The lvalue reference of LocalMutex class.
+         * @param [in] input - Lvalue reference of LocalMutex class.
          */
         explicit LockGuard (LocalMutex& input) noexcept
-                : mutex(input)
+            : mutex(input)
         {
-            mutex.Lock();
+            [[maybe_unused]] bool unused = mutex.Lock();
         }
 
         /**

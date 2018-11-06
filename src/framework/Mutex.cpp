@@ -1,6 +1,12 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+// ============================================================================
+// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
+
 #include "../../include/framework/Mutex.hpp"
 
 
@@ -9,22 +15,33 @@ namespace analyzer::framework::system
     [[nodiscard]]
     bool LocalMutex::Lock(void) noexcept
     {
+        isRequestForMutexLock.store(true, std::memory_order_seq_cst);
         const int32_t result = pthread_mutex_lock(&mutex);
-        isAlreadyLocked.store(true, std::memory_order_seq_cst);
-        return (result == 0 || result == EDEADLK);
+        if (result == 0 || result == EDEADLK)
+        {
+            isAlreadyLocked.store(true, std::memory_order_seq_cst);
+            return true;
+        }
+        return false;
     }
 
     [[nodiscard]]
     bool LocalMutex::TryLock(void) noexcept
     {
-        isAlreadyLocked.store(true, std::memory_order_seq_cst);
-        return (pthread_mutex_trylock(&mutex) == 0);
+        isRequestForMutexLock.store(true, std::memory_order_seq_cst);
+        if (pthread_mutex_trylock(&mutex) == 0)
+        {
+            isAlreadyLocked.store(true, std::memory_order_seq_cst);
+            return true;
+        }
+        return false;
     }
 
-    [[nodiscard]]
-    bool LocalMutex::Unlock(void) noexcept
+    void LocalMutex::Unlock(void) noexcept
     {
-        return (pthread_mutex_unlock(&mutex) == 0);
+        if (pthread_mutex_unlock(&mutex) == 0) {
+            isAlreadyUnlocked.store(true, std::memory_order_seq_cst);
+        }
     }
 
     LocalMutex::~LocalMutex(void) noexcept

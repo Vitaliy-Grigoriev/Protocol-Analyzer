@@ -10,9 +10,7 @@
 #ifndef PROTOCOL_ANALYZER_NOTIFICATION_HPP
 #define PROTOCOL_ANALYZER_NOTIFICATION_HPP
 
-#include <chrono>
-
-#include "Mutex.hpp"
+#include "Mutex.hpp"  // system::LocalMutex, system::LockGuard.
 
 
 namespace analyzer::framework::task
@@ -35,11 +33,11 @@ namespace analyzer::framework::task
 
     private:
         /**
-         * @brief Expected value.
+         * @brief Expected value for NotificationObserver.
          */
         Type internalValue;
         /**
-         * @brief The expected event.
+         * @brief The expected event for NotificationObserver.
          */
         system::LocalMutex mutex = { };
 
@@ -91,7 +89,8 @@ namespace analyzer::framework::task
         template <typename Duration>
         bool WaitUntil (Type& output, const std::chrono::time_point<std::chrono::system_clock, Duration>& time) noexcept
         {
-            if (mutex.TryLockUntil(time) == true) {
+            if (mutex.TryLockUntil(time) == true)
+            {
                 output = internalValue;
                 mutex.Unlock();
                 return true;
@@ -171,13 +170,13 @@ namespace analyzer::framework::task
          */
         NotificationSubject(void) noexcept
         {
-            Notification<Type>::mutex.Lock();
+            [[maybe_unused]] bool unused = Notification<Type>::mutex.Lock();
         }
 
         explicit NotificationSubject (const Type& value) noexcept
             : Notification<Type>(value)
         {
-            Notification<Type>::mutex.Lock();
+            [[maybe_unused]] bool unused = Notification<Type>::mutex.Lock();
         }
 
         inline void SetValue (const Type& value) noexcept
@@ -187,16 +186,18 @@ namespace analyzer::framework::task
 
         inline void Notify(void) noexcept
         {
-            Notification<Type>::mutex.ResetFlag();
+            Notification<Type>::mutex.ResetLockedFlag();
             Notification<Type>::mutex.Unlock();
+
             while (Notification<Type>::mutex.IsAlreadyLocked() == false);
-            Notification<Type>::mutex.Lock();
+
+            [[maybe_unused]] bool unused = Notification<Type>::mutex.Lock();
         }
 
         virtual NotificationObserver<Type>* ToObserver(void) noexcept
         {
             auto base = static_cast<Notification<Type>*>(this);
-            return dynamic_cast<NotificationObserver<Type> *>(base);
+            return dynamic_cast<NotificationObserver<Type>*>(base);
         }
     };
 
@@ -233,12 +234,12 @@ namespace analyzer::framework::task
 
         inline NotificationObserver<Type>* ToObserver(void) noexcept final
         {
-            return static_cast<NotificationObserver<Type> *>(this);
+            return static_cast<NotificationObserver<Type>*>(this);
         }
 
         inline NotificationSubject<Type>* ToSubject(void) noexcept
         {
-            return static_cast<NotificationSubject<Type> *>(this);
+            return static_cast<NotificationSubject<Type>*>(this);
         }
     };
 
