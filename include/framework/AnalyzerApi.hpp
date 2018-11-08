@@ -12,7 +12,7 @@
 #define PROTOCOL_ANALYZER_VERSION_PATCH 11
 
 
-#include "Log.hpp"  // In this header file also defined "Common.hpp".
+#include "GlobalInfo.hpp"  // In this header file also defined "Log.hpp" and "Common.hpp".
 #include "Mutex.hpp"
 #include "System.hpp"
 #include "LockedDeque.hpp"

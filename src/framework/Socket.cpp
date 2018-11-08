@@ -19,7 +19,7 @@ namespace analyzer::framework::net
 {
     // Constructor.
     Socket::Socket (const int32_t family, const int32_t type, const int32_t protocol, const uint32_t time) noexcept
-            : socketFamily(family), socketType(type), ipProtocol(protocol), timeout(time)
+        : socketFamily(family), socketType(type), ipProtocol(protocol), timeout(time)
     {
         LOG_TRACE("Socket.Socket: Creating socket...");
         fd = socket(socketFamily, socketType, ipProtocol);

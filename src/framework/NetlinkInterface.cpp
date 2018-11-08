@@ -9,8 +9,9 @@
 
 #include <net/if.h>  // IFF_*.
 #include <unistd.h>  // getpid.
+#include <pthread.h>  // pthread_self.
 #include <net/if_arp.h>  // ARPHRD_*.
-#include <linux/netlink.h>  // nlmsghdr.
+#include <linux/netlink.h>  // sockaddr_nl, nlmsghdr, NLMSG_*.
 
 #include "../../include/framework/System.hpp"  // system::allocMemoryForObject.
 #include "../../include/framework/Common.hpp"  // common::GetRandomValue.
@@ -23,7 +24,7 @@ namespace analyzer::framework::net
     NetlinkSocket::NetlinkSocket (const uint32_t timeout) noexcept
         : Socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE, timeout)
     {
-        pid = static_cast<uint32_t>((pthread_self() << 16) | static_cast<uint32_t>(getpid()));
+        uniquePid = static_cast<uint32_t>((pthread_self() << 16) | static_cast<uint32_t>(getpid()));
     }
 
     // Method that associates a Netlink socket PID with a Netlink multicast groups.
@@ -31,16 +32,16 @@ namespace analyzer::framework::net
     {
         sockaddr_nl netlink = { };
         netlink.nl_family = AF_NETLINK;
-        netlink.nl_pid = pid;
+        netlink.nl_pid = uniquePid;
         netlink.nl_groups = groups;
 
         const int32_t result = bind(fd, reinterpret_cast<sockaddr*>(&netlink), sizeof(struct sockaddr_nl));
         if (result == SOCKET_SUCCESS)
         {
-            LOG_INFO("NetlinkSocket.Bind [", fd, "]: Binding to Netlink groups with pid '", pid, "' is success.");
+            LOG_INFO("NetlinkSocket.Bind [", fd, "]: Binding to Netlink groups with pid '", uniquePid, "' is success.");
             return true;
         }
-        LOG_ERROR("NetlinkSocket.Bind [", fd, "]: Binding to  groups with pid '", pid, "' failed - ", GET_ERROR(errno));
+        LOG_ERROR("NetlinkSocket.Bind [", fd, "]: Binding to  groups with pid '", uniquePid, "' failed - ", GET_ERROR(errno));
         return false;
     }
 
@@ -62,39 +63,25 @@ namespace analyzer::framework::net
         return false;
     }
 
-    InterfaceInfo* GetCorrectInterface (const uint32_t index, const uint8_t family, const std::list<InterfaceInfo>& interfaces)
+    InterfaceInformation* GetCorrectInterface (const uint32_t index, const uint8_t family, const std::list<InterfaceInformation>& interfaces)
     {
-        for (auto iff = interfaces.begin(); iff != interfaces.end(); ++iff)
+        for (auto iff = interfaces.cbegin(); iff != interfaces.cend(); ++iff)
         {
-            if (iff->interfaceIndex == index && (iff->interfaceFamily == AF_UNSPEC || iff->interfaceFamily == family))
+            if (iff->interfaceIndex == index)
             {
-                return const_cast<InterfaceInfo*>(&*iff);
+                if (family == AF_UNSPEC) {
+                    return const_cast<InterfaceInformation*>(&*iff);
+                }
+                else if (iff->interfaceFamily == AF_UNSPEC || iff->interfaceFamily == family) {
+                    return const_cast<InterfaceInformation*>(&*iff);
+                }
             }
         }
         return nullptr;
     }
 
 
-    struct InterfaceRequest
-    {
-        struct nlmsghdr  netlinkHeaderMsg;
-        struct ifinfomsg interfaceInfoMsg;
-    };
-
-    struct InterfaceAddressesRequest
-    {
-        struct nlmsghdr  netlinkHeaderMsg;
-        struct ifaddrmsg interfaceAddressMsg;
-    };
-
-    struct InterfaceRoutesRequest
-    {
-        struct nlmsghdr netlinkHeaderMsg;
-        struct rtmsg    interfaceRouteMsg;
-    };
-
-
-    bool NetlinkRequester::NetlinkInterfaceParser (void* const data, uint32_t length, std::list<InterfaceInfo>& interfaces) const noexcept
+    bool NetlinkRequester::NetlinkInterfaceParser (void* const data, uint32_t length, std::list<InterfaceInformation>& interfaces, const uint16_t types, const bool onlyRunning) const noexcept
     {
         // Enumerate all received network interfaces.
         struct nlmsghdr* msg = static_cast<struct nlmsghdr*>(data);
@@ -106,27 +93,39 @@ namespace analyzer::framework::net
                 struct ifinfomsg* const iface = static_cast<ifinfomsg*>(NLMSG_DATA(msg));
                 uint32_t tailLength = NLMSG_PAYLOAD(msg, length);
 
-                if (iface->ifi_type != ARPHRD_ETHER     &&
-                    iface->ifi_type != ARPHRD_IEEE80211 &&
-                    iface->ifi_type != ARPHRD_TUNNEL    &&
-                    iface->ifi_type != ARPHRD_TUNNEL6   &&
-                    iface->ifi_type != ARPHRD_LOOPBACK  &&
-                    iface->ifi_type != 65534)
+                // Check type of the interface.
+                if ((types & INTERFACE_TYPE_ANY) == 0U &&
+                    !(iface->ifi_type == ARPHRD_ETHER && (types & INTERFACE_TYPE_ETHERNET) != 0U)      &&
+                    !(iface->ifi_type == ARPHRD_IEEE80211 && (types & INTERFACE_TYPE_IEEE80211) != 0U) &&
+                    !(iface->ifi_type == ARPHRD_TUNNEL && (types & INTERFACE_TYPE_TUNNEL) != 0U)       &&
+                    !(iface->ifi_type == ARPHRD_TUNNEL6 && (types & INTERFACE_TYPE_TUNNEL6) != 0U)     &&
+                    !(iface->ifi_type == ARPHRD_LOOPBACK && (types & INTERFACE_TYPE_LOOPBACK) != 0U)   &&
+                    !(iface->ifi_type == 65534 && (types & INTERFACE_TYPE_UNSPECIFIED_TUNNEL) != 0U)   )
                 {
                     LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Skip the following interface, type: ", iface->ifi_type, '.');
                     continue;
                 }
 
+                InterfaceInformation interfaceEntry = { };
+                switch (iface->ifi_type)
+                {
+                    case ARPHRD_ETHER: interfaceEntry.interfaceType = INTERFACE_TYPE_ETHERNET;      break;
+                    case ARPHRD_IEEE80211: interfaceEntry.interfaceType = INTERFACE_TYPE_IEEE80211; break;
+                    case ARPHRD_TUNNEL: interfaceEntry.interfaceType = INTERFACE_TYPE_TUNNEL;       break;
+                    case ARPHRD_TUNNEL6: interfaceEntry.interfaceType = INTERFACE_TYPE_TUNNEL6;     break;
+                    case ARPHRD_LOOPBACK: interfaceEntry.interfaceType = INTERFACE_TYPE_LOOPBACK;   break;
+                    case 65534: interfaceEntry.interfaceType = INTERFACE_TYPE_UNSPECIFIED_TUNNEL;   break;
+                    default: interfaceEntry.interfaceType = iface->ifi_type;
+                }
+
                 // Check active status of the interface.
-                if ((iface->ifi_flags & IFF_UP) == 0U)
+                if (onlyRunning == true && (iface->ifi_flags & IFF_UP) == 0U)
                 {
                     LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Skip the following interface because its status is DOWN.");
                     continue;
                 }
-                
-                InterfaceInfo interfaceEntry = { };
+
                 interfaceEntry.interfaceFamily = iface->ifi_family;
-                interfaceEntry.interfaceType = static_cast<uint32_t>(iface->ifi_type);
                 interfaceEntry.interfaceIndex = static_cast<uint32_t>(iface->ifi_index);
                 // Enumerate all attributes of each network interface.
                 struct rtattr* attribute = IFLA_RTA(iface);
@@ -147,8 +146,12 @@ namespace analyzer::framework::net
                             interfaceEntry.mtuSize = *reinterpret_cast<const uint32_t*>(attr);
                             LOG_TRACE("NetlinkRequester.NetlinkInterfaceParser: Interface MTU size: ", interfaceEntry.mtuSize);
                             break;
+                        case IFLA_BROADCAST:  // Interface broadcast MAC address.
+                            interfaceEntry.broadcastMacAddress = MacAddress(attr);
+                            LOG_TRACE("NetlinkRequester.NetlinkInterfaceParser: Interface broadcast MAC address: ", interfaceEntry.broadcastMacAddress.ToString());
+                            break;
                         default:
-                            //LOG_INFO("Available additional information about interface, type ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Available additional information about interface of type: ", attribute->rta_type, '.');
                             break;
                     }
                 }
@@ -156,13 +159,13 @@ namespace analyzer::framework::net
             }
             else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
             else if (msg->nlmsg_type == NLMSG_ERROR) { return false; }
-            else { LOG_WARNING("NetlinkRequester.NetlinkInterfaceParser: Unhandled Netlink message, type: ", msg->nlmsg_type, '.'); }
+            else { LOG_WARNING("NetlinkRequester.NetlinkInterfaceParser: Unhandled Netlink message of type: ", msg->nlmsg_type, '.'); }
         }
         return false;
     }
 
 
-    bool NetlinkRequester::NetlinkAddressParser (void* const data, uint32_t length, std::list<InterfaceInfo>& interfaces) const noexcept
+    bool NetlinkRequester::NetlinkAddressParser (void* const data, uint32_t length, std::list<InterfaceInformation>& addresses, const bool notEnrich) const noexcept
     {
         // Enumerate all received network interfaces address.
         struct nlmsghdr* msg = static_cast<struct nlmsghdr*>(data);
@@ -176,19 +179,11 @@ namespace analyzer::framework::net
 
                 if (addr->ifa_family != AF_INET && addr->ifa_family != AF_INET6)
                 {
-                    LOG_INFO("NetlinkRequester.NetlinkAddressParser: Skip the following address, family: ", addr->ifa_family, '.');
-                    continue;
-                }
-
-                InterfaceInfo* const interface = GetCorrectInterface(addr->ifa_index, addr->ifa_family, interfaces);
-                if (interface == nullptr)
-                {
-                    LOG_WARNING("NetlinkRequester.NetlinkAddressParser: Not found correct interface, index: ", addr->ifa_index, ", family: ", addr->ifa_family, '.');
+                    LOG_INFO("NetlinkRequester.NetlinkAddressParser: Skip the following address of family: ", addr->ifa_family, '.');
                     continue;
                 }
 
                 InterfaceAddresses ipAddressEntry = { };
-
                 // Enumerate all attributes of each network interface address.
                 struct rtattr* attribute = IFA_RTA(addr);
                 for ( ; RTA_OK(attribute, tailLength) == true; attribute = RTA_NEXT(attribute, tailLength))
@@ -196,53 +191,77 @@ namespace analyzer::framework::net
                     const char* const attr = static_cast<const char*>(RTA_DATA(attribute));
                     switch (attribute->rta_type)
                     {
-                        case IFA_ADDRESS:  // Interface address.
+                        case IFA_ADDRESS:  // Interface unicast address.
                             if (addr->ifa_family == AF_INET)
-                                ipAddressEntry.ipAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
+                                ipAddressEntry.unicastIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
-                                ipAddressEntry.ipAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Interface address '", addr->ifa_index, "': ", ipAddressEntry.ipAddress.ToString());
+                                ipAddressEntry.unicastIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
+                            LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface address '", addr->ifa_index, "': ", ipAddressEntry.unicastIpAddress.ToString());
                             break;
                         case IFA_LOCAL:  // Interface local address.
                             if (addr->ifa_family == AF_INET)
                                 ipAddressEntry.localIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
                                 ipAddressEntry.localIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Interface local address '", addr->ifa_index, "': ", ipAddressEntry.localIpAddress.ToString());
-                            break;
-                        case IFA_BROADCAST:  // Interface broadcast address.
-                            if (addr->ifa_family == AF_INET)
-                                ipAddressEntry.broadcastIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
-                            else
-                                ipAddressEntry.broadcastIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Interface broadcast address '", addr->ifa_index, "': ", ipAddressEntry.broadcastIpAddress.ToString());
+                            LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface local address '", addr->ifa_index, "': ", ipAddressEntry.localIpAddress.ToString());
                             break;
                         case IFA_ANYCAST:  // Interface anycast address.
                             if (addr->ifa_family == AF_INET)
                                 ipAddressEntry.anycastIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
                                 ipAddressEntry.anycastIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Interface anycast address '", addr->ifa_index, "': ", ipAddressEntry.anycastIpAddress.ToString());
+                            LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface anycast address '", addr->ifa_index, "': ", ipAddressEntry.anycastIpAddress.ToString());
+                            break;
+                        case IFA_BROADCAST:  // Interface broadcast address.
+                            if (addr->ifa_family == AF_INET)
+                                ipAddressEntry.broadcastIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
+                            else
+                                ipAddressEntry.broadcastIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
+                            LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface broadcast address '", addr->ifa_index, "': ", ipAddressEntry.broadcastIpAddress.ToString());
+                            break;
+                        case IFA_MULTICAST:  // Interface multicast address.
+                            if (addr->ifa_family == AF_INET)
+                                ipAddressEntry.multicastIpAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
+                            else
+                                ipAddressEntry.multicastIpAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
+                            LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface multicast address '", addr->ifa_index, "': ", ipAddressEntry.multicastIpAddress.ToString());
                             break;
                         default:
-                            //LOG_INFO("Available additional information about interface addresses, type ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkAddressParser: Available additional information about interface addresses of type ", attribute->rta_type, '.');
                             break;
                     }
                 }
 
-                if (addr->ifa_family == AF_INET)
-                    interface->ipv4Addresses.push_back(ipAddressEntry);
-                else
-                    interface->ipv6Addresses.push_back(ipAddressEntry);
+                const uint8_t family = (notEnrich == true ? addr->ifa_family : static_cast<uint8_t>(AF_UNSPEC));
+                InterfaceInformation* const interface = GetCorrectInterface(addr->ifa_index, family, addresses);
+                if (interface == nullptr && notEnrich == false)
+                {
+                    InterfaceInformation interfaceEntry = { };
+                    interfaceEntry.interfaceIndex = addr->ifa_index;
+                    interfaceEntry.interfaceFamily = addr->ifa_family;
+                    if (addr->ifa_family == AF_INET) {
+                        interfaceEntry.ipv4Addresses.push_back(ipAddressEntry);
+                    }
+                    else { interfaceEntry.ipv6Addresses.push_back(ipAddressEntry); }
+                    addresses.push_back(interfaceEntry);
+                }
+                else if (interface != nullptr)
+                {
+                    if (addr->ifa_family == AF_INET) {
+                        interface->ipv4Addresses.push_back(ipAddressEntry);
+                    }
+                    else { interface->ipv6Addresses.push_back(ipAddressEntry); }
+                }
             }
             else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
             else if (msg->nlmsg_type == NLMSG_ERROR) { return false; }
-            else { LOG_WARNING("NetlinkRequester.NetlinkAddressParser: Unhandled Netlink message, type: ", msg->nlmsg_type, '.'); }
+            else { LOG_WARNING("NetlinkRequester.NetlinkAddressParser: Unhandled Netlink message of type: ", msg->nlmsg_type, '.'); }
         }
         return false;
     }
 
-    bool NetlinkRequester::NetlinkRouteParser (void* const data, uint32_t length, std::list<InterfaceInfo>& interfaces) const noexcept
+
+    bool NetlinkRequester::NetlinkRouteParser (void* const data, uint32_t length, std::list<RouteInformation>& routes, const uint8_t types) const noexcept
     {
         // Enumerate all received network interfaces route.
         struct nlmsghdr* msg = static_cast<struct nlmsghdr*>(data);
@@ -256,16 +275,41 @@ namespace analyzer::framework::net
 
                 if (route->rtm_family != AF_INET && route->rtm_family != AF_INET6)
                 {
-                    LOG_INFO("NetlinkRequester.NetlinkRouteParser: Skip the following route, family: ", uint16_t(route->rtm_family), '.');
-                    continue;
-                }
-                if (route->rtm_type == RTN_BROADCAST || route->rtm_type == RTN_MULTICAST)
-                {
-                    LOG_INFO("NetlinkRequester.NetlinkRouteParser: Skip the following route, type: ", uint16_t(route->rtm_type), '.');
+                    LOG_INFO("NetlinkRequester.NetlinkRouteParser: Skip the following route of family: ", uint16_t(route->rtm_family), '.');
                     continue;
                 }
 
-                InterfaceRoutesInfo routeEntry = { };
+                if (route->rtm_type == RTN_PROHIBIT || route->rtm_type == RTN_UNREACHABLE || route->rtm_type == RTN_BLACKHOLE)
+                {
+                    LOG_INFO("NetlinkRequester.NetlinkRouteParser: Skip the following route of type: ", uint16_t(route->rtm_type), '.');
+                    continue;
+                }
+
+                if ((types & ROUTE_TYPE_ANY) == 0U &&
+                    !(route->rtm_type == RTN_UNICAST && (types & ROUTE_TYPE_UNICAST) != 0U)     &&
+                    !(route->rtm_type == RTN_BROADCAST && (types & ROUTE_TYPE_BROADCAST) != 0U) &&
+                    !(route->rtm_type == RTN_MULTICAST && (types & ROUTE_TYPE_MULTICAST) != 0U) &&
+                    !(route->rtm_type == RTN_ANYCAST && (types & ROUTE_TYPE_ANYCAST) != 0U)     &&
+                    !(route->rtm_type == RTN_LOCAL && (types & ROUTE_TYPE_LOCAL) != 0U)         )
+                {
+                    LOG_INFO("NetlinkRequester.NetlinkRouteParser: Skip the following route of type: ", uint16_t(route->rtm_type), '.');
+                    continue;
+                }
+
+                RouteInformation routeEntry = { };
+                switch (route->rtm_type)
+                {
+                    case RTN_UNICAST: routeEntry.routeType = ROUTE_TYPE_UNICAST;     break;
+                    case RTN_BROADCAST: routeEntry.routeType = ROUTE_TYPE_BROADCAST; break;
+                    case RTN_MULTICAST: routeEntry.routeType = ROUTE_TYPE_MULTICAST; break;
+                    case RTN_ANYCAST: routeEntry.routeType = ROUTE_TYPE_ANYCAST;     break;
+                    case RTN_LOCAL: routeEntry.routeType = ROUTE_TYPE_LOCAL;         break;
+                    default: routeEntry.routeType = route->rtm_type;
+                }
+
+                routeEntry.routeFamily = route->rtm_family;
+                routeEntry.routeType = route->rtm_type;
+
                 // Enumerate all attributes of each network interface route.
                 struct rtattr* attribute = RTM_RTA(route);
                 for ( ; RTA_OK(attribute, tailLength) == true; attribute = RTA_NEXT(attribute, tailLength))
@@ -275,48 +319,42 @@ namespace analyzer::framework::net
                     {
                         case RTA_GATEWAY:  // Route gateway address.
                             if (route->rtm_family == AF_INET)
-                                routeEntry.gateWay = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
+                                routeEntry.gatewayAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
-                                routeEntry.gateWay = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Route gateway address: ", routeEntry.gateWay.ToString());
+                                routeEntry.gatewayAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
+                            LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route gateway address: ", routeEntry.gatewayAddress.ToString());
                             break;
                         case RTA_DST:  // Route destination address.
                             if (route->rtm_family == AF_INET)
                                 routeEntry.destinationAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
                                 routeEntry.destinationAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Route destination address: ", routeEntry.destinationAddress.ToString());
+                            LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route destination address: ", routeEntry.destinationAddress.ToString());
                             break;
                         case RTA_PREFSRC:  // Preferred route source address.
                             if (route->rtm_family == AF_INET)
                                 routeEntry.sourceAddress = IpAddress(*reinterpret_cast<const struct in_addr*>(attr));
                             else
                                 routeEntry.sourceAddress = IpAddress(*reinterpret_cast<const struct in6_addr*>(attr));
-                            LOG_TRACE("Route source address: ", routeEntry.sourceAddress.ToString());
+                            LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route source address: ", routeEntry.sourceAddress.ToString());
                             break;
                         case RTA_OIF:  // Interface index.
                             routeEntry.interfaceIndex = *reinterpret_cast<const uint32_t*>(attr);
-                            LOG_TRACE("Route interface index: ", routeEntry.interfaceIndex);
+                            LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route interface index: ", routeEntry.interfaceIndex);
                             break;
                         case RTA_PRIORITY:  // Route priority.
                             routeEntry.routePriority = *reinterpret_cast<const int32_t*>(attr);
-                            LOG_TRACE("Route priority: ", routeEntry.routePriority);
+                            LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route priority: ", routeEntry.routePriority);
                             break;
                         default:
-                            //LOG_INFO("Available additional information about interface addresses, type ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkRouteParser: Available additional information about interface addresses of type ", attribute->rta_type, '.');
                             break;
                     }
                 }
-                
-                InterfaceInfo* const interface = GetCorrectInterface(routeEntry.interfaceIndex, route->rtm_family, interfaces);
-                if (interface == nullptr)
-                {
-                    LOG_WARNING("NetlinkRequester.NetlinkRouteParser: Not found correct interface, index: ", routeEntry.interfaceIndex, ", family: ", route->rtm_family, '.');
-                    continue;
-                }
 
                 routeEntry.destinationMask.exist = true;
-                if (route->rtm_family == AF_INET) {
+                if (route->rtm_family == AF_INET)
+                {
                     routeEntry.destinationMask.isIPv6 = false;
                     if (route->rtm_dst_len == 0) {
                         routeEntry.destinationMask.ipv4.s_addr = 0x00000000;
@@ -344,47 +382,19 @@ namespace analyzer::framework::net
                     }
                 }
 
-                if (routeEntry.sourceAddress.IsExist() == false)
-                {
-                    if (route->rtm_family == AF_INET) {
-                        routeEntry.sourceAddress = interface->ipv4Addresses.front().ipAddress;
-                    }
-                    else {
-                        routeEntry.sourceAddress = interface->ipv6Addresses.front().ipAddress;
-                    }
-                }
                 routeEntry.routeScope = route->rtm_scope;
-                routeEntry.interface = interface;
                 routeEntry.isDefault = false;
                 if (route->rtm_dst_len == 0 &&
                     routeEntry.routeScope == RT_SCOPE_UNIVERSE &&
-                    routeEntry.gateWay.IsExist() == true &&
+                    routeEntry.gatewayAddress.IsExist() == true &&
                     routeEntry.destinationAddress.IsExist() == false &&
-                        route->rtm_family == AF_INET)
+                    route->rtm_family == AF_INET)
                 {
                     routeEntry.isDefault = true;
                 }
-
-                if (route->rtm_family == AF_INET)
-                {
-                    interface->ipv4Routes.push_back(routeEntry);
-                    if (routeEntry.isDefault == true) {
-                        interface->defaultIpv4Route = &interface->ipv4Routes.back();
-                    }
-                }
-                else { interface->ipv6Routes.push_back(routeEntry); }
+                routes.push_back(routeEntry);
             }
-            else if (msg->nlmsg_type == NLMSG_DONE)
-            {
-                // Clear interfaces without routes.
-                for (auto it = interfaces.cbegin(); it != interfaces.cend(); ++it)
-                {
-                    if (it->ipv4Routes.empty() == true && it->ipv6Routes.empty() == true) {
-                        it = interfaces.erase(it);
-                    }
-                }
-                return true;
-            }
+            else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
             else if (msg->nlmsg_type == NLMSG_ERROR) { return false; }
             else { LOG_WARNING("NetlinkRequester.NetlinkRouteParser: Unhandled Netlink message, type: ", msg->nlmsg_type, '.'); }
         }
@@ -404,12 +414,16 @@ namespace analyzer::framework::net
         }
     }
 
-    // Method that returns the list of network interfaces of selected family in the system.
-    bool NetlinkRequester::GetNetworkInterfaces (std::list<InterfaceInfo>& interfaces) noexcept
+    // Method that returns the list of network interfaces in the system.
+    bool NetlinkRequester::GetNetworkInterfaces (std::list<InterfaceInformation>& interfaces, const uint16_t types, const bool onlyRunning) noexcept
     {
         if (sock != nullptr)
         {
-            InterfaceRequest request = { };
+            struct InterfaceRequest
+            {
+                struct nlmsghdr  netlinkHeaderMsg;
+                struct ifinfomsg interfaceInfoMsg;
+            } request = { };
 
             request.netlinkHeaderMsg.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg));
             request.netlinkHeaderMsg.nlmsg_type = RTM_GETLINK;
@@ -420,7 +434,7 @@ namespace analyzer::framework::net
             request.interfaceInfoMsg.ifi_family = interfaceFamily;
             request.interfaceInfoMsg.ifi_change = 0xFFFFFFFF;
 
-            LOG_ERROR("NetlinkRequester.GetNetworkInterfaces: Sending Netlink-Route request...");
+            LOG_ERROR("NetlinkRequester.GetNetworkInterfaces: Sending Netlink-Interface request...");
             if (sock->Send(reinterpret_cast<char*>(&request), sizeof(InterfaceRequest)) == false) {
                 return false;
             }
@@ -428,7 +442,7 @@ namespace analyzer::framework::net
             char buff[16392] = { };
             std::size_t length = 0;
             const bool result = sock->Recv(buff, sizeof(buff), length, NetlinkReceiveFunctor);
-            return result == true && length > 0 && NetlinkInterfaceParser(buff, static_cast<uint32_t>(length), interfaces) == true;
+            return (result == true && length > 0 && NetlinkInterfaceParser(buff, static_cast<uint32_t>(length), interfaces, types, onlyRunning) == true);
         }
 
         LOG_ERROR("NetlinkRequester.GetNetworkInterfaces: Socket is invalid.");
@@ -436,13 +450,21 @@ namespace analyzer::framework::net
     }
 
     // Method that fills the InterfaceInfo structures by network interface addresses.
-    bool NetlinkRequester::GetInterfacesAddresses (std::list<InterfaceInfo>& interfaces) noexcept
+    bool NetlinkRequester::GetInterfacesAddresses (std::list<InterfaceInformation>& addresses, const bool notEnrich) noexcept
     {
-        if (interfaces.empty() == true) { return false; }
+        if (notEnrich == true && addresses.empty() == true)
+        {
+            LOG_WARNING("NetlinkRequester.GetInterfacesAddresses: Method call with incorrect inputted data.");
+            return false;
+        }
 
         if (sock != nullptr)
         {
-            InterfaceAddressesRequest request = { };
+            struct InterfaceAddressesRequest
+            {
+                struct nlmsghdr  netlinkHeaderMsg;
+                struct ifaddrmsg interfaceAddressMsg;
+            } request = { };
 
             request.netlinkHeaderMsg.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifaddrmsg));
             request.netlinkHeaderMsg.nlmsg_type = RTM_GETADDR;
@@ -460,7 +482,7 @@ namespace analyzer::framework::net
             char buff[16392] = { };
             std::size_t length = 0;
             const bool result = sock->Recv(buff, sizeof(buff), length, NetlinkReceiveFunctor);
-            return result == true && length > 0 && NetlinkAddressParser(buff, static_cast<uint32_t>(length), interfaces) == true;
+            return (result == true && length > 0 && NetlinkAddressParser(buff, static_cast<uint32_t>(length), addresses, notEnrich) == true);
         }
 
         LOG_ERROR("NetlinkRequester.GetInterfacesAddresses: Socket is invalid.");
@@ -468,13 +490,15 @@ namespace analyzer::framework::net
     }
 
 
-    bool NetlinkRequester::GetInterfacesRoutes (std::list<InterfaceInfo>& interfaces) noexcept
+    bool NetlinkRequester::GetRoutes (std::list<RouteInformation>& routes, const uint8_t types) noexcept
     {
-        if (interfaces.empty() == true) { return false; }
-
         if (sock != nullptr)
         {
-            InterfaceRoutesRequest request = { };
+            struct InterfaceRoutesRequest
+            {
+                struct nlmsghdr netlinkHeaderMsg;
+                struct rtmsg    interfaceRouteMsg;
+            } request = { };
 
             request.netlinkHeaderMsg.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
             request.netlinkHeaderMsg.nlmsg_type = RTM_GETROUTE;
@@ -484,7 +508,7 @@ namespace analyzer::framework::net
 
             request.interfaceRouteMsg.rtm_family = interfaceFamily;
 
-            LOG_ERROR("NetlinkRequester.GetInterfacesRoutes: Sending Netlink-Route request...");
+            LOG_ERROR("NetlinkRequester.GetRoutes: Sending Netlink-Route request...");
             if (sock->Send(reinterpret_cast<char*>(&request), sizeof(InterfaceRoutesRequest)) == false) {
                 return false;
             }
@@ -492,10 +516,10 @@ namespace analyzer::framework::net
             char buff[16392] = { };
             std::size_t length = 0;
             const bool result = sock->Recv(buff, sizeof(buff), length, NetlinkReceiveFunctor);
-            return result == true && length > 0 && NetlinkRouteParser(buff, static_cast<uint32_t>(length), interfaces) == true;
+            return (result == true && length > 0 && NetlinkRouteParser(buff, static_cast<uint32_t>(length), routes, types) == true);
         }
 
-        LOG_ERROR("NetlinkRequester.GetInterfacesRoutes: Socket is invalid.");
+        LOG_ERROR("NetlinkRequester.GetRoutes: Socket is invalid.");
         return false;
     }
 

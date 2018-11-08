@@ -11,8 +11,9 @@
 #include <memory>  // std::unique_ptr.
 
 #include "Log.hpp"  // log::Logger.
-#include "FrameworkModuleTypes.hpp"  // FRAMEWORK_MODULE_TYPES.
-#include "FrameworkCallbackFunctors.hpp"  // BaseCallbackFunctor.
+#include "FrameworkModuleTypes.hpp"  // modules::FRAMEWORK_MODULE_TYPES.
+#include "FrameworkCallbackFunctors.hpp"  // callbacks::BaseCallbackFunctor.
+#include "SystemNetworkConfiguration.hpp"  // system::SystemNetworkConfiguration.
 
 
 namespace analyzer::framework::storage
@@ -31,7 +32,12 @@ namespace analyzer::framework::storage
         /**
          * @brief Variable that consist of various global callbacks.
          */
-        std::array<std::unique_ptr<std::unique_ptr<callbacks::BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks;
+        std::array<std::unique_ptr<std::unique_ptr<callbacks::BaseCallbackFunctor>[]>, modules::FRAMEWORK_MODULE_TYPES_SIZE> callbacks = { };
+        /**
+         * @brief Class that stores information about system interfaces and routes.
+         */
+        system::SystemNetworkConfiguration networkConfiguration;
+
 
         /**
          * @brief Function that returns size of the selected module callbacks.
@@ -58,6 +64,12 @@ namespace analyzer::framework::storage
          * @return The instance of GlobalInfo singleton class.
          */
         static GlobalInfo & Instance(void) noexcept;
+
+        /**
+         * @brief Method that returns constant reference of the SystemNetworkConfiguration class with filled information.
+         * @return Reference of the SystemNetworkConfiguration class.
+         */
+        system::SystemNetworkConfiguration & GetNetworkInformation(void) noexcept;
 
         /**
          * @brief Method that returns pointer to callback functor of selected type.
@@ -101,6 +113,7 @@ namespace analyzer::framework::storage
          * @brief Default destructor of GlobalInfo class.
          */
         ~GlobalInfo(void) = default;
+
     };
 
 
@@ -121,6 +134,8 @@ namespace analyzer::framework::storage
     inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime = std::chrono::system_clock::now();
 
 #pragma clang diagnostic pop
+
+    /*********************************************** Global Variables ***********************************************/
 
 }  // namespace storage.
 

@@ -7,131 +7,23 @@
 #ifndef PROTOCOL_ANALYZER_NETLINK_INTERFACE_HPP
 #define PROTOCOL_ANALYZER_NETLINK_INTERFACE_HPP
 
-#include <list>  // std::list.
-#include <linux/rtnetlink.h>  // RTMGRP_*, ifinfomsg, ifaddrmsg, rtmsg, rtattr.
-
 #include "Socket.hpp"  // Socket.
-#include "NetworkAddresses.hpp"  // IpAddress, MacAddress.
+#include "NetworkTypes.hpp"  // IpAddress, MacAddress, InterfaceInformation.
 
 
 namespace analyzer::framework::net
 {
-    struct InterfaceAddresses
-    {
-        IpAddress ipAddress;
-        IpAddress localIpAddress;
-        IpAddress anycastIpAddress;
-        IpAddress broadcastIpAddress;
-    };
-
-    struct InterfaceInfo;
-
-    struct InterfaceRoutesInfo
-    {
-        IpAddress destinationAddress;
-        IpAddress destinationMask;
-        IpAddress gateWay;
-        IpAddress sourceAddress;
-
-        bool isDefault;
-        uint8_t routeScope;
-        int32_t routePriority;
-        uint32_t interfaceIndex;
-        struct InterfaceInfo* interface;
-
-        std::string ToString(void) const noexcept
-        {
-            std::ostringstream str;
-
-            str << "\tGateWay address: " << gateWay << std::endl;
-            str << "\tDestination address: " << destinationAddress << std::endl;
-            str << "\tSource address: " << sourceAddress << std::endl;
-            str << "\tDestination mask: " << destinationMask << std::endl;
-            str << "\tIs default: " << isDefault << std::endl;
-            str << "\tPriority: " << routePriority << std::endl << std::endl;
-
-            return str.str();
-        }
-    };
-
-    struct InterfaceInfo
-    {
-        std::string interfaceName;
-        uint32_t interfaceType;
-        uint32_t interfaceIndex;
-        uint32_t mtuSize;
-        uint8_t interfaceFamily;
-        MacAddress macAddress;
-
-        std::list<InterfaceAddresses> ipv4Addresses;
-        std::list<InterfaceAddresses> ipv6Addresses;
-
-        InterfaceRoutesInfo * defaultIpv4Route;
-        std::list<InterfaceRoutesInfo> ipv4Routes;
-        std::list<InterfaceRoutesInfo> ipv6Routes;
-
-
-        std::string ToString(void) const noexcept
-        {
-            std::ostringstream str;
-
-            str << "Interface name: " << interfaceName << std::endl;
-            str << "Interface index: " << interfaceIndex << std::endl;
-            str << "Interface type: " << interfaceType << std::endl;
-            str << "MTU size: " << mtuSize << std::endl;
-            str << "Interface family: " << uint16_t(interfaceFamily) << std::endl;
-            str << "Interface MAC: " << macAddress.ToString() << std::endl;
-
-            str << "IPv4 addresses: " << std::endl;
-            for (auto& addr : ipv4Addresses) {
-                str << "\tIP address: " << addr.ipAddress << std::endl;
-                str << "\tIP local address: " << addr.localIpAddress << std::endl;
-                str << "\tIP broadcast address: " << addr.broadcastIpAddress << std::endl;
-                str << "\tIP anycast address: " << addr.anycastIpAddress << std::endl << std::endl;
-            }
-            str << "IPv6 addresses: " << std::endl;
-            for (auto& addr : ipv6Addresses) {
-                str << "\tIP address: " << addr.ipAddress << std::endl;
-                str << "\tIP local address: " << addr.localIpAddress << std::endl;
-                str << "\tIP broadcast address: " << addr.broadcastIpAddress << std::endl;
-                str << "\tIP anycast address: " << addr.anycastIpAddress << std::endl << std::endl;
-            }
-
-            str << "IPv4 routes: " << std::endl;
-            for (auto& rtt : ipv4Routes) {
-                str << "\tGateWay address: " << rtt.gateWay << std::endl;
-                str << "\tDestination address: " << rtt.destinationAddress << std::endl;
-                str << "\tSource address: " << rtt.sourceAddress << std::endl;
-                str << "\tDestination mask: " << rtt.destinationMask << std::endl;
-                str << "\tIs default: " << rtt.isDefault << std::endl;
-                str << "\tPriority: " << rtt.routePriority << std::endl << std::endl;
-            }
-            str << "IPv6 routes: " << std::endl;
-            for (auto& rtt : ipv6Routes) {
-                str << "\tGateWay address: " << rtt.gateWay << std::endl;
-                str << "\tDestination address: " << rtt.destinationAddress << std::endl;
-                str << "\tSource address: " << rtt.sourceAddress << std::endl;
-                str << "\tDestination mask: " << rtt.destinationMask << std::endl;
-                str << "\tIs default: " << rtt.isDefault << std::endl;
-                str << "\tPriority: " << rtt.routePriority << std::endl << std::endl;
-            }
-
-            return str.str();
-        }
-    };
-
-
 #define DEFAULT_NETLINK_TIMEOUT   2
 #define DEFAULT_NETLINK_GROUPS   RTMGRP_LINK | RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE
 
     /**
      * @class NetlinkSocket   NetlinkInterface.hpp   "include/framework/NetlinkInterface.hpp"
-     * @brief This class defined the interface for work with Netlink Interface.
+     * @brief This class defined an interface for work with Netlink Interface.
      */
     class NetlinkSocket final : public Socket
     {
     private:
-        uint32_t pid = 0;
+        uint32_t uniquePid = 0;
 
     public:
         NetlinkSocket (NetlinkSocket &&) = delete;
@@ -161,8 +53,37 @@ namespace analyzer::framework::net
     };
 
 
-    InterfaceInfo * GetCorrectInterface (uint32_t /*index*/, uint8_t /*family*/, const std::list<InterfaceInfo> & /*interfaces*/);
+    InterfaceInformation * GetCorrectInterface (uint32_t /*index*/, uint8_t /*family*/, const std::list<InterfaceInformation> & /*interfaces*/);
 
+    /**
+     * @enum INTERFACE_TYPES
+     * @brief Type of network interface.
+     */
+    enum INTERFACE_TYPES : uint16_t
+    {
+        INTERFACE_TYPE_ANY = 0x01,
+        INTERFACE_TYPE_ETHERNET = 0x02,
+        INTERFACE_TYPE_IEEE80211 = 0x04,
+        INTERFACE_TYPE_LOOPBACK = 0x08,
+        INTERFACE_TYPE_TUNNEL = 0x10,
+        INTERFACE_TYPE_TUNNEL6 = 0x20,
+        INTERFACE_TYPE_UNSPECIFIED_TUNNEL = 0x40
+    };
+#define DEFAULT_INTERFACE_TYPES   INTERFACE_TYPE_ETHERNET | INTERFACE_TYPE_IEEE80211 | INTERFACE_TYPE_LOOPBACK | INTERFACE_TYPE_TUNNEL | INTERFACE_TYPE_TUNNEL6 | INTERFACE_TYPE_UNSPECIFIED_TUNNEL
+
+    /**
+     * @enum ROUTE_TYPES
+     * @brief Type of network route.
+     */
+    enum ROUTE_TYPES : uint8_t
+    {
+        ROUTE_TYPE_ANY = 0x01,
+        ROUTE_TYPE_UNICAST = 0x02,
+        ROUTE_TYPE_BROADCAST = 0x04,
+        ROUTE_TYPE_MULTICAST = 0x08,
+        ROUTE_TYPE_ANYCAST = 0x10,
+        ROUTE_TYPE_LOCAL = 0x20
+    };
 
     /**
      * @class NetlinkRequester   NetlinkInterface.hpp   "include/framework/NetlinkInterface.hpp"
@@ -185,11 +106,11 @@ namespace analyzer::framework::net
         uint8_t interfaceFamily = AF_UNSPEC;
 
     protected:
-        bool NetlinkInterfaceParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInfo> & /*interfaces*/) const noexcept;
+        bool NetlinkInterfaceParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInformation> & /*interfaces*/, uint16_t /*types*/, bool /*onlyRunning*/) const noexcept;
 
-        bool NetlinkAddressParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInfo> & /*interfaces*/) const noexcept;
+        bool NetlinkAddressParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInformation> & /*addresses*/, bool /*notEnrich*/) const noexcept;
 
-        bool NetlinkRouteParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInfo> & /*interfaces*/) const noexcept;
+        bool NetlinkRouteParser (void * /*data*/, uint32_t /*length*/, std::list<RouteInformation> & /*routes*/, uint8_t /*types*/) const noexcept;
 
     public:
         NetlinkRequester (NetlinkRequester &&) = delete;
@@ -200,33 +121,37 @@ namespace analyzer::framework::net
         /**
          * @brief Constructor of NetlinkRequester class.
          *
-         * @param [in] family - Family of network interface. Default: AF_UNSPEC.
+         * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
          */
         explicit NetlinkRequester (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
         /**
-         * @brief Method that returns the list of network interfaces of selected family in the system.
+         * @brief Method that returns the list of network interfaces in the system.
          *
-         * @param [in] interfaces - List of InterfaceInfo structures for filling.
+         * @param [out] interfaces - List of InterfaceInfo structures for filling.
+         * @param [in] types - Type of the network interfaces in INTERFACE_TYPES type. Default: DEFAULT_INTERFACE_TYPES.
+         * @param [in] onlyRunning - Boolean flag that indicates the working status of received interfaces. Default: TRUE.
          * @return Boolean value that indicates about the status of the request.
          */
-        bool GetNetworkInterfaces (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
+        bool GetNetworkInterfaces (std::list<InterfaceInformation> & /*interfaces*/, uint16_t /*types*/ = DEFAULT_INTERFACE_TYPES, bool /*onlyRunning*/ = true) noexcept;
 
         /**
-         * @brief Method that fills the InterfaceInfo structures by network interface addresses.
+         * @brief Method that fills the InterfaceInformation structures by network interfaces addresses.
          *
-         * @param [in] interfaces - List of InterfaceInfo structures which received from 'GetNetworkInterfaces' method.
+         * @param [in,out] addresses - List of InterfaceInformation structures.
+         * @param [in] notEnrich - Boolean flag that indicates about regarding the addition to the collection of new interfaces. Default: FALSE.
          * @return Boolean value that indicates about the status of the request.
          */
-        bool GetInterfacesAddresses (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
+        bool GetInterfacesAddresses (std::list<InterfaceInformation> & /*addresses*/, bool /*notEnrich*/ = false) noexcept;
 
         /**
-         * @brief Method that fills the InterfaceInfo structures by network interface routes.
+         * @brief Method that fills the RouteInformation structures by network routes.
          *
-         * @param [in] interfaces - List of InterfaceInfo structures which received from 'GetNetworkInterfaces' method.
+         * @param [out] routes - List of RouteInformation structures.
+         * @param [in] types - Type of the network routes in ROUTE_TYPES type. Default: ROUTE_TYPE_ANY.
          * @return Boolean value that indicates about the status of the request.
          */
-        bool GetInterfacesRoutes (std::list<InterfaceInfo> & /*interfaces*/) noexcept;
+        bool GetRoutes (std::list<RouteInformation> & /*routes*/, uint8_t /*types*/ = ROUTE_TYPE_ANY) noexcept;
 
         /**
          * @brief Default destructor of NetlinkRequester class.

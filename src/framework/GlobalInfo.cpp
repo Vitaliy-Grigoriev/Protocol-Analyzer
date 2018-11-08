@@ -34,8 +34,6 @@ namespace analyzer::framework::storage
     // Method that returns the instance of the GlobalInfo singleton class.
     GlobalInfo& GlobalInfo::Instance(void) noexcept
     {
-        // Since it's a static variable, if the class has already been created, its won't be created again.
-        // It's thread-safe since C++11.
         static GlobalInfo instance;
         return instance;
     }
@@ -69,6 +67,15 @@ namespace analyzer::framework::storage
         }
         LOG_ERROR("GlobalInfo.SetCallback: Incorrect input callback type - ", callback, '.');
         return false;
+    }
+
+
+    std::once_flag flag;
+
+    system::SystemNetworkConfiguration& GlobalInfo::GetNetworkInformation(void) noexcept
+    {
+        std::call_once(flag, [&]() { if (networkConfiguration.Initialize() == false) { std::terminate(); } });
+        return networkConfiguration;
     }
 
 }  // namespace storage.

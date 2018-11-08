@@ -13,15 +13,15 @@
 using namespace analyzer::framework;
 
 
-std::list<net::InterfaceInfo> interfaces;
+std::list<net::InterfaceInformation> interfaces;
 
 
-const net::InterfaceRoutesInfo* GetBestRouteForIpAddress (const net::IpAddress& ip) noexcept
+const net::RouteInformation* GetBestRouteForIpAddress (const net::IpAddress& ip) noexcept
 {
     if (interfaces.empty() == true) { return nullptr; }
 
-    const net::InterfaceRoutesInfo* defaultRoute = interfaces.front().defaultIpv4Route;
-    std::list<const net::InterfaceRoutesInfo*> routes;
+    const net::RouteInformation* defaultRoute = interfaces.front().defaultIpv4Route;
+    std::list<const net::RouteInformation*> routes;
 
     for (const auto& iff : interfaces)
     {
@@ -36,11 +36,11 @@ const net::InterfaceRoutesInfo* GetBestRouteForIpAddress (const net::IpAddress& 
 
             for (auto rt = iff.ipv4Routes.cbegin(); rt != iff.ipv4Routes.cend(); ++rt)
             {
-                if (rt->isDefault == true) { continue; }
+                if ((*rt)->isDefault == true) { continue; }
 
-                if (((rt->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & rt->destinationMask.ipv4.s_addr) == 0U)
+                if ((((*rt)->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & (*rt)->destinationMask.ipv4.s_addr) == 0U)
                 {
-                    routes.push_back(&*rt);
+                    routes.push_back(&*(*rt));
                 }
             }
         }
@@ -53,7 +53,7 @@ const net::InterfaceRoutesInfo* GetBestRouteForIpAddress (const net::IpAddress& 
         return routes.front();
     }
 
-    const net::InterfaceRoutesInfo* route = routes.front();
+    const net::RouteInformation* route = routes.front();
     for (auto rt = routes.cbegin(); rt != routes.cend(); ++rt)
     {
         if ((*rt)->routePriority < route->routePriority) {
@@ -71,15 +71,18 @@ int32_t main (int32_t size, char** data)
     log::Logger::Instance().SwitchBufferedMode();
 
 
-    net::NetlinkRequester netlink;
-    std::cout << netlink.GetNetworkInterfaces(interfaces) << std::endl;
-    std::cout << netlink.GetInterfacesAddresses(interfaces) << std::endl;
-    std::cout << netlink.GetInterfacesRoutes(interfaces) << std::endl;
+    std::cout << storage::GI.GetNetworkInformation().ToString();
+
+    /*net::NetlinkRequester netlink;
+    const uint16_t type = net::INTERFACE_TYPE_ETHERNET;
+    std::cout << netlink.GetNetworkInterfaces(interfaces, type) << std::endl;
+    std::cout << netlink.GetInterfacesAddresses(interfaces, true) << std::endl;
+    //std::cout << netlink.GetInterfacesRoutes(interfaces) << std::endl;
     for (auto& iff : interfaces) {
         std::cout << iff.ToString() << std::endl << std::endl;
-    }
+    }*/
 
-    net::IpAddress ip;
+    /*net::IpAddress ip;
     ip.FromString(AF_INET, data[1]);
     std::cout << "IP address: " << ip.ToString() << std::endl;
 
@@ -89,7 +92,7 @@ int32_t main (int32_t size, char** data)
         return EXIT_FAILURE;
     }
 
-    std::cout << rt->ToString() << std::endl;
+    std::cout << rt->ToString() << std::endl;*/
 
     std::cerr << "[+] Exit." << std::endl;
     return EXIT_SUCCESS;

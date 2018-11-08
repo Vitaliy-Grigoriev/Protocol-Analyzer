@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 #include <netdb.h>
-#include <sys/epoll.h>
+#include <sys/epoll.h>  // struct epoll_event, epoll_create1, epoll_ctl, epoll_wait, EPOLL_CTL_*, EPOLL*.
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -317,9 +317,24 @@ namespace analyzer::framework::net
         bool Bind (const struct sockaddr * /*addr*/, uint32_t /*size*/);
         // Connecting to external host.
         virtual bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT);
-        // Sending the message to external host over TCP protocol.
+
+        /**
+         * @brief Method that sends a message to external host over TCP protocol.
+         *
+         * @param [in] data - Pointer to the constant data.
+         * @param [in] length - Length of the sending data.
+         * @return TRUE - if sending data is successful, otherwise - FALSE.
+         */
         virtual bool Send (const char * /*data*/, std::size_t /*length*/) noexcept;
-        // Receiving the message from external host over TCP protocol.
+
+        /**
+         * @brief Method that receives a message from external host over TCP protocol.
+         *
+         * @param [in] data - Pointer to the buffer for incoming data.
+         * @param [in] length - Size of the buffer for incoming data.
+         * @param [in] noWait - Boolean flag that indicates is it worth it to continue in a loop after the first reading.
+         * @return Received data length or error code (less than zero).
+         */
         virtual int32_t Recv (char * /*data*/, std::size_t /*length*/, bool /*noWait*/ = false);
         // Receiving the message from external host over TCP protocol until the functor returns false value.
         bool Recv (char * /*data*/, std::size_t /*length*/, std::size_t & /*obtainLength*/, CompleteFunctor /*functor*/, std::size_t /*chunkLength*/ = DEFAULT_NO_CHUNK);

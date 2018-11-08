@@ -189,7 +189,10 @@ namespace analyzer::framework::task
             Notification<Type>::mutex.ResetLockedFlag();
             Notification<Type>::mutex.Unlock();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wempty-body"
             while (Notification<Type>::mutex.IsAlreadyLocked() == false);
+#pragma clang diagnostic pop
 
             [[maybe_unused]] bool unused = Notification<Type>::mutex.Lock();
         }
