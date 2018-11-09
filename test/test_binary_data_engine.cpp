@@ -111,51 +111,6 @@ int32_t main (int32_t size, char** data)
     std::cout << Timer.PauseAndGetCount().MicroSeconds() / 100  << std::endl;
     return EXIT_SUCCESS;
 
-    std::cout << buffer1.SetField(4, field) << std::endl;
-    std::cout << buffer1.ToFormattedString() << std::endl;
-    buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 0, false);
-    buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 1, false);
-    buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 8, false);
-    buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 16, false);
-    buffer1.SetFieldBit<types::DATA_MODE_DEPENDENT>(0, 31, false);
-    std::cout << buffer1.ToFormattedString() << std::endl;
-    std::cout << buffer1.GetFieldBit<types::DATA_MODE_DEPENDENT>(0, 0);
-    std::cout << buffer1.GetFieldBit<types::DATA_MODE_DEPENDENT>(0, 1);
-    std::cout << buffer1.GetFieldBit<types::DATA_MODE_DEPENDENT>(0, 8);
-    std::cout << buffer1.GetFieldBit<types::DATA_MODE_DEPENDENT>(0, 16);
-    std::cout << buffer1.GetFieldBit<types::DATA_MODE_DEPENDENT>(0, 31) << std::endl;
-
-    BinaryDataEngine field1 = buffer1.GetField<types::DATA_MODE_DEFAULT, types::DATA_LITTLE_ENDIAN>(0);
-    std::cout << field1.BitsTransform().Length() << std::endl;
-    std::cout << field1.BitsTransform() << std::endl;
-
-    BinaryDataEngine field3 = buffer1.GetFieldByReference(0);
-    std::cout << field3.BitsTransform().Length() << std::endl;
-    std::cout << field3.BitsTransform() << std::endl;
-    field3.BitsTransform().RoundShiftLeft(8);
-    field3.Clear();
-    std::cout << buffer1.ToFormattedString() << std::endl;
-
-
-    /*BinaryStructuredDataEngine buffer2(types::DATA_LITTLE_ENDIAN);
-    std::cout << buffer2.AssignData(&tcp, pattern, 7) << std::endl;
-    buffer2.SetFieldBit<types::DATA_MODE_DEPENDENT>(6, 0, true);
-    buffer2.SetFieldBit<types::DATA_MODE_DEPENDENT>(6, 1, true);
-    buffer2.SetFieldBit<types::DATA_MODE_DEPENDENT>(6, 8, true);
-    buffer2.SetFieldBit<types::DATA_MODE_DEPENDENT>(6, 15, true);
-    std::cout << buffer2.ToFormattedString() << std::endl;
-    std::cout << buffer2.GetFieldBit<types::DATA_MODE_DEPENDENT>(6, 0);
-    std::cout << buffer2.GetFieldBit<types::DATA_MODE_DEPENDENT>(6, 1);
-    std::cout << buffer2.GetFieldBit<types::DATA_MODE_DEPENDENT>(6, 8);
-    std::cout << buffer2.GetFieldBit<types::DATA_MODE_DEPENDENT>(6, 15) << std::endl;
-
-    BinaryDataEngine field6 = buffer2.GetField<types::DATA_MODE_DEFAULT, types::DATA_BIG_ENDIAN>(6);
-    std::cout << field6.BitsTransform().Length() << std::endl;
-    std::cout << field6.BitsTransform() << std::endl;*/
-
-
-
-    //return EXIT_SUCCESS;
 
     const uint16_t value_0 = 37988;
     const uint32_t value_1 = 573475684;
