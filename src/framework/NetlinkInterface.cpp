@@ -50,8 +50,14 @@ namespace analyzer::framework::net
     NetlinkSocket::~NetlinkSocket(void) noexcept { }
 
 
-
-    bool NetlinkReceiveFunctor (const char* const data, std::size_t length) noexcept
+    /**
+     * @brief Functor that needs for fast receiving of the Netlink message.
+     *
+     * @param [in] data - Pointer to constant Netlink response message.
+     * @param [in] length - Length of the Netlink message.
+     * @return TRUE - if the Netlink-Done message was found in response, othewise - FALSE.
+     */
+    static bool NetlinkReceiveFunctor (const char* const data, std::size_t length) noexcept
     {
         const struct nlmsghdr* msg = reinterpret_cast<const struct nlmsghdr*>(data);
         for ( ; NLMSG_OK(msg, length) == true; msg = NLMSG_NEXT(msg, length))
@@ -63,24 +69,33 @@ namespace analyzer::framework::net
         return false;
     }
 
-    InterfaceInformation* GetCorrectInterface (const uint32_t index, const uint8_t family, const std::list<InterfaceInformation>& interfaces)
+    /**
+     * @brief Function that returns the interface by index and network family.
+     *
+     * @param [in] index - Index of the network interface.
+     * @param [in] family - Network family of the network interface.
+     * @param [in] interfaces - List of the network interfaces in which the desired interface will be searched.
+     * @return Pointer to the found network interface or nullptr.
+     */
+    [[nodiscard]]
+    static InterfaceInformation* GetCorrectInterface (const uint32_t index, const uint8_t family, const std::list<InterfaceInformation>& interfaces) noexcept
     {
-        for (auto iff = interfaces.cbegin(); iff != interfaces.cend(); ++iff)
+        for (auto iface = interfaces.cbegin(); iface != interfaces.cend(); ++iface)
         {
-            if (iff->interfaceIndex == index)
+            if (iface->interfaceIndex == index)
             {
                 if (family == AF_UNSPEC) {
-                    return const_cast<InterfaceInformation*>(&*iff);
+                    return const_cast<InterfaceInformation*>(&*iface);
                 }
-                else if (iff->interfaceFamily == AF_UNSPEC || iff->interfaceFamily == family) {
-                    return const_cast<InterfaceInformation*>(&*iff);
+                else if (iface->interfaceFamily == AF_UNSPEC || iface->interfaceFamily == family) {
+                    return const_cast<InterfaceInformation*>(&*iface);
                 }
             }
         }
         return nullptr;
     }
 
-
+    // Method that parses Netlink-Interface response and fills InterfaceInformation structures.
     bool NetlinkRequester::NetlinkInterfaceParser (void* const data, uint32_t length, std::list<InterfaceInformation>& interfaces, const uint16_t types, const bool onlyRunning) const noexcept
     {
         // Enumerate all received network interfaces.
@@ -164,7 +179,7 @@ namespace analyzer::framework::net
         return false;
     }
 
-
+    // Method that parses Netlink-Address response and fills InterfaceInformation structures.
     bool NetlinkRequester::NetlinkAddressParser (void* const data, uint32_t length, std::list<InterfaceInformation>& addresses, const bool notEnrich) const noexcept
     {
         // Enumerate all received network interfaces address.
@@ -260,7 +275,7 @@ namespace analyzer::framework::net
         return false;
     }
 
-
+    // Method that parses Netlink-Route response and fills RouteInformation structures.
     bool NetlinkRequester::NetlinkRouteParser (void* const data, uint32_t length, std::list<RouteInformation>& routes, const uint8_t types) const noexcept
     {
         // Enumerate all received network interfaces route.
@@ -489,7 +504,7 @@ namespace analyzer::framework::net
         return false;
     }
 
-
+    // Method that fills the RouteInformation structures by network routes.
     bool NetlinkRequester::GetRoutes (std::list<RouteInformation>& routes, const uint8_t types) noexcept
     {
         if (sock != nullptr)

@@ -37,7 +37,7 @@ namespace analyzer::framework::system
 
         for (auto route = networkRoutesInfo.begin(); route != networkRoutesInfo.end(); ++route)
         {
-            net::InterfaceInformation* const interface = GetCorrectInterface(route->interfaceIndex, route->routeFamily, networkInterfacesInfo);
+            net::InterfaceInformation* const interface = const_cast<net::InterfaceInformation*>(GetInterface(route->interfaceIndex, route->routeFamily));
             if (interface == nullptr)
             {
                 LOG_TRACE("SystemNetworkConfiguration.SystemNetworkConfiguration: Not found correct interface with index: ", route->interfaceIndex, ", family: ", route->routeFamily, '.');
@@ -75,6 +75,91 @@ namespace analyzer::framework::system
         return true;
     }
 
+    // Method that updates information about system network interfaces and routes.
+    bool SystemNetworkConfiguration::Update (const uint8_t family) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock { mutex }; }
+        catch (const std::system_error& /*err*/) {
+            return false;
+        }
+
+        networkRoutesInfo.clear();
+        networkInterfacesInfo.clear();
+        return Initialize(family);
+    }
+
+    // Method that returns the best network route for selected IP address.
+    const net::RouteInformation* SystemNetworkConfiguration::GetBestRouteForIpAddress (const net::IpAddress& ip) noexcept
+    {
+        try { std::lock_guard<std::mutex> lock { mutex }; }
+        catch (const std::system_error& /*err*/) {
+            return nullptr;
+        }
+
+        if (networkInterfacesInfo.empty() == true) { return nullptr; }
+
+        const net::RouteInformation* defaultRoute = networkInterfacesInfo.front().defaultIpv4Route;
+        std::list<const net::RouteInformation*> routes;
+
+        for (const auto& iface : networkInterfacesInfo)
+        {
+            if (iface.interfaceFamily == AF_UNSPEC || iface.interfaceFamily == AF_INET)
+            {
+                if (defaultRoute == nullptr) {
+                    defaultRoute = iface.defaultIpv4Route;
+                }
+                else if (iface.defaultIpv4Route != nullptr && iface.defaultIpv4Route->routePriority < defaultRoute->routePriority) {
+                    defaultRoute = iface.defaultIpv4Route;
+                }
+
+                for (auto rt = iface.ipv4Routes.cbegin(); rt != iface.ipv4Routes.cend(); ++rt)
+                {
+                    if ((*rt)->isDefault == true) { continue; }
+                    if ((((*rt)->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & (*rt)->destinationMask.ipv4.s_addr) == 0U)
+                    {
+                        routes.push_back(&*(*rt));
+                    }
+                }
+            }
+            else { return nullptr; }
+        }
+
+        if (routes.empty() == true) {
+            return defaultRoute;
+        }
+        if (routes.size() == 1) {
+            return routes.front();
+        }
+
+        const net::RouteInformation* route = routes.front();
+        for (auto rt = routes.cbegin(); rt != routes.cend(); ++rt)
+        {
+            if ((*rt)->routePriority < route->routePriority) {
+                route = *rt;
+            }
+        }
+        return route;
+    }
+
+    // Method that returns the interface by index and network family.
+    const net::InterfaceInformation* SystemNetworkConfiguration::GetInterface (const uint32_t index, const uint8_t family) noexcept
+    {
+        for (auto iface = networkInterfacesInfo.cbegin(); iface != networkInterfacesInfo.cend(); ++iface)
+        {
+            if (iface->interfaceIndex == index)
+            {
+                if (family == AF_UNSPEC) {
+                    return const_cast<net::InterfaceInformation*>(&*iface);
+                }
+                else if (iface->interfaceFamily == AF_UNSPEC || iface->interfaceFamily == family) {
+                    return const_cast<net::InterfaceInformation*>(&*iface);
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    // Method that returns information about system interfaces and routes in string format.
     std::string SystemNetworkConfiguration::ToString (void) const noexcept
     {
         std::ostringstream str;

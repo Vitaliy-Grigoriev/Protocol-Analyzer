@@ -53,7 +53,6 @@ namespace analyzer::framework::net
     };
 
 
-    InterfaceInformation * GetCorrectInterface (uint32_t /*index*/, uint8_t /*family*/, const std::list<InterfaceInformation> & /*interfaces*/);
 
     /**
      * @enum INTERFACE_TYPES
@@ -106,10 +105,38 @@ namespace analyzer::framework::net
         uint8_t interfaceFamily = AF_UNSPEC;
 
     protected:
+        /**
+         * @brief Method that parses Netlink-Interface response and fills InterfaceInformation structures.
+         *
+         * @param [in] data - Netlink-Interface response message on Netlink-Interface request.
+         * @param [in] length - Length of the inputted Netlink-Interface response.
+         * @param [out] interfaces - List of InterfaceInformation structures for filling.
+         * @param [in] types - Type of the network interfaces in INTERFACE_TYPES type.
+         * @param [in] onlyRunning - Boolean flag that indicates the working status of received interfaces.
+         * @return TRUE - if Netlink-Interface message was successfully parsed, otherwise - FALSE.
+         */
         bool NetlinkInterfaceParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInformation> & /*interfaces*/, uint16_t /*types*/, bool /*onlyRunning*/) const noexcept;
 
+        /**
+         * @brief Method that parses Netlink-Address response and fills InterfaceInformation structures.
+         *
+         * @param [in] data - Netlink-Address response message on Netlink-Address request.
+         * @param [in] length - Length of the inputted Netlink-Address response.
+         * @param [out] addresses - List of InterfaceInformation structures for filling.
+         * @param [in] notEnrich - Boolean flag that indicates about regarding the addition to the collection of new interfaces.
+         * @return TRUE - if Netlink-Address message was successfully parsed, otherwise - FALSE.
+         */
         bool NetlinkAddressParser (void * /*data*/, uint32_t /*length*/, std::list<InterfaceInformation> & /*addresses*/, bool /*notEnrich*/) const noexcept;
 
+        /**
+         * @brief Method that parses Netlink-Route response and fills RouteInformation structures.
+         *
+         * @param [in] data - Netlink-Route response message on Netlink-Route request.
+         * @param [in] length - Length of the inputted Netlink-Route response.
+         * @param [out] routes - List of RouteInformation structures for filling.
+         * @param [in] types - Type of the network routes in ROUTE_TYPES type.
+         * @return TRUE - if Netlink-Route message was successfully parsed, otherwise - FALSE.
+         */
         bool NetlinkRouteParser (void * /*data*/, uint32_t /*length*/, std::list<RouteInformation> & /*routes*/, uint8_t /*types*/) const noexcept;
 
     public:
@@ -138,7 +165,7 @@ namespace analyzer::framework::net
         /**
          * @brief Method that fills the InterfaceInformation structures by network interfaces addresses.
          *
-         * @param [in,out] addresses - List of InterfaceInformation structures.
+         * @param [out] addresses - List of InterfaceInformation structures.
          * @param [in] notEnrich - Boolean flag that indicates about regarding the addition to the collection of new interfaces. Default: FALSE.
          * @return Boolean value that indicates about the status of the request.
          */

@@ -8,6 +8,7 @@
 #define PROTOCOL_ANALYZER_SYSTEM_NETWORK_CONFIGURATION_HPP
 
 #include <list>  // std::list.
+#include <mutex>  // std::mutex.
 
 #include "NetworkTypes.hpp"  // net::InterfaceInformation.
 
@@ -21,6 +22,10 @@ namespace analyzer::framework::system
     class SystemNetworkConfiguration
     {
     private:
+        /**
+         * @brief Mutex that needs for update network routes.
+         */
+        std::mutex mutex = { };
         std::list<net::InterfaceInformation> networkInterfacesInfo = { };
         std::list<net::RouteInformation> networkRoutesInfo = { };
 
@@ -36,16 +41,41 @@ namespace analyzer::framework::system
         SystemNetworkConfiguration(void) noexcept = default;
 
         /**
-         * @brief Method that initialize information about system network interfaces and routes.
+         * @brief Method that initializes information about system network interfaces and routes.
          *
-         * [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
-         *
+         * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
          * @return TRUE - if initialization succeeds, otherwise - false.
          */
         bool Initialize (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
         /**
+         * @brief Method that updates information about system network interfaces and routes.
+         *
+         * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
+         * @return TRUE - if update succeeds, otherwise - false.
+         */
+        bool Update (uint8_t /*family*/ = AF_UNSPEC) noexcept;
+
+        /**
+         * @brief Method that returns the best network route for selected IP address.
+         *
+         * @param [in] ip - IP address in IPv4 or IPv6 representation.
+         * @return Pointer to best network route for selected IP address.
+         */
+        const net::RouteInformation * GetBestRouteForIpAddress (const net::IpAddress & /*ip*/) noexcept;
+
+        /**
+         * @brief Method that returns the interface by index and network family.
+         *
+         * @param [in] index - Index of the network interface.
+         * @param [in] family - Network family of the network interface.
+         * @return Constant pointer to the found network interface or nullptr.
+         */
+        const net::InterfaceInformation * GetInterface (uint32_t /*index*/, uint8_t /*family*/) noexcept;
+
+        /**
          * @brief Method that returns information about system interfaces and routes in string format.
+         *
          * @return Information about system interfaces and routes.
          */
         std::string ToString(void) const noexcept;

@@ -66,7 +66,8 @@ namespace analyzer::framework::storage
         static GlobalInfo & Instance(void) noexcept;
 
         /**
-         * @brief Method that returns constant reference of the SystemNetworkConfiguration class with filled information.
+         * @brief Method that returns reference of the SystemNetworkConfiguration class with filled information.
+         *
          * @return Reference of the SystemNetworkConfiguration class.
          */
         system::SystemNetworkConfiguration & GetNetworkInformation(void) noexcept;

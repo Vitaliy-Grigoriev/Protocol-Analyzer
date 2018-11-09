@@ -72,6 +72,7 @@ namespace analyzer::framework::storage
 
     std::once_flag flag;
 
+    // Method that returns reference of the SystemNetworkConfiguration class with filled information.
     system::SystemNetworkConfiguration& GlobalInfo::GetNetworkInformation(void) noexcept
     {
         std::call_once(flag, [&]() { if (networkConfiguration.Initialize() == false) { std::terminate(); } });
