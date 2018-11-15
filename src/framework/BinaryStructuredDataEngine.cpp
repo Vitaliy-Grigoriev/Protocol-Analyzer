@@ -175,7 +175,7 @@ namespace analyzer::framework::common::types
     }
 
     // Method that outputs internal binary structured data by pattern in string format.
-    std::string BinaryStructuredDataEngine::ToFormattedString (void) const noexcept
+    std::string BinaryStructuredDataEngine::ToFormattedString(void) const noexcept
     {
         std::ostringstream result;
         if (data.IsEmpty() == false)

@@ -117,7 +117,7 @@ namespace analyzer::framework::net
                     !(iface->ifi_type == ARPHRD_LOOPBACK && (types & INTERFACE_TYPE_LOOPBACK) != 0U)   &&
                     !(iface->ifi_type == 65534 && (types & INTERFACE_TYPE_UNSPECIFIED_TUNNEL) != 0U)   )
                 {
-                    LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Skip the following interface, type: ", iface->ifi_type, '.');
+                    LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Skip the following interface of type: ", iface->ifi_type, '.');
                     continue;
                 }
 
@@ -166,7 +166,7 @@ namespace analyzer::framework::net
                             LOG_TRACE("NetlinkRequester.NetlinkInterfaceParser: Interface broadcast MAC address: ", interfaceEntry.broadcastMacAddress.ToString());
                             break;
                         default:
-                            LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Available additional information about interface of type: ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Available additional interface information of type: ", attribute->rta_type, '.');
                             break;
                     }
                 }
@@ -242,7 +242,7 @@ namespace analyzer::framework::net
                             LOG_TRACE("NetlinkRequester.NetlinkAddressParser: Interface multicast address '", addr->ifa_index, "': ", ipAddressEntry.multicastIpAddress.ToString());
                             break;
                         default:
-                            LOG_INFO("NetlinkRequester.NetlinkAddressParser: Available additional information about interface addresses of type ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkAddressParser: Available additional addresses information of type ", attribute->rta_type, '.');
                             break;
                     }
                 }
@@ -362,7 +362,7 @@ namespace analyzer::framework::net
                             LOG_TRACE("NetlinkRequester.NetlinkRouteParser: Route priority: ", routeEntry.routePriority);
                             break;
                         default:
-                            LOG_INFO("NetlinkRequester.NetlinkRouteParser: Available additional information about interface addresses of type ", attribute->rta_type, '.');
+                            LOG_INFO("NetlinkRequester.NetlinkRouteParser: Available additional route information of type ", attribute->rta_type, '.');
                             break;
                     }
                 }
@@ -449,7 +449,7 @@ namespace analyzer::framework::net
             request.interfaceInfoMsg.ifi_family = interfaceFamily;
             request.interfaceInfoMsg.ifi_change = 0xFFFFFFFF;
 
-            LOG_ERROR("NetlinkRequester.GetNetworkInterfaces: Sending Netlink-Interface request...");
+            LOG_INFO("NetlinkRequester.GetNetworkInterfaces: Sending Netlink-Interface request...");
             if (sock->Send(reinterpret_cast<char*>(&request), sizeof(InterfaceRequest)) == false) {
                 return false;
             }
@@ -489,7 +489,7 @@ namespace analyzer::framework::net
 
             request.interfaceAddressMsg.ifa_family = interfaceFamily;
 
-            LOG_ERROR("NetlinkRequester.GetInterfacesAddresses: Sending Netlink-Address request...");
+            LOG_INFO("NetlinkRequester.GetInterfacesAddresses: Sending Netlink-Address request...");
             if (sock->Send(reinterpret_cast<char*>(&request), sizeof(InterfaceAddressesRequest)) == false) {
                 return false;
             }
@@ -523,7 +523,7 @@ namespace analyzer::framework::net
 
             request.interfaceRouteMsg.rtm_family = interfaceFamily;
 
-            LOG_ERROR("NetlinkRequester.GetRoutes: Sending Netlink-Route request...");
+            LOG_INFO("NetlinkRequester.GetRoutes: Sending Netlink-Route request...");
             if (sock->Send(reinterpret_cast<char*>(&request), sizeof(InterfaceRoutesRequest)) == false) {
                 return false;
             }

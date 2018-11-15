@@ -368,9 +368,9 @@ namespace analyzer::framework::common
     struct is_supports_binary_operations : std::false_type { };
 
     /**
-     * @struct template <typename Type>
-     * struct is_supports_binary_operations<Type, typename, typename, typename, typename, typename, typename>;
+     * @struct is_supports_binary_operations<Type>   Common.hpp   "analyzer/framework/Common.hpp"
      * @brief Structure that checks that variable has binary operators.
+     *
      * @tparam [in] Type - Typename of checked data type.
      * @return TRUE - if variable has binary operators, otherwise - FALSE.
      */
@@ -396,9 +396,9 @@ namespace analyzer::framework::common
     };
 
     /**
-     * @struct template <typename Type>
-     * struct is_iterator_type<Type, typename>;
+     * @struct is_iterator_type<Type>   Common.hpp   "analyzer/framework/Common.hpp"
      * @brief Structure that checks the variable for belonging to the iterative type.
+     *
      * @tparam [in] Type - Typename of checked data type.
      */
     template <typename Type>
@@ -415,9 +415,9 @@ namespace analyzer::framework::common
     };
 
     /**
-     * @struct template <typename Type>
-     * struct is_pod_type<Type, typename>;
+     * @struct is_pod_type<Type>   Common.hpp   "analyzer/framework/Common.hpp"
      * @brief Structure that checks the variable for belonging to the POD type.
+     *
      * @tparam [in] Type - Typename of checked data type.
      */
     template <typename Type>

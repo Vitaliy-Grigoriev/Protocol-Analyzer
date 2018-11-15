@@ -16,6 +16,7 @@
 #include <ostream>  // std::ostream.
 #include <cstring>  // memset, memcmp, memcpy, strtok_r.
 #include <limits.h>  // ULONG_MAX.
+#include <functional>  // std::hash.
 #include <arpa/inet.h>  // inet_ntop, inet_pton.
 #include <netinet/in.h>  // struct in_addr, struct in6_addr, struct sockaddr_storage.
 #include <linux/rtnetlink.h>  // struct ifinfomsg, struct ifaddrmsg, struct rtmsg.
@@ -287,7 +288,11 @@ namespace analyzer::framework::net
         IpAddress broadcastIpAddress;
         IpAddress multicastIpAddress;
 
-
+        /**
+         * @brief Method that outputs the data of InterfaceAddresses structure in string format.
+         *
+         * @return InterfaceAddresses data in string representation.
+         */
         std::string ToString(void) const noexcept;
     };
 
@@ -314,9 +319,13 @@ namespace analyzer::framework::net
         uint8_t routeType;
         int32_t routePriority;
         uint32_t interfaceIndex;
-        struct InterfaceInformation * interface;
+        struct InterfaceInformation * ownerInterface;
 
-
+        /**
+         * @brief Method that outputs the data of RouteInformation structure in string format.
+         *
+         * @return RouteInformation data in string representation.
+         */
         std::string ToString(void) const noexcept;
     };
 
@@ -341,8 +350,48 @@ namespace analyzer::framework::net
         std::list<RouteInformation*> ipv4Routes;
         std::list<RouteInformation*> ipv6Routes;
 
-
+        /**
+         * @brief Method that outputs the data of InterfaceInformation structure in string format.
+         *
+         * @return InterfaceInformation data in string representation.
+         */
         std::string ToString(void) const noexcept;
+    };
+}
+
+
+namespace std
+{
+    /**
+     * @struct hash<net::IpAddress>   NetworkTypes.hpp   "analyzer/framework/NetworkTypes.hpp"
+     * @brief Specialize the std::hash template for a IpAddress class for using in hash tables.
+     */
+    template <>
+    struct hash <analyzer::framework::net::IpAddress>
+    {
+        std::size_t operator() (const analyzer::framework::net::IpAddress& value) const noexcept
+        {
+            if (value.isIPv6 == false) {
+                return std::hash<uint32_t>()(value.ipv4.s_addr);
+            }
+            const uint64_t* part1 = reinterpret_cast<const uint64_t*>(&value.ipv6.s6_addr[0]);
+            const uint64_t* part2 = reinterpret_cast<const uint64_t*>(&value.ipv6.s6_addr[8]);
+            return std::hash<uint64_t>()(*part1) ^ std::hash<uint64_t>()(*part2);
+        }
+    };
+
+    /**
+     * @struct hash<net::MacAddress>   NetworkTypes.hpp   "analyzer/framework/NetworkTypes.hpp"
+     * @brief Specialize the std::hash template for a MacAddress class for using in hash tables.
+     */
+    template <>
+    struct hash <analyzer::framework::net::MacAddress>
+    {
+        std::size_t operator() (const analyzer::framework::net::MacAddress& value) const noexcept
+        {
+            // First three bytes determine the manufacturer, so for hash is used last four bytes.
+            return std::hash<uint32_t>()(*reinterpret_cast<const uint32_t*>(value.address[2]));
+        }
     };
 }
 

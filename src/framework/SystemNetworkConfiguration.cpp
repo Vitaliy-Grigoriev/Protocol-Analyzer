@@ -16,22 +16,29 @@ namespace analyzer::framework::system
     // Method that initialize information about system network interfaces and routes.
     bool SystemNetworkConfiguration::Initialize (const uint8_t family) noexcept
     {
+        if (family != AF_INET && family != AF_INET6 && family != AF_UNSPEC)
+        {
+            LOG_FATAL("SystemNetworkConfiguration.Initialize: Incorrect type of inputted interface network family.");
+            return false;
+        }
+
+        interfaceFamily = family;
         net::NetlinkRequester netlink(family);
         if (netlink.GetNetworkInterfaces(networkInterfacesInfo) == false)
         {
-            LOG_FATAL("SystemNetworkConfiguration.SystemNetworkConfiguration: An error occurred while retrieving network interface information.");
+            LOG_FATAL("SystemNetworkConfiguration.Initialize: An error occurred while retrieving network interfaces information.");
             return false;
         }
 
         if (netlink.GetInterfacesAddresses(networkInterfacesInfo, true) == false)
         {
-            LOG_FATAL("SystemNetworkConfiguration.SystemNetworkConfiguration: An error occurred while retrieving network interfaces addresses.");
+            LOG_FATAL("SystemNetworkConfiguration.Initialize: An error occurred while retrieving network addresses information.");
             return false;
         }
 
         if (netlink.GetRoutes(networkRoutesInfo) == false)
         {
-            LOG_FATAL("SystemNetworkConfiguration.SystemNetworkConfiguration: An error occurred while retrieving network routes.");
+            LOG_FATAL("SystemNetworkConfiguration.Initialize: An error occurred while retrieving network routes information.");
             return false;
         }
 
@@ -40,11 +47,12 @@ namespace analyzer::framework::system
             net::InterfaceInformation* const interface = const_cast<net::InterfaceInformation*>(GetInterface(route->interfaceIndex, route->routeFamily));
             if (interface == nullptr)
             {
-                LOG_TRACE("SystemNetworkConfiguration.SystemNetworkConfiguration: Not found correct interface with index: ", route->interfaceIndex, ", family: ", route->routeFamily, '.');
+                LOG_TRACE("SystemNetworkConfiguration.Initialize: Not found correct interface by index: ", route->interfaceIndex, ", family: ", route->routeFamily, '.');
                 route = networkRoutesInfo.erase(route);
                 continue;
             }
 
+            route->ownerInterface = interface;
             if (route->routeFamily == AF_INET)
             {
                 interface->ipv4Routes.push_back(&*route);
@@ -78,11 +86,6 @@ namespace analyzer::framework::system
     // Method that updates information about system network interfaces and routes.
     bool SystemNetworkConfiguration::Update (const uint8_t family) noexcept
     {
-        try { std::lock_guard<std::mutex> lock { mutex }; }
-        catch (const std::system_error& /*err*/) {
-            return false;
-        }
-
         networkRoutesInfo.clear();
         networkInterfacesInfo.clear();
         return Initialize(family);
@@ -91,37 +94,54 @@ namespace analyzer::framework::system
     // Method that returns the best network route for selected IP address.
     const net::RouteInformation* SystemNetworkConfiguration::GetBestRouteForIpAddress (const net::IpAddress& ip) noexcept
     {
+        if (networkInterfacesInfo.empty() == true || ip.IsExist() == false) { return nullptr; }
         try { std::lock_guard<std::mutex> lock { mutex }; }
         catch (const std::system_error& /*err*/) {
             return nullptr;
         }
 
-        if (networkInterfacesInfo.empty() == true) { return nullptr; }
-
         const net::RouteInformation* defaultRoute = networkInterfacesInfo.front().defaultIpv4Route;
-        std::list<const net::RouteInformation*> routes;
+        std::list<const net::RouteInformation*> routes;  // List of found candidates for routing.
 
-        for (const auto& iface : networkInterfacesInfo)
+        bool alreadyUpdate = false;
+        while (true)
         {
-            if (iface.interfaceFamily == AF_UNSPEC || iface.interfaceFamily == AF_INET)
+            for (const auto& iface : networkInterfacesInfo)
             {
-                if (defaultRoute == nullptr) {
-                    defaultRoute = iface.defaultIpv4Route;
-                }
-                else if (iface.defaultIpv4Route != nullptr && iface.defaultIpv4Route->routePriority < defaultRoute->routePriority) {
-                    defaultRoute = iface.defaultIpv4Route;
-                }
-
-                for (auto rt = iface.ipv4Routes.cbegin(); rt != iface.ipv4Routes.cend(); ++rt)
+                if (ip.isIPv6 == false && (iface.interfaceFamily == AF_UNSPEC || iface.interfaceFamily == AF_INET))
                 {
-                    if ((*rt)->isDefault == true) { continue; }
-                    if ((((*rt)->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & (*rt)->destinationMask.ipv4.s_addr) == 0U)
+                    if (defaultRoute == nullptr) {
+                        defaultRoute = iface.defaultIpv4Route;
+                    }
+                    else if (iface.defaultIpv4Route != nullptr && iface.defaultIpv4Route->routePriority < defaultRoute->routePriority) {
+                        defaultRoute = iface.defaultIpv4Route;
+                    }
+
+                    for (auto rt = iface.ipv4Routes.cbegin(); rt != iface.ipv4Routes.cend(); ++rt)
                     {
-                        routes.push_back(&*(*rt));
+                        if ((*rt)->isDefault == true) { continue; }
+                        if ((((*rt)->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & (*rt)->destinationMask.ipv4.s_addr) == 0U)
+                        {
+                            routes.push_back(&*(*rt));
+                        }
                     }
                 }
+                else
+                {
+                    // IPv6 not implemented now.
+                    return nullptr;
+                }
             }
-            else { return nullptr; }
+
+            // Check condition for exit from loop.
+            if (routes.empty() == true && defaultRoute == nullptr)
+            {
+                if (alreadyUpdate == true || Update() == false) {
+                    return nullptr;
+                }
+                alreadyUpdate = true;
+            }
+            else { break; }  // Route found.
         }
 
         if (routes.empty() == true) {
@@ -160,7 +180,7 @@ namespace analyzer::framework::system
     }
 
     // Method that returns information about system interfaces and routes in string format.
-    std::string SystemNetworkConfiguration::ToString (void) const noexcept
+    std::string SystemNetworkConfiguration::ToString(void) const noexcept
     {
         std::ostringstream str;
         for (auto& iface : networkInterfacesInfo) {
@@ -168,6 +188,5 @@ namespace analyzer::framework::system
         }
         return str.str();
     }
-
 
 }  // namespace system.

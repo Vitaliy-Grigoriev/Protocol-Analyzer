@@ -23,11 +23,31 @@ namespace analyzer::framework::system
     {
     private:
         /**
+         * @brief Family of network interfaces and routes.
+         */
+        uint8_t interfaceFamily = AF_UNSPEC;
+        /**
          * @brief Mutex that needs for update network routes.
          */
         std::mutex mutex = { };
+        /**
+         * @brief List that contain information about all network interfaces.
+         */
         std::list<net::InterfaceInformation> networkInterfacesInfo = { };
+        /**
+         * @brief List that contain information about all network routes.
+         */
         std::list<net::RouteInformation> networkRoutesInfo = { };
+
+
+        /**
+         * @brief Method that updates information about system network interfaces and routes.
+         *
+         * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
+         * @return TRUE - if update succeeds, otherwise - false.
+         */
+        [[nodiscard]]
+        bool Update (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
     public:
         SystemNetworkConfiguration (SystemNetworkConfiguration &&) = delete;
@@ -46,22 +66,18 @@ namespace analyzer::framework::system
          * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
          * @return TRUE - if initialization succeeds, otherwise - false.
          */
+        [[nodiscard]]
         bool Initialize (uint8_t /*family*/ = AF_UNSPEC) noexcept;
-
-        /**
-         * @brief Method that updates information about system network interfaces and routes.
-         *
-         * @param [in] family - Family of network interfaces and routes. Default: AF_UNSPEC.
-         * @return TRUE - if update succeeds, otherwise - false.
-         */
-        bool Update (uint8_t /*family*/ = AF_UNSPEC) noexcept;
 
         /**
          * @brief Method that returns the best network route for selected IP address.
          *
          * @param [in] ip - IP address in IPv4 or IPv6 representation.
          * @return Pointer to best network route for selected IP address.
+         *
+         * @todo Add support for IPv6 routing.
          */
+        [[nodiscard]]
         const net::RouteInformation * GetBestRouteForIpAddress (const net::IpAddress & /*ip*/) noexcept;
 
         /**
@@ -71,6 +87,7 @@ namespace analyzer::framework::system
          * @param [in] family - Network family of the network interface.
          * @return Constant pointer to the found network interface or nullptr.
          */
+        [[nodiscard]]
         const net::InterfaceInformation * GetInterface (uint32_t /*index*/, uint8_t /*family*/) noexcept;
 
         /**

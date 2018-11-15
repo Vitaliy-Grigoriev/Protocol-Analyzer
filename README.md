@@ -28,11 +28,11 @@
 <h2><b>Current goals</b></h2>
 
 * Development the basis of network interaction for the needs of the framework;
-  * Epoll Socket State Pool interface for all Sockets under the observation;
-  * Managed Socket Pool for unique interface to take and control sockets;
-  * UDP Socket interface;
-  * RAW Socket interface;
-  * Netlink socket interface for interact with Linux Kernel;
+  * Epoll Socket State Pool Interface for all Sockets under the observation;
+  * Managed Socket Pool for unique Interface to take and control sockets;
+  * UDP Socket Interface;
+  * RAW Socket Interface;
+  * ✓ Netlink Socket Interface for interact with Linux Kernel;
   * Create two error interfaces: POSIX-oriented, C++ exceptions.
 
 * Development an interface for describing the structure of Network Protocol;
