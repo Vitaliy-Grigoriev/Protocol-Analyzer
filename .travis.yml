@@ -140,7 +140,7 @@ script:
   - pwd
   - uname -a
   - cmake --version
-  - ${COMPILER} --version
+  - ${CXX} --version
   - bash build_travis.sh
 
 
