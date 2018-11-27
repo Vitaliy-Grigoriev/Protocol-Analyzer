@@ -24,7 +24,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
-      env: COMPILER=g++-7 BUILD_TYPE=Release
+      env: CXX=g++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -33,7 +33,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
-      env: COMPILER=g++-7 BUILD_TYPE=Debug
+      env: CXX=g++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -42,7 +42,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      env: COMPILER=g++-8 BUILD_TYPE=Release
+      env: CXX=g++-8 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -51,27 +51,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      env: COMPILER=g++-8 BUILD_TYPE=Debug
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: COMPILER=clang++-5.0 BUILD_TYPE=Release
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: COMPILER=clang++-5.0 BUILD_TYPE=Debug
+      env: CXX=g++-8 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -81,7 +61,7 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
-      env: COMPILER=clang++-6.0 BUILD_TYPE=Release
+      env: CXX=clang++-6.0 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -91,7 +71,7 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
-      env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
+      env: CXX=clang++-6.0 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -101,7 +81,7 @@ matrix:
             - llvm-toolchain-trusty-7
           packages:
             - clang-7
-      env: COMPILER=clang++-7 BUILD_TYPE=Release
+      env: CXX=clang++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -111,7 +91,7 @@ matrix:
             - llvm-toolchain-trusty-7
           packages:
             - clang-7
-      env: COMPILER=clang++-7 BUILD_TYPE=Debug
+      env: CXX=clang++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -129,7 +109,7 @@ matrix:
           build_command_prepend: cov-configure --comptype gcc --compiler gcc-7 --template && cmake -j4 .
           build_command: make -j 4
           branch_pattern: master
-      env: COMPILER=g++-7 BUILD_TYPE=Debug
+      env: CXX=g++-7 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
 
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test

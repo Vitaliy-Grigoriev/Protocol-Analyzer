@@ -21,44 +21,45 @@ set(CMAKE_CXX_STANDARD   17)
 set(CMAKE_CXX_STANDARD_REQUIRED   ON)
 
 # Choose compiler.
-if (DEFINED  ENV{COMPILER})  # If the custom compiler is defined.
-    message("The compiler is set to '$ENV{COMPILER}'.")
-    set(CMAKE_CXX_COMPILER   "$ENV{COMPILER}")
-else()  # If the custom compiler is not defined.
-    message("The compiler is set to 'g++' by default.")
-    set(CMAKE_CXX_COMPILER   "/usr/bin/g++")
-endif()
+message("Compiler ID is '${CMAKE_CXX_COMPILER_ID}'.")
 
 # Choose build type.
 if (DEFINED   ENV{BUILD_TYPE})  # If the custom build type is defined.
-    message("The build type is set to '$ENV{BUILD_TYPE}'.")
+    message("Build type is set to '$ENV{BUILD_TYPE}'.")
     set(CMAKE_BUILD_TYPE   "$ENV{BUILD_TYPE}")
 else()  # If the custom build type is not defined.
-    message("The build type is set to 'Release' by default.")
+    message("Build type is set to 'Release' by default.")
     set(CMAKE_BUILD_TYPE   "Release")
 endif()
 
-set(DISABLE_WARNINGS_RELEASE   "-Wno-variadic-macros")
-set(DISABLE_WARNINGS_DEBUG   "-Wno-unused-result -Wno-deprecated-declarations -Wno-unused-macros -Wno-unused-variable -Wno-padded -Wno-documentation")
-set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-c++98-compat -Wno-missing-prototypes -Wno-variadic-macros -Wno-exit-time-destructors -Wno-zero-as-null-pointer-constant")
+
+set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-zero-as-null-pointer-constant -Wno-deprecated-declarations")
+set(DISABLE_WARNINGS_GCC   "-Wno-variadic-macros -Wno-unknown-pragmas -Wno-class-memaccess")
+set(DISABLE_WARNINGS_CLANG   "-Wno-c++98-compat -Wno-exit-time-destructors -Wno-missing-prototypes -Wno-documentation")
+set(DISABLE_WARNINGS_DEBUG   "-Wno-unused-result -Wno-unused-variable")
+set(DISABLE_WARNINGS_DEBUG_CLANG   "-Wno-unused-macros -Wno-padded -Wno-weak-vtables -Wno-cast-align")
+
 set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefined")
 #set(ADDITIONAL_FLAGS   "-fsanitize=thread")
 #set(ADDITIONAL_FLAGS   "-fsanitize=dataflow")
 #set(ADDITIONAL_FLAGS   "-fsanitize=memory  -fno-omit-frame-pointer")
 
 # Choose compile flags.
-set(CMAKE_CXX_FLAGS_RELEASE   "-std=c++17 -O2 -DRELEASE -DNDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS_RELEASE}")
-string(FIND  ${CMAKE_CXX_COMPILER}  "clang"  POSITION)
-if (${POSITION}  GREATER  "-1")  # Build flags for Clang compiler only.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG -fstandalone-debug   -Weverything -Wthread-safety  ${DISABLE_WARNINGS} ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS_DEBUG}")
-else()  # Other compilers.
-    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++17 -O0 -g -DDEBUG   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG     "-std=c++17 -O0 -g -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE   "-std=c++17 -O2 -DRELEASE -DNDEBUG")
+if (CMAKE_CXX_COMPILER_ID   MATCHES   "GNU")
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -Wall -Wextra -Wpedantic  ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_GCC} ${DISABLE_WARNINGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_GCC}")
+elseif (CMAKE_CXX_COMPILER_ID   MATCHES   "Clang")
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug   -Weverything -Wthread-safety  ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_CLANG} ${DISABLE_WARNINGS_DEBUG} ${DISABLE_WARNINGS_DEBUG_CLANG}")
+    set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_CLANG}")
+else()
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -Wall")
 endif()
 
-
 # Output compile flags.
-message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
 message("Debug flags:   ${CMAKE_CXX_FLAGS_DEBUG}.")
+message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
 
 
 # Build Analyzer Framework libraries.

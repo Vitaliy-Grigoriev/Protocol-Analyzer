@@ -245,7 +245,7 @@ namespace analyzer::framework::common
         /**
          * @brief Function that returns file size.
          *
-         * @param [in] path - Path to file.
+         * @param [in] path - Full or relative path to the file.
          * @return File size in bytes or maximum value of std::size_t if an error.
          */
         std::size_t getFileSize (std::string_view /*path*/) noexcept;
@@ -253,7 +253,7 @@ namespace analyzer::framework::common
         /**
          * @brief Function that reads all data from file.
          *
-         * @param [in] path - Path to file.
+         * @param [in] path - Full or relative path to the file.
          * @param [in,out] data - String value for assign.
          * @return TRUE - if the data is read from the file successfully, otherwise - FALSE.
          */
@@ -262,7 +262,7 @@ namespace analyzer::framework::common
         /**
          * @brief Function that returns number of file lines.
          *
-         * @param [in] path - Path to file.
+         * @param [in] path - Full or relative path to the file.
          * @return Number of file lines or maximum value of std::size_t if an error.
          */
         std::size_t getFileLines (std::string_view /*path*/) noexcept;
