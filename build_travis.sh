@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-echo "${CXX}"
-echo "${BUILD_TYPE}"
+echo "Compiler: ${CXX}."
+echo "Build type: ${BUILD_TYPE}."
 
-mkdir build && cd build && cmake -j 4 .. && make -j 4
-cd .. && rm -rf build
+cmake -j 4 .
+if [ $? -ne 0 ]; then exit -1; fi
+
+make -j 4
+if [ $? -ne 0 ]; then exit -2; fi
+
+exit 0
