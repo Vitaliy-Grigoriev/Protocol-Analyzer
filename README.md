@@ -51,5 +51,11 @@
 
 * CMake >= 3.8.0 (for C++17 standard support);
 
-* Compiler, supported full C++17 standard ('clang-6.0.0', 'gcc-7.0' or higher).
+* Compiler, supported full C++17 standard ('clang-6.0.0', 'gcc-7.0', icc-19.0 or higher).
 
+--------------
+<h2><b>Build</b></h2>
+
+1. Go to 'build.sh' script.
+2. Uncomment (define) the necessary parameters 'CXX' and 'BUILD_TYPE'.
+3. Run the build script: 'chmod +x build.sh && ./build.sh'.

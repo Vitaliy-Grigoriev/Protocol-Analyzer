@@ -23,7 +23,7 @@ int32_t main (int32_t size, char** data)
     std::cout << storage::GI.GetNetworkInformation().ToString();
     
 
-    net::IpAddress ip;
+    net::IpAddress ip = { };
     ip.FromString(AF_INET, data[1]);
     std::cout << "Selected IP address: " << ip.ToString() << std::endl;
 
