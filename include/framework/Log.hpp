@@ -402,6 +402,8 @@ namespace analyzer::framework::log
          * @brief Method that switches the buffered mode.
          *
          * @note Buffered mode set by default.
+         *
+         * @warning If buffered mode is turned off, this can lead to poor performance.
          */
         inline void SwitchBufferedMode(void) noexcept { bufferedMode = !bufferedMode; }
 

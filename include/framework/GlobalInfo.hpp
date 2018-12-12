@@ -127,12 +127,12 @@ namespace analyzer::framework::storage
     /**
      * @brief Global variable that consist of the instance of the GlobalInfo singleton class.
      */
-    inline static GlobalInfo& GI = GlobalInfo::Instance();
+    inline GlobalInfo& GI = GlobalInfo::Instance();
 
     /**
      * @brief Global variable that consist of the start time of Protocol Analyzer Framework.
      */
-    inline const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime = std::chrono::system_clock::now();
+    inline extern const std::chrono::time_point<std::chrono::system_clock> ApplicationStartTime = std::chrono::system_clock::now();
 
 #pragma clang diagnostic pop
 
