@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright (c) 2017-2018, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// Copyright (c) 2017-2019, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
@@ -37,7 +37,7 @@ namespace analyzer::framework::diagnostic
         /**@}*/
 
         /**
-         * @typedef typedef std::chrono::time_point<std::chrono::high_resolution_clock> timepoint_t;
+         * @typedef std::chrono::time_point<std::chrono::high_resolution_clock> timepoint_t;
          * @brief Type of the internal container for time ticks in the Timer class.
          */
         using timepoint_t = std::chrono::time_point<std::chrono::high_resolution_clock>;

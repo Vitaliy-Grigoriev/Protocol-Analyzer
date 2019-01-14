@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION   3.8)  # For support C++17 standard.
 project(ProtocolAnalyzer   CXX)
 
+# Select CPP standard.
+set(CMAKE_CXX_STANDARD   17)
+set(CMAKE_CXX_STANDARD_REQUIRED   ON)
+
 # Select output binary paths.
 set(EXECUTABLE_OUTPUT_PATH   ${PROJECT_SOURCE_DIR}/bin)
 # Select input system paths.
@@ -15,10 +19,6 @@ set(SCANNER_INCLUDES_PATH ${PROJECT_SOURCE_DIR}/include/scanner)
 set(SCANNER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/scanner)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
-
-# Select CPP standard.
-set(CMAKE_CXX_STANDARD   17)
-set(CMAKE_CXX_STANDARD_REQUIRED   ON)
 
 # Choose compiler.
 message("Compiler ID is '${CMAKE_CXX_COMPILER_ID}'.")
@@ -66,7 +66,6 @@ message("Debug flags:   ${CMAKE_CXX_FLAGS_DEBUG}.")
 message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
 
 
-# Build Analyzer Framework libraries.
 # Select Analyzer Framework source files.
 file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES_PATH}/*.cpp")
 # Select Analyzer Framework include files.
@@ -84,20 +83,32 @@ add_library(AnalyzerFramework   STATIC   ${FSOURCES} ${FHEADERS})
 target_link_libraries(AnalyzerFramework   pthread ssl crypto)
 
 
+# Add include path of the Analyzer Framework library.
+include_directories(${FRAMEWORK_INCLUDES_PATH})
+# Select Analyzer Scanner source files.
+file(GLOB   SSOURCES   "${SCANNER_SOURCES_PATH}/*.cpp")
+# Select Analyzer Scanner include files.
+file(GLOB   SHEADERS   "${SCANNER_INCLUDES_PATH}/*.hpp")
+
+# Build Analyzer Scanner Executable.
+add_executable(NetProtoFuzz   ${SSOURCES} ${SHEADERS})
+# Link Analyzer Framework library.
+target_link_libraries(NetProtoFuzz   AnalyzerFramework)
+
 
 # Build test suites for Analyzer Framework library.
-set(SSL_TEST                  ${TESTS}/test_ssl.cpp                  ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(SOCKET_TEST               ${TESTS}/test_socket.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(NETLINK_TEST              ${TESTS}/test_netlink.cpp              ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(COMMON_TEST               ${TESTS}/test_common.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp   ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(TIMING_TEST               ${TESTS}/test_timing.cpp               ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(LOGGING_TEST              ${TESTS}/test_logging.cpp              ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(ANYTHING_TEST             ${TESTS}/test_anything.cpp             ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(CALLBACKS_TEST            ${TESTS}/test_callbacks.cpp            ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp           ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp         ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
-set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp    ${FRAMEWORK_INCLUDES_PATH}/AnalyzerApi.hpp)
+set(SSL_TEST                  ${TESTS}/test_ssl.cpp)
+set(SOCKET_TEST               ${TESTS}/test_socket.cpp)
+set(NETLINK_TEST              ${TESTS}/test_netlink.cpp)
+set(COMMON_TEST               ${TESTS}/test_common.cpp)
+set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp)
+set(TIMING_TEST               ${TESTS}/test_timing.cpp)
+set(LOGGING_TEST              ${TESTS}/test_logging.cpp)
+set(ANYTHING_TEST             ${TESTS}/test_anything.cpp)
+set(CALLBACKS_TEST            ${TESTS}/test_callbacks.cpp)
+set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp)
+set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp)
+set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp)
 
 add_executable(test_ssl                  ${SSL_TEST})
 add_executable(test_socket               ${SOCKET_TEST})

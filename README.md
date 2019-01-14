@@ -1,4 +1,4 @@
-# Protocol Analyzer
+# Protocol Analyzer (NetProtoFuzz)
 <h2><b>Protocol-oriented fuzz testing framework for network protocols.</b></h2>
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Vitaliy-Grigoriev/Protocol-Analyzer/blob/master/LICENSE)
@@ -13,7 +13,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer/badge)](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer)
 
 
-<h3><b>The framework under the deep development.</b> Version 0.0.10.</h3>
+<h3><b>Framework and Scanner under the deep development.</b> Version 0.0.10.</h3>
 
 --------------
 <h2><b>The main purposes of the framework</b></h2>

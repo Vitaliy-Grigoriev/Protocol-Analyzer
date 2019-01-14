@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <iostream>
-#include "../include/framework/AnalyzerApi.hpp"
+#include "FrameworkApi.hpp"
 
 
 int main(void)
