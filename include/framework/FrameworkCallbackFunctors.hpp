@@ -7,8 +7,8 @@
 #ifndef PROTOCOL_ANALYZER_FRAMEWORK_CALLBACK_FUNCTORS_HPP
 #define PROTOCOL_ANALYZER_FRAMEWORK_CALLBACK_FUNCTORS_HPP
 
-#include <cstddef>  // std::size_t.
 #include <cstdint>  // uint16_t.
+#include <cstddef>  // std::size_t.
 
 
 namespace analyzer::framework::callbacks
@@ -55,7 +55,7 @@ namespace analyzer::framework::callbacks
     {
     public:
         SocketCallbackFunctorBeforeSend(void) = default;
-        ~SocketCallbackFunctorBeforeSend(void) = default;
+        ~SocketCallbackFunctorBeforeSend(void) override = default;
 
         /**
          * @brief Function call operator for SocketCallbackFunctorBeforeSend class-functor.
@@ -76,7 +76,7 @@ namespace analyzer::framework::callbacks
     {
     public:
         SocketCallbackFunctorAfterReceive(void) = default;
-        ~SocketCallbackFunctorAfterReceive(void) = default;
+        ~SocketCallbackFunctorAfterReceive(void) override = default;
 
         /**
          * @brief Function call operator for SocketCallbackFunctorAfterReceive class-functor.
@@ -84,7 +84,7 @@ namespace analyzer::framework::callbacks
          * @param [in] data - Pointer to the constant raw data.
          * @param [in] length - Length of the inputted raw data.
          */
-        virtual void operator() (const char * /*data*/, const std::size_t /*length*/) const noexcept = 0;
+        virtual void operator() (const char * /*data*/, std::size_t /*length*/) const noexcept = 0;
     };
 
     /**************************************** MODULE_SOCKET ****************************************/

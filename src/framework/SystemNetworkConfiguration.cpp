@@ -117,12 +117,11 @@ namespace analyzer::framework::system
                         defaultRoute = iface.defaultIpv4Route;
                     }
 
-                    for (auto rt = iface.ipv4Routes.cbegin(); rt != iface.ipv4Routes.cend(); ++rt)
-                    {
-                        if ((*rt)->isDefault == true) { continue; }
-                        if ((((*rt)->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & (*rt)->destinationMask.ipv4.s_addr) == 0U)
+                    for (auto ipv4Route : iface.ipv4Routes) {
+                        if (ipv4Route->isDefault == true) { continue; }
+                        if (((ipv4Route->destinationAddress.ipv4.s_addr ^ ip.ipv4.s_addr) & ipv4Route->destinationMask.ipv4.s_addr) == 0U)
                         {
-                            routes.push_back(&*(*rt));
+                            routes.push_back(&*ipv4Route);
                         }
                     }
                 }
@@ -152,10 +151,10 @@ namespace analyzer::framework::system
         }
 
         const net::RouteInformation* route = routes.front();
-        for (auto rt = routes.cbegin(); rt != routes.cend(); ++rt)
+        for (const auto rt : routes)
         {
-            if ((*rt)->routePriority < route->routePriority) {
-                route = *rt;
+            if (rt->routePriority < route->routePriority) {
+                route = rt;
             }
         }
         return route;
@@ -164,15 +163,14 @@ namespace analyzer::framework::system
     // Method that returns the interface by index and network family.
     const net::InterfaceInformation* SystemNetworkConfiguration::GetInterface (const uint32_t index, const uint8_t family) noexcept
     {
-        for (auto iface = networkInterfacesInfo.cbegin(); iface != networkInterfacesInfo.cend(); ++iface)
-        {
-            if (iface->interfaceIndex == index)
+        for (const auto& iface : networkInterfacesInfo) {
+            if (iface.interfaceIndex == index)
             {
                 if (family == AF_UNSPEC) {
-                    return const_cast<net::InterfaceInformation*>(&*iface);
+                    return const_cast<net::InterfaceInformation*>(&iface);
                 }
-                else if (iface->interfaceFamily == AF_UNSPEC || iface->interfaceFamily == family) {
-                    return const_cast<net::InterfaceInformation*>(&*iface);
+                else if (iface.interfaceFamily == AF_UNSPEC || iface.interfaceFamily == family) {
+                    return const_cast<net::InterfaceInformation*>(&iface);
                 }
             }
         }

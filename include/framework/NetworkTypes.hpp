@@ -15,7 +15,6 @@
 #include <cstdlib>  // std::strtoul.
 #include <ostream>  // std::ostream.
 #include <cstring>  // memset, memcmp, memcpy, strtok_r.
-#include <limits.h>  // ULONG_MAX.
 #include <functional>  // std::hash.
 #include <arpa/inet.h>  // inet_ntop, inet_pton.
 #include <netinet/in.h>  // struct in_addr, struct in6_addr, struct sockaddr_storage.
