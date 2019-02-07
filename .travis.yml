@@ -24,7 +24,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
-      env: CXX=g++-7 BUILD_TYPE=Release
+      env: COMPILER=g++-7 CXX=g++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -33,7 +33,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
-      env: CXX=g++-7 BUILD_TYPE=Debug
+      env: COMPILER=g++-7 CXX=g++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -42,7 +42,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      env: CXX=g++-8 BUILD_TYPE=Release
+      env: COMPILER=g++-8 CXX=g++-8 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -51,7 +51,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      env: CXX=g++-8 BUILD_TYPE=Debug
+      env: COMPILER=g++-8 CXX=g++-8 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -61,7 +61,7 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
-      env: CXX=clang++-6.0 BUILD_TYPE=Release
+      env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -71,7 +71,7 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
-      env: CXX=clang++-6.0 BUILD_TYPE=Debug
+      env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -81,7 +81,7 @@ matrix:
             - llvm-toolchain-trusty-7
           packages:
             - clang-7
-      env: CXX=clang++-7 BUILD_TYPE=Release
+      env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -91,7 +91,7 @@ matrix:
             - llvm-toolchain-trusty-7
           packages:
             - clang-7
-      env: CXX=clang++-7 BUILD_TYPE=Debug
+      env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -109,7 +109,7 @@ matrix:
           build_command_prepend: cov-configure --comptype gcc --compiler gcc-7 --template && cmake -j4 .
           build_command: make -j 4
           branch_pattern: master
-      env: CXX=g++-7 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
+      env: COMPILER=g++-7 CXX=g++-7 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
 
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -140,6 +140,7 @@ script:
   - pwd
   - uname -a
   - cmake --version
+  - export CXX=${COMPILER}
   - ${CXX} --version
   - bash build_travis.sh
 
