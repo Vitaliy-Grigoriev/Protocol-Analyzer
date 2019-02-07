@@ -22,6 +22,7 @@ namespace analyzer::scanner::settings
      * @param [in] argumentValue - Inputted argument's value.
      * @return Exit with error code from the program with help message.
      */
+    [[noreturn]]
     void ErrorHandler (const ArgumentsParser* parser, std::string_view argumentName, std::string_view argumentValue) noexcept
     {
         if (argumentName.empty() == false)
