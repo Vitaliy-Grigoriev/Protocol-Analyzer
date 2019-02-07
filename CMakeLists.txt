@@ -20,16 +20,16 @@ set(SCANNER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/scanner)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
 
-# Choose compiler.
+# Info about compiler.
 message("Compiler ID is '${CMAKE_CXX_COMPILER_ID}'.")
 
 # Choose build type.
 if (DEFINED   ENV{BUILD_TYPE})  # If the custom build type is defined.
-    message("Build type is set to '$ENV{BUILD_TYPE}'.")
     set(CMAKE_BUILD_TYPE   "$ENV{BUILD_TYPE}")
+    message("Build type is set to '${CMAKE_BUILD_TYPE}'.")
 else()  # If the custom build type is not defined.
-    message("Build type is set to 'Release' by default.")
     set(CMAKE_BUILD_TYPE   "Release")
+    message("Build type is set to '${CMAKE_BUILD_TYPE}' by default.")
 endif()
 
 
