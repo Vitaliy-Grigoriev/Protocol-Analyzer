@@ -19,9 +19,7 @@ int32_t main (int32_t size, char** data)
     log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
     log::Logger::Instance().SwitchBufferedMode();
 
-
     std::cout << storage::GI.GetNetworkInformation().ToString();
-    
 
     net::IpAddress ip = { };
     ip.FromString(AF_INET, data[1]);

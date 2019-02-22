@@ -236,10 +236,11 @@ namespace analyzer::framework::common::types
                 return *this;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
+            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN)
+            {
                 leftDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
-            else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
+            else {  // If data endian type is DATA_BIG_ENDIAN or DATA_REVERSE_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
                 leftDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
             }
         }

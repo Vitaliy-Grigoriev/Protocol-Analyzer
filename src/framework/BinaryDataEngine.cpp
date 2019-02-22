@@ -8,6 +8,7 @@
 
 
 #include <utility>  // std::move.
+#include <climits>  // UINT*_MAX.
 
 #include "../../include/framework/BinaryDataEngine.hpp"
 
@@ -63,7 +64,11 @@ namespace analyzer::framework::common::types
           byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
-        if (data != nullptr) {
+        if (data != nullptr)
+        {
+            if (dataEndianType == DATA_SYSTEM_ENDIAN) {
+                dataEndianType = system_endian;
+            }
             length = size;
             SetDataModeType(DATA_MODE_ALLOCATION);
             memset(data.get(), 0, length);
@@ -78,6 +83,9 @@ namespace analyzer::framework::common::types
     {
         if (data != nullptr && size != 0)
         {
+            if (dataEndianType == DATA_SYSTEM_ENDIAN) {
+                dataEndianType = system_endian;
+            }
             length = size;
             if (destruct == false) { SetDataModeType(DATA_MODE_NO_ALLOCATION); }
         }
@@ -91,6 +99,9 @@ namespace analyzer::framework::common::types
     {
         if (data != nullptr && size != 0)
         {
+            if (dataEndianType == DATA_SYSTEM_ENDIAN) {
+                dataEndianType = system_endian;
+            }
             length = size;
             SetDataModeType(DATA_MODE_NO_ALLOCATION);
         }
@@ -102,7 +113,8 @@ namespace analyzer::framework::common::types
         if (this != &other && other == true)
         {
             data = system::allocMemoryForArray<std::byte>(other.length, other.data.get(), other.length);
-            if (data != nullptr) {
+            if (data != nullptr)
+            {
                 length = other.length;
                 dataModeType = other.dataModeType;
                 dataEndianType = other.dataEndianType;
@@ -130,7 +142,8 @@ namespace analyzer::framework::common::types
     bool BinaryDataEngine::AssignReference (std::byte* const memory, const std::size_t size, const bool destruct) noexcept
     {
         data.reset(memory);
-        if (data != nullptr) {
+        if (data != nullptr)
+        {
             length = size;
             if (destruct == false) { SetDataModeType(DATA_MODE_NO_ALLOCATION); }
             return true;
@@ -179,20 +192,59 @@ namespace analyzer::framework::common::types
     }
 
     // Method that changes handling mode type of stored data in BinaryDataEngine class.
-    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, const bool convert) const noexcept
+    void BinaryDataEngine::SetDataEndianType (const DATA_ENDIAN_TYPE endian, const bool convert) noexcept
     {
         if (dataEndianType == endian) { return; }
-        dataEndianType = endian;
 
         if (convert == true)
         {
-            for (std::size_t idx = 0; idx < length / 2; ++idx)
+            if ((endian == DATA_BIG_ENDIAN && dataEndianType == DATA_LITTLE_ENDIAN) ||
+                (endian == DATA_LITTLE_ENDIAN && dataEndianType == DATA_BIG_ENDIAN))
             {
-                data[idx] ^= data[length - idx - 1];
-                data[length - idx - 1] ^= data[idx];
-                data[idx] ^= data[length - idx - 1];
+                for (std::size_t idx = 0; idx < length / 2; ++idx)
+                {
+                    data[idx] ^= data[length - idx - 1];
+                    data[length - idx - 1] ^= data[idx];
+                    data[idx] ^= data[length - idx - 1];
+                }
+            }
+            else if ((endian == DATA_BIG_ENDIAN && dataEndianType == DATA_REVERSE_BIG_ENDIAN) ||
+                     (endian == DATA_REVERSE_BIG_ENDIAN && dataEndianType == DATA_BIG_ENDIAN))
+            {
+                for (std::size_t idx = 0; idx < length; ++idx)
+                {
+                    data[idx] = (data[idx] & std::byte(0xF0)) >> 4 | (data[idx] & std::byte(0x0F)) << 4;
+                    data[idx] = (data[idx] & std::byte(0xCC)) >> 2 | (data[idx] & std::byte(0x33)) << 2;
+                    data[idx] = (data[idx] & std::byte(0xAA)) >> 1 | (data[idx] & std::byte(0x55)) << 1;
+                }
+            }
+            else if ((endian == DATA_LITTLE_ENDIAN && dataEndianType == DATA_REVERSE_BIG_ENDIAN) ||
+                     (endian == DATA_REVERSE_BIG_ENDIAN && dataEndianType == DATA_LITTLE_ENDIAN))
+            {
+                if (length == 1)
+                {
+                    data[0] = (data[0] & std::byte(0xF0)) >> 4 | (data[0] & std::byte(0x0F)) << 4;
+                    data[0] = (data[0] & std::byte(0xCC)) >> 2 | (data[0] & std::byte(0x33)) << 2;
+                    data[0] = (data[0] & std::byte(0xAA)) >> 1 | (data[0] & std::byte(0x55)) << 1;
+                }
+                else
+                {
+                    for (std::size_t idx = 0; idx < length / 2; ++idx)
+                    {
+                        data[idx] = (data[idx] & std::byte(0xF0)) >> 4 | (data[idx] & std::byte(0x0F)) << 4;
+                        data[idx] = (data[idx] & std::byte(0xCC)) >> 2 | (data[idx] & std::byte(0x33)) << 2;
+                        data[idx] = (data[idx] & std::byte(0xAA)) >> 1 | (data[idx] & std::byte(0x55)) << 1;
+                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xF0)) >> 4 | (data[length - idx - 1] & std::byte(0x0F)) << 4;
+                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xCC)) >> 2 | (data[length - idx - 1] & std::byte(0x33)) << 2;
+                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xAA)) >> 1 | (data[length - idx - 1] & std::byte(0x55)) << 1;
+                        data[idx] ^= data[length - idx - 1];
+                        data[length - idx - 1] ^= data[idx];
+                        data[idx] ^= data[length - idx - 1];
+                    }
+                }
             }
         }
+        dataEndianType = endian;
     }
 
     // Safety getter of internal value.
@@ -225,6 +277,30 @@ namespace analyzer::framework::common::types
         return common::text::getHexString(data.get(), length);
     }
 
+    // Method returns internal data in standard uint8_t type.
+    std::optional<uint8_t> BinaryDataEngine::To8Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<uint8_t>();
+    }
+
+    // Method returns internal data in standard uint16_t type.
+    std::optional<uint16_t> BinaryDataEngine::To16Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<uint16_t>();
+    }
+
+    // Method returns internal data in standard uint32_t type.
+    std::optional<uint32_t> BinaryDataEngine::To32Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<uint32_t>();
+    }
+
+    // Method returns internal data in standard uint64_t type.
+    std::optional<uint64_t> BinaryDataEngine::To64Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<uint64_t>();
+    }
+
     // Operator that returns a const reference to an element by selected index.
     inline std::optional<std::byte> BinaryDataEngine::operator[] (const std::size_t index) const noexcept
     {
@@ -232,25 +308,238 @@ namespace analyzer::framework::common::types
         return data[index];
     }
 
-    // Logical assignment bitwise AND operator that transforms internal binary data.
+    // Bitwise assignment AND operator.
     BinaryDataEngine& BinaryDataEngine::operator&= (const BinaryDataEngine& other) noexcept
     {
         bitStreamTransform &= other.BitsInformation();
         return *this;
     }
 
-    // Logical assignment bitwise OR operator that transforms internal binary data.
+    // Bitwise assignment OR operator.
     BinaryDataEngine& BinaryDataEngine::operator|= (const BinaryDataEngine& other) noexcept
     {
         bitStreamTransform |= other.BitsInformation();
         return *this;
     }
 
-    // Logical assignment bitwise XOR operator that transforms internal binary data.
+    // Bitwise assignment XOR operator.
     BinaryDataEngine& BinaryDataEngine::operator^= (const BinaryDataEngine& other) noexcept
     {
         bitStreamTransform ^= other.BitsInformation();
         return *this;
+    }
+
+    // Literal operator that converts number in string representation to 8-bit integer in little endian form.
+    std::optional<BinaryDataEngine> operator"" _u8_le (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT8_MAX)
+        {
+            const uint8_t temp = static_cast<uint8_t>(number);
+            BinaryDataEngine data(sizeof(uint8_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint8_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_LITTLE_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 8-bit integer in big endian form.
+    std::optional<BinaryDataEngine> operator"" _u8_be (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT8_MAX)
+        {
+            const uint8_t temp = static_cast<uint8_t>(number);
+            BinaryDataEngine data(sizeof(uint8_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint8_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 8-bit integer in reverse big endian form.
+    std::optional<BinaryDataEngine> operator"" _u8_rbe (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT8_MAX)
+        {
+            const uint8_t temp = static_cast<uint8_t>(number);
+            BinaryDataEngine data(sizeof(uint8_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint8_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_REVERSE_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 16-bit integer in little endian form.
+    std::optional<BinaryDataEngine> operator"" _u16_le (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT16_MAX)
+        {
+            const uint16_t temp = static_cast<uint16_t>(number);
+            BinaryDataEngine data(sizeof(uint16_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint16_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_LITTLE_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 16-bit integer in big endian form.
+    std::optional<BinaryDataEngine> operator"" _u16_be (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT16_MAX)
+        {
+            const uint16_t temp = static_cast<uint16_t>(number);
+            BinaryDataEngine data(sizeof(uint16_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint16_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 16-bit integer in reverse big endian form.
+    std::optional<BinaryDataEngine> operator"" _u16_rbe (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT16_MAX)
+        {
+            const uint16_t temp = static_cast<uint16_t>(number);
+            BinaryDataEngine data(sizeof(uint16_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint16_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_REVERSE_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 32-bit integer in little endian form.
+    std::optional<BinaryDataEngine> operator"" _u32_le (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT32_MAX)
+        {
+            const uint32_t temp = static_cast<uint32_t>(number);
+            BinaryDataEngine data(sizeof(uint32_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint32_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_LITTLE_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 32-bit integer in big endian form.
+    std::optional<BinaryDataEngine> operator"" _u32_be (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT32_MAX)
+        {
+            const uint32_t temp = static_cast<uint32_t>(number);
+            BinaryDataEngine data(sizeof(uint32_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint32_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 32-bit integer in reverse big endian form.
+    std::optional<BinaryDataEngine> operator"" _u32_rbe (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && number <= UINT32_MAX)
+        {
+            const uint32_t temp = static_cast<uint32_t>(number);
+            BinaryDataEngine data(sizeof(uint32_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint32_t>(&temp, 1) == true)
+            {
+                data.SetDataEndianType(DATA_REVERSE_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 64-bit integer in little endian form.
+    std::optional<BinaryDataEngine> operator"" _u64_le (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && errno != ERANGE)
+        {
+            BinaryDataEngine data(sizeof(uint64_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint64_t>(&number, 1) == true)
+            {
+                data.SetDataEndianType(DATA_LITTLE_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 64-bit integer in big endian form.
+    std::optional<BinaryDataEngine> operator"" _u64_be (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && errno != ERANGE)
+        {
+            BinaryDataEngine data(sizeof(uint64_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint64_t>(&number, 1) == true)
+            {
+                data.SetDataEndianType(DATA_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Literal operator that converts number in string representation to 64-bit integer in reverse big endian form.
+    std::optional<BinaryDataEngine> operator"" _u64_rbe (const char* value, const std::size_t size) noexcept
+    {
+        char* end = nullptr;
+        const uint64_t number = strtoull(value, &end, 10);
+        if (value + size == end && errno != ERANGE)
+        {
+            BinaryDataEngine data(sizeof(uint64_t), DATA_MODE_DEFAULT);
+            if (data.AssignData<uint64_t>(&number, 1) == true)
+            {
+                data.SetDataEndianType(DATA_REVERSE_BIG_ENDIAN);
+                return data;
+            }
+        }
+        return std::nullopt;
     }
 
 }  // namespace types.

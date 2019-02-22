@@ -34,8 +34,8 @@ endif()
 
 
 set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-zero-as-null-pointer-constant -Wno-deprecated-declarations")
-set(DISABLE_WARNINGS_GCC   "-Wno-variadic-macros -Wno-unknown-pragmas -Wno-class-memaccess")
-set(DISABLE_WARNINGS_CLANG   "-Wno-c++98-compat -Wno-exit-time-destructors -Wno-missing-prototypes -Wno-documentation")
+set(DISABLE_WARNINGS_GCC   "-Wno-variadic-macros -Wno-unknown-pragmas")
+set(DISABLE_WARNINGS_CLANG   "-Wno-return-std-move-in-c++11 -Wno-c++98-compat -Wno-exit-time-destructors -Wno-missing-prototypes -Wno-documentation")
 set(DISABLE_WARNINGS_INTEL   "-diag-disable=161,1478")
 set(DISABLE_WARNINGS_DEBUG   "-Wno-unused-result -Wno-unused-variable")
 set(DISABLE_WARNINGS_DEBUG_CLANG   "-Wno-unused-macros -Wno-padded -Wno-weak-vtables -Wno-cast-align")
@@ -102,6 +102,7 @@ set(SOCKET_TEST               ${TESTS}/test_socket.cpp)
 set(NETLINK_TEST              ${TESTS}/test_netlink.cpp)
 set(COMMON_TEST               ${TESTS}/test_common.cpp)
 set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp)
+set(BINARY_STRUCTURED_DATA_ENGINE_TEST   ${TESTS}/test_binary_structured_data_engine.cpp)
 set(TIMING_TEST               ${TESTS}/test_timing.cpp)
 set(LOGGING_TEST              ${TESTS}/test_logging.cpp)
 set(ANYTHING_TEST             ${TESTS}/test_anything.cpp)
@@ -116,6 +117,7 @@ add_executable(test_netlink              ${NETLINK_TEST})
 add_executable(test_common               ${COMMON_TEST})
 add_executable(test_timing               ${TIMING_TEST})
 add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
+add_executable(test_binary_structured_data_engine   ${BINARY_STRUCTURED_DATA_ENGINE_TEST})
 add_executable(test_logging              ${LOGGING_TEST})
 add_executable(test_anything             ${ANYTHING_TEST})
 add_executable(test_callbacks            ${CALLBACKS_TEST})
@@ -130,6 +132,7 @@ set_target_properties(
         test_common
         test_timing
         test_binary_data_engine
+        test_binary_structured_data_engine
         test_logging
         test_anything
         test_callbacks
@@ -145,6 +148,7 @@ target_link_libraries(test_socket              AnalyzerFramework)
 target_link_libraries(test_netlink             AnalyzerFramework)
 target_link_libraries(test_common              AnalyzerFramework)
 target_link_libraries(test_binary_data_engine  AnalyzerFramework)
+target_link_libraries(test_binary_structured_data_engine  AnalyzerFramework)
 target_link_libraries(test_timing              AnalyzerFramework)
 target_link_libraries(test_anything            AnalyzerFramework)
 target_link_libraries(test_logging             AnalyzerFramework)

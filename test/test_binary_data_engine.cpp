@@ -8,107 +8,39 @@
 
 
 #include <bitset>
+#include <cassert>
 #include <iostream>
 
-#include "../include/framework/Timer.hpp"
-#include "FrameworkApi.hpp"
+#include "Timer.hpp"
+#include "BinaryDataEngine.hpp"
 
-namespace types = analyzer::framework::common::types;
-using analyzer::framework::common::types::BinaryDataEngine;
-using analyzer::framework::common::types::BinaryStructuredDataEngine;
 using timer = analyzer::framework::diagnostic::Timer;
-
+using namespace analyzer::framework::common::types;
 
 
 int32_t main (int32_t size, char** data)
 {
-#pragma pack(push, 1)
-    struct Data
-    {
-        uint32_t SequenceNumber;
-        uint32_t AcknowledgmentNumber;
-        uint8_t Offset_Reserved_NS;
-        uint8_t CWR_ECE_TcpFlags;
-        uint16_t WindowSize;
-        uint16_t Checksum;
-        uint16_t UrgentPointer;
-    } const tcp { 0x00000000, 0x00000000, 0x0C, 0x00, 0x00FF, 0xAAAA, 0x0000 };
-#pragma pack(pop)
+    auto buffer1 = "170"_u8_le.value();
+    auto buffer2 = "42"_u8_be.value();
+    auto buffer3 = "87"_u8_rbe.value();
+    auto buffer4 = "0"_u8_le.value();
+    auto buffer5 = "128"_u8_be.value();
+    auto buffer6 = "255"_u8_be.value();
+
+    assert(buffer1.To8Bit().value() == 170);
+    assert(buffer2.To8Bit().value() == 42);
+    assert(buffer3.To8Bit().value() == 87);
+    assert(buffer4.To8Bit().value() == 0);
+    assert(buffer5.To8Bit().value() == 128);
+    assert(buffer6.To8Bit().value() == 255);
 
 
-    /*const BinaryDataEngine buffer(reinterpret_cast<const std::byte*>(&tcp), sizeof(tcp));
-    buffer.SetDataModeType(types::DATA_MODE_INDEPENDENT);
-    buffer.SetDataEndianType(types::DATA_BIG_ENDIAN, true);
-    auto value = buffer.BitsTransform().Convert<uint32_t>(1000, 1100);
-    buffer.BitsTransform().Invert(5);
-    std::cout << value.value() << std::endl;
-
-    return EXIT_FAILURE;*/
-
-    const uint16_t field = 0x00FF;
-    const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
-    const uint16_t bit_pattern[10] = { 32, 32, 4, 3, 3, 6, 9, 7, 16, 16 };
 
 
-    BinaryStructuredDataEngine buffer1(types::DATA_BIG_ENDIAN);
-    buffer1.AssignData(&tcp, byte_pattern, 7);
-    std::cout << buffer1.Data().ToHexString() << std::endl;
-    //uint8_t value = buffer1.GetSubField<uint8_t>(4, 0, 7);
-    //std::cout << buffer1.ToFormattedString() << std::endl << std::endl;
-    //std::cout << uint16_t(buffer1.GetSubField<uint32_t>(2, 4, 3)) << std::endl;
 
-    /*std::cout << '-' << buffer1.GetNonemptyFieldIndex(0, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(1, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(2, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(3, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(4, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(5, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(6, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(7, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(8, bit_pattern, 10).value() << std::endl;
-    std::cout << '-' << buffer1.GetNonemptyFieldIndex(9, bit_pattern, 10).value() << std::endl;*/
-
-    timer Timer(true);
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(0, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100 << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(1, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100 << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(2, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(3, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(4, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(5, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(6, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(7, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(8, bit_pattern, 10).value();
-    }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100  << std::endl;
-    for (uint16_t idx = 0; idx < 100; ++idx) {
-        buffer1.GetNonemptyFieldIndex(9, bit_pattern, 10).value();
-    }
-    std::cout << Timer.PauseAndGetCount().MicroSeconds() / 100  << std::endl;
+    /*buffer.SetDataEndianType(DATA_REVERSE_BIG_ENDIAN, true);
+    std::cout << buffer.To16Bit().value() << std::endl;
+    std::cout << buffer.To32Bit().value() << std::endl;*/
     return EXIT_SUCCESS;
 
 
@@ -127,9 +59,9 @@ int32_t main (int32_t size, char** data)
     const auto& engine_1 = buffer_1.BitsInformation();
     buffer_1.AssignData(&value_1, 1);
     std::cout << "Count 1: " << engine_1.Count() << "   " << engine_1 << std::endl;
-    buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_BIG_ENDIAN);
     std::cout << "Count 1: " << engine_1.Count() << "   " << engine_1 << std::endl;
-    buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
     BinaryDataEngine buffer_2;
     const auto& engine_2 = buffer_2.BitsInformation();
@@ -187,17 +119,17 @@ int32_t main (int32_t size, char** data)
     const auto& engine_5 = buffer_5.BitsInformation();
     std::cout << "Count 5: " << engine_5.Count() << "   " << engine_5 << std::endl;
 
-    buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_6 = engine_1 ^ engine_2;
     const auto& engine_6 = buffer_6.BitsInformation();
     std::cout << "Count 4: " << engine_6.Count() << "   " << engine_6 << std::endl;
-    buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
-    buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_7 = engine_2 ^ engine_3;
     const auto& engine_7 = buffer_7.BitsInformation();
     std::cout << "Count 5: " << engine_7.Count() << "   " << engine_7 << std::endl;
-    buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
 
     std::cout << "AND:" << std::endl;
@@ -211,17 +143,17 @@ int32_t main (int32_t size, char** data)
     const auto& engine_9 = buffer_9.BitsInformation();
     std::cout << "Count 7: " << engine_9.Count() << "   " << engine_9 << std::endl;
 
-    buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_10 = engine_1 & engine_2;
     const auto& engine_10 = buffer_10.BitsInformation();
     std::cout << "Count 6: " << engine_10.Count() << "   " << engine_10 << std::endl;
-    buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
-    buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_11 = engine_2 & engine_3;
     const auto& engine_11 = buffer_11.BitsInformation();
     std::cout << "Count 7: " << engine_11.Count() << "   " << engine_11 << std::endl;
-    buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
 
     std::cout << "OR:" << std::endl;
@@ -235,17 +167,17 @@ int32_t main (int32_t size, char** data)
     const auto& engine_13 = buffer_13.BitsInformation();
     std::cout << "Count 9: " << engine_13.Count() << "   " << engine_13 << std::endl;
 
-    buffer_1.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_14 = engine_1 | engine_2;
     const auto& engine_14 = buffer_14.BitsInformation();
     std::cout << "Count 8: " << engine_14.Count() << "   " << engine_14 << std::endl;
-    buffer_1.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_1.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
-    buffer_2.SetDataEndianType(types::DATA_BIG_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_BIG_ENDIAN);
     BinaryDataEngine buffer_15 = engine_2 | engine_3;
     const auto& engine_15 = buffer_15.BitsInformation();
     std::cout << "Count 9: " << engine_15.Count() << "   " << engine_15 << std::endl;
-    buffer_2.SetDataEndianType(types::DATA_LITTLE_ENDIAN);
+    buffer_2.SetDataEndianType(DATA_LITTLE_ENDIAN);
 
     return EXIT_SUCCESS;
 }

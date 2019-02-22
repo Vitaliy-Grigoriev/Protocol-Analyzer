@@ -24,7 +24,6 @@ namespace analyzer::framework::system
       * @tparam [in] args - Arguments for construct the object.
       * @return Smart pointer to allocated object of selected type object.
       *
-      * @note Return value is marked with the "nodiscard" attribute.
       * @attention All exceptions that can be thrown from the object constructor must be inherited from STL std::exception.
       */
     template <typename Type, typename... Args>
@@ -47,12 +46,10 @@ namespace analyzer::framework::system
       * @param [in] data - Pointer to any data for copy. Default: nullptr.
       * @param [in] length - Size of data for copy in bytes. Default: 0.
       * @return Smart pointer to allocated memory of selected type array.
-      *
-      * @note Return value is marked with the "nodiscard" attribute.
       */
     template <typename Type>
     [[nodiscard]]
-    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t count, const void* data = nullptr, const std::size_t length = 0) noexcept
+    std::unique_ptr<Type[]> allocMemoryForArray (const std::size_t count, const void* const data = nullptr, const std::size_t length = 0) noexcept
     {
         try
         {
@@ -82,7 +79,6 @@ namespace analyzer::framework::system
       * @tparam [in] args - Arguments for construct each object in array.
       * @return Smart pointer to allocated memory of selected smart pointer type array.
       *
-      * @note Return value is marked with the "nodiscard" attribute.
       * @attention All exceptions that can be thrown from the object constructor must be inherited from STL std::exception.
       */
     template <typename Type, typename... Args>

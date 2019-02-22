@@ -9,7 +9,7 @@
 
 #define PROTOCOL_ANALYZER_FRAMEWORK_VERSION_MAJOR 0
 #define PROTOCOL_ANALYZER_FRAMEWORK_VERSION_MINOR 0
-#define PROTOCOL_ANALYZER_FRAMEWORK_VERSION_PATCH 11
+#define PROTOCOL_ANALYZER_FRAMEWORK_VERSION_PATCH 12
 
 
 #include "GlobalInfo.hpp"  // In this header file also defined "Log.hpp" and "Common.hpp".

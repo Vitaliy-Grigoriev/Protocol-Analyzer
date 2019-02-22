@@ -171,7 +171,11 @@ namespace analyzer::framework::net
                 }
                 interfaces.push_back(interfaceEntry);
             }
-            else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
+            else if (msg->nlmsg_type == NLMSG_DONE)
+            {
+                LOG_INFO("NetlinkRequester.NetlinkInterfaceParser: Parsing Netlink-Interface response finished successfully.");
+                return true;
+            }
             else if (msg->nlmsg_type == NLMSG_ERROR)
             {
                 const struct nlmsgerr* const error = static_cast<struct nlmsgerr*>(NLMSG_DATA(msg));
@@ -281,7 +285,11 @@ namespace analyzer::framework::net
                     else { interface->ipv6Addresses.push_back(ipAddressEntry); }
                 }
             }
-            else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
+            else if (msg->nlmsg_type == NLMSG_DONE)
+            {
+                LOG_INFO("NetlinkRequester.NetlinkAddressParser: Parsing Netlink-Address response finished successfully.");
+                return true;
+            }
             else if (msg->nlmsg_type == NLMSG_ERROR)
             {
                 const struct nlmsgerr* const error = static_cast<struct nlmsgerr*>(NLMSG_DATA(msg));
@@ -436,7 +444,11 @@ namespace analyzer::framework::net
                 }
                 routes.push_back(routeEntry);
             }
-            else if (msg->nlmsg_type == NLMSG_DONE) { return true; }
+            else if (msg->nlmsg_type == NLMSG_DONE)
+            {
+                LOG_INFO("NetlinkRequester.NetlinkRouteParser: Parsing Netlink-Route response finished successfully.");
+                return true;
+            }
             else if (msg->nlmsg_type == NLMSG_ERROR)
             {
                 const struct nlmsgerr* const error = static_cast<struct nlmsgerr*>(NLMSG_DATA(msg));

@@ -317,7 +317,7 @@ namespace analyzer::framework::common
          * @param [in] size - Size of this data.
          */
         Data (Type* in, const std::size_t size) noexcept
-                : data(in), length(size)
+            : data(in), length(size)
         { }
 
         /**
@@ -327,7 +327,7 @@ namespace analyzer::framework::common
          * @param [in] size - Size of this data.
          */
         Data (std::unique_ptr<Type[]>& in, const std::size_t size) noexcept
-                : data(std::move(in)), length(size)
+            : data(std::move(in)), length(size)
         { }
 
         /**

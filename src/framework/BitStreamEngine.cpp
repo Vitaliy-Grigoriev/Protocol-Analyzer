@@ -22,8 +22,11 @@ namespace analyzer::framework::common::types
             if (storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
                 return { index >> 3, std::byte(0x01) << (index % 8) };
             }
-            // If data endian type is DATA_BIG_ENDIAN.
-            return { storedData->length - (index >> 3) - 1, std::byte(0x01) << (index % 8) };
+            else if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
+                return { storedData->length - (index >> 3) - 1, std::byte(0x01) << (index % 8) };
+            }
+            // If data endian type is DATA_REVERSE_BIG_ENDIAN.
+            return { storedData->length - (index >> 3) - 1, std::byte(0x80) >> (index % 8) };
         }
         // If data handling mode type is DATA_MODE_INDEPENDENT.
         return { index >> 3, std::byte(0x80) >> (index % 8) };
@@ -211,7 +214,7 @@ namespace analyzer::framework::common::types
 
 
     // Method that performs direct left bit shift by a specified bit offset.
-    BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::ShiftLeft (const std::size_t shift, const  bool fillBit) noexcept
+    BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::ShiftLeft (const std::size_t shift, const bool fillBit) noexcept
     {
         if (*storedData == true && shift != 0)
         {
@@ -229,14 +232,28 @@ namespace analyzer::framework::common::types
             const std::size_t tailBits = shift % 8;
             if (tailBits > 0)
             {
-                if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData->dataEndianType == DATA_LITTLE_ENDIAN)
+                if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U)
                 {
-                    for (std::size_t idx = storedData->length - 1; idx != 0; --idx) {
-                        storedData->data[idx] = (storedData->data[idx - 1] >> (8 - tailBits)) | (storedData->data[idx] << tailBits);
+                    if (storedData->dataEndianType == DATA_LITTLE_ENDIAN)
+                    {
+                        for (std::size_t idx = storedData->length - 1; idx != 0; --idx) {
+                            storedData->data[idx] = (storedData->data[idx - 1] >> (8 - tailBits)) | (storedData->data[idx] << tailBits);
+                        }
+                        storedData->data[0] <<= tailBits;
+                        if (fillBit == true) {
+                            storedData->data[0] |= (std::byte(0xFF) >> (8 - tailBits));
+                        }
                     }
-                    storedData->data[0] <<= tailBits;
-                    if (fillBit == true) {
-                        storedData->data[0] |= (std::byte(0xFF) >> (8 - tailBits));
+                    else if (storedData->dataEndianType == DATA_REVERSE_BIG_ENDIAN)
+                    {
+                        const std::size_t lastIndex = storedData->length - 1;
+                        for (std::size_t idx = 0; idx < lastIndex; ++idx) {
+                            storedData->data[idx] = (storedData->data[idx + 1] << (8 - tailBits)) | (storedData->data[idx] >> tailBits);
+                        }
+                        storedData->data[lastIndex] >>= tailBits;
+                        if (fillBit == true) {
+                            storedData->data[lastIndex] |= (std::byte(0xFF) << (8 - tailBits));
+                        }
                     }
                 }
                 else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
@@ -436,7 +453,7 @@ namespace analyzer::framework::common::types
         return *this;
     }
 
-    // Logical assignment bitwise AND operator that transforms internal binary data.
+    // Bitwise assignment AND operator.
     BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::operator&= (const BinaryDataEngine::BitStreamTransformEngine& other) noexcept
     {
         if (*storedData == true)
@@ -495,7 +512,7 @@ namespace analyzer::framework::common::types
         return *this;
     }
 
-    // Logical assignment bitwise OR operator that transforms internal binary data.
+    // Bitwise assignment OR operator.
     BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::operator|= (const BinaryDataEngine::BitStreamTransformEngine& other) noexcept
     {
         if (*storedData == true)
@@ -551,7 +568,7 @@ namespace analyzer::framework::common::types
         return *this;
     }
 
-    // Logical assignment bitwise XOR operator that transforms internal binary data.
+    // Bitwise assignment XOR operator.
     BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::operator^= (const BinaryDataEngine::BitStreamTransformEngine& other) noexcept
     {
         if (*storedData == true)
