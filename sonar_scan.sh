@@ -10,7 +10,7 @@ PROJECT_DIR=$(pwd)
 
 mkdir check && cd check
 
-export COMPILER="/usr/bin/clang++"
+export CXX="/usr/bin/clang++"
 export BUILD_TYPE="Debug"
 cmake -j4 ..
 

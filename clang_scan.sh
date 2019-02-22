@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export COMPILER="/usr/bin/clang++"
+export CXX="/usr/bin/clang++"
 export BUILD_TYPE="Debug"
 
 mkdir check && cd check && cmake -j4 ..
