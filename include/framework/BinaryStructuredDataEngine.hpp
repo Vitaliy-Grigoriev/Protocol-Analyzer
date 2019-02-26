@@ -787,14 +787,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline BinaryStructuredDataEngine operator& (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().ize()) {
                 return BinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data &= *right.data;
+                *result.data &= right.Data();
             }
             return result;
         }
@@ -813,14 +813,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline BinaryStructuredDataEngine operator| (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().Size()) {
                 return BinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data |= *right.data;
+                *result.data |= right.Data();
             }
             return result;
         }
@@ -839,14 +839,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline BinaryStructuredDataEngine operator^ (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().Size()) {
                 return BinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data ^= *right.data;
+                *result.data ^= right.Data();
             }
             return result;
         }
@@ -947,14 +947,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline ConstantBinaryStructuredDataEngine operator& (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().Size()) {
                 return ConstantBinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data &= *right.data;
+                *result.data &= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
@@ -973,14 +973,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline ConstantBinaryStructuredDataEngine operator| (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().Size()) {
                 return ConstantBinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data |= *right.data;
+                *result.data |= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
@@ -999,14 +999,14 @@ namespace analyzer::framework::common::types
         template <typename BinaryDataType>
         friend inline ConstantBinaryStructuredDataEngine operator^ (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->Size() != right.Data().Size()) {
                 return ConstantBinaryStructuredDataEngine();
             }
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
-                *result.data ^= *right.data;
+                *result.data ^= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }

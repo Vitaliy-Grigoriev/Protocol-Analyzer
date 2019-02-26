@@ -34,29 +34,11 @@ const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
 const uint16_t bit_pattern[9] = { 32, 32, 4, 3, 3, 6, 16, 16, 16 };
 
 
-std::string CreateTcpFingerprintFromPacket (const ConstantBinaryStructuredDataEngine& tcp) noexcept
-{
-    std::string result;
-    result.reserve(100);
-
-    // Get Sequence Number.
-    const uint32_t sequenceNumber = tcp.GetField(0).value().BitsInformation().Convert<uint32_t>(0, 31).value();
-    result += std::to_string(sequenceNumber) + '|';
-
-    // Get Acknowledgment Number.
-    const uint32_t acknowledgmentNumber = tcp.GetField(1).value().BitsInformation().Convert<uint32_t>(0, 31).value();
-    result += std::to_string(acknowledgmentNumber) + '|';
-    return result;
-}
-
-
 int32_t main (int32_t size, char** data)
 {
     BinaryStructuredDataEngine buffer1;
     const bool res = buffer1.Constructor().AssignStructuredData<DATA_BIG_ENDIAN>(&tcp, 1, byte_pattern, 7, true);
     assert(res == true);
-
-    CreateTcpFingerprintFromPacket(buffer1.ToTemporaryConstantDataEngine());
 
     const BinaryDataEngine binData(reinterpret_cast<const std::byte*>(&tcp), sizeof(tcp), DATA_BIG_ENDIAN);
     ConstantBinaryStructuredDataEngine buffer(binData, byte_pattern, sizeof(byte_pattern) / sizeof(uint16_t));
