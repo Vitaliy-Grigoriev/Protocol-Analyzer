@@ -46,7 +46,7 @@ namespace analyzer::framework::common::types
         /**
          * @brief Default constructor.
          *
-         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
+         * @throw std::bad_alloc - If there is not enough system memory for allocate the storage.
          */
         LockedDeque(void) noexcept(std::is_nothrow_default_constructible_v<std::deque<Type>>) = default;
 
@@ -56,82 +56,87 @@ namespace analyzer::framework::common::types
         ~LockedDeque(void) noexcept = default;
 
         /**
-         * @brief Copy assignment constructor with LockedDeque<Type>.
+         * @brief Copy assignment constructor with LockedDeque.
          *
-         * @tparam [in] other - The const reference of copied LockedDeque<Type>.
+         * @tparam [in] other - Constant lvalue reference of copied LockedDeque.
          *
-         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
+         * @throw std::bad_alloc - If there is not enough system memory for allocate the storage.
          */
-        LockedDeque (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
+        LockedDeque (const LockedDeque& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
-            try { std::scoped_lock lock { mutex, other.mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return;
+            try
+            {
+                std::scoped_lock lock { mutex, other.mutex };
+                deque = other.deque;
             }
-            deque = other.deque;
+            catch (const std::system_error& /*err*/) { }
         }
 
         /**
-         * @brief Copy assignment constructor with STL std::deque<Type>.
+         * @brief Copy assignment constructor with STL std::deque.
          *
-         * @tparam [in] other - The const reference of copied STL std::deque<Type>.
+         * @tparam [in] other - Constant lvalue reference of copied STL std::deque.
          *
-         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
+         * @throw std::bad_alloc - If there is not enough system memory for allocate the storage.
          */
         explicit LockedDeque (const std::deque<Type>& other) noexcept(std::is_nothrow_copy_constructible_v<std::deque<Type>>)
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return;
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                deque = other;
             }
-            deque = other;
+            catch (const std::system_error& /*err*/) { }
         }
 
         /**
-         * @brief Move assignment constructor with LockedDeque<Type>.
+         * @brief Move assignment constructor with LockedDeque.
          *
-         * @tparam [in] other - The rvalue reference of moved LockedDeque<Type>.
+         * @tparam [in] other - Rvalue reference of moved LockedDeque.
          */
-        LockedDeque (LockedDeque<Type>&& other) noexcept
+        LockedDeque (LockedDeque&& other) noexcept
         {
-            try { std::scoped_lock lock { mutex, other.mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return;
+            try
+            {
+                std::scoped_lock lock { mutex, other.mutex };
+                deque = std::move(other.deque);
             }
-            deque = std::move(other.deque);
+            catch (const std::system_error& /*err*/) { }
         }
 
         /**
-         * @brief Move assignment constructor with STL std::deque<Type>.
+         * @brief Move assignment constructor with STL std::deque.
          *
-         * @tparam [in] other - The rvalue reference of moved STL std::deque<Type>.
+         * @tparam [in] other - Rvalue reference of moved STL std::deque.
          */
         explicit LockedDeque (std::deque<Type>&& other) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
-            catch (const std::system_error& /*err*/) {
-                return;
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                deque = std::move(other);
             }
-            deque = std::move(other);
+            catch (const std::system_error& /*err*/) { }
         }
 
         /**
          * @brief Copy assignment operator.
          *
-         * @tparam [in] other - The const reference of copied LockedDeque<Type> class.
-         * @return Reference of the current LockedDeque<Type> class.
+         * @tparam [in] other - Constant lvalue reference of copied LockedDeque class.
+         * @return Lvalue reference of current LockedDeque class.
          *
-         * @throw std::bad_alloc - In case when do not system memory to allocate the storage.
+         * @throw std::bad_alloc - If there is not enough system memory for allocate the storage.
          */
-        LockedDeque<Type>& operator= (const LockedDeque<Type>& other) noexcept(std::is_nothrow_copy_assignable_v<std::deque<Type>>)
+        LockedDeque& operator= (const LockedDeque& other) noexcept(std::is_nothrow_copy_assignable_v<std::deque<Type>>)
         {
             if (this != &other)
             {
-                try { std::scoped_lock lock { mutex, other.mutex }; }
-                catch (const std::system_error& /*err*/) {
-                    return *this;
+                try
+                {
+                    std::scoped_lock lock { mutex, other.mutex };
+                    deque = other.deque;
                 }
-                deque = other.deque;
+                catch (const std::system_error& /*err*/) { }
             }
             return *this;
         }
@@ -139,18 +144,19 @@ namespace analyzer::framework::common::types
         /**
          * @brief Move assignment operator.
          *
-         * @tparam [in] other - The rvalue reference of moved LockedDeque<Type> class.
-         * @return Reference of the current LockedDeque<Type> class.
+         * @tparam [in] other - Rvalue reference of moved LockedDeque class.
+         * @return Lvalue reference of current LockedDeque class.
          */
-        LockedDeque<Type>& operator= (LockedDeque<Type>&& other) noexcept
+        LockedDeque& operator= (LockedDeque&& other) noexcept
         {
             if (this != &other)
             {
-                try { std::scoped_lock lock { mutex, other.mutex }; }
-                catch (const std::system_error& /*err*/) {
-                    return *this;
+                try
+                {
+                    std::scoped_lock lock { mutex, other.mutex };
+                    deque = std::move(other.deque);
                 }
-                deque = std::move(other.deque);
+                catch (const std::system_error& /*err*/) { }
             }
             return *this;
         }
@@ -162,36 +168,43 @@ namespace analyzer::framework::common::types
          */
         std::size_t Size(void) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                return deque.size();
+            }
             catch (const std::system_error& /*err*/) {
                 return 0;
             }
-            return deque.size();
         }
 
         /**
          * @brief Method that returns the internal state of deque.
          *
-         * @return TRUE - if the container size is 0, otherwise - FALSE.
+         * @return TRUE - if container is empty, otherwise - FALSE.
          */
         bool IsEmpty(void) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                return deque.empty();
+            }
             catch (const std::system_error& /*err*/) {
                 return false;
             }
-            return deque.empty();
         }
 
         /**
          * @brief Method that push new value to front of deque.
          *
          * @tparam [in] value - New value for insert.
-         * @return TRUE - if push is successful, otherwise - FALSE.
+         * @return TRUE - if pushing is successful, otherwise - FALSE.
          */
         bool Push (const Type& value) noexcept
         {
-            try {
+            try
+            {
                 std::lock_guard<std::mutex> lock { mutex };
                 deque.push_front(value);
             }
@@ -202,116 +215,131 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @brief Method that pop value from back of deque.
+         * @brief Method that pops value from the back of deque.
          *
          * @tparam [out] result - Returned value.
-         * @return TRUE - if pop back element is successful, otherwise - FALSE.
+         * @return TRUE - if popping element from back is successful, otherwise - FALSE.
          *
          * @note Use this method for pop the oldest value in the deque.
          */
         bool PopBack (Type& result) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                if (deque.empty() == true) {
+                    return false;
+                }
+                result = deque.back();
+                deque.pop_back();
+            }
             catch (const std::exception& /*err*/) {
                 return false;
             }
-
-            if (deque.empty() == true) {
-                return false;
-            }
-            result = deque.back();
-            deque.pop_back();
             return true;
         }
 
         /**
-         * @brief Method that pop value from front of deque.
+         * @brief Method that pops value from the front of deque.
          *
          * @tparam [out] result - Returned value.
-         * @return TRUE - if pop the front element is successful, otherwise - FALSE.
+         * @return TRUE - if popping element from front is successful, otherwise - FALSE.
          */
         bool PopFront (Type& result) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                if (deque.empty() == true) {
+                    return false;
+                }
+                result = deque.front();
+                deque.pop_front();
+            }
             catch (const std::system_error& /*err*/) {
                 return false;
             }
-
-            if (deque.empty() == true) {
-                return false;
-            }
-            result = deque.front();
-            deque.pop_front();
             return true;
         }
 
         /**
-         * @brief Method that moves all internal values to outside STL std::deque<Type>.
+         * @brief Method that moves all internal values to outside STL std::deque.
          *
          * @tparam [out] result - Returned value.
          * @return TRUE - if at least one element has been moved, otherwise - FALSE.
          */
         bool Move (std::deque<Type>& result) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                if (deque.empty() == true) {
+                    return false;
+                }
+                result = std::move(deque);
+            }
             catch (const std::system_error& /*err*/) {
                 return false;
             }
-
-            if (deque.empty() == true) {
-                return false;
-            }
-            result = std::move(deque);
             return true;
         }
 
         /**
-         * @brief Method that swaps internal value with outside LockedDeque<Type> object.
+         * @brief Method that swaps internal value with outside LockedDeque object.
          *
-         * @tparam [in,out] other - Swapped value reference.
-         * @return TRUE - if swap is successful, otherwise - FALSE.
+         * @tparam [in,out] other - Lvalue reference of swapped value.
+         * @return TRUE - if swapping is successful, otherwise - FALSE.
          */
-        bool Swap (LockedDeque<Type>& other) noexcept
+        bool Swap (LockedDeque& other) noexcept
         {
             if (this != &other)
             {
-                try { std::scoped_lock lock { mutex, other.mutex }; }
+                try
+                {
+                    std::scoped_lock lock { mutex, other.mutex };
+                    std::swap(deque, other.deque);
+                }
                 catch (const std::system_error& /*err*/) {
                     return false;
                 }
-                std::swap(deque, other.deque);
             }
             return true;
         }
 
         /**
-         * @brief Method that swaps internal value with outside STL std::deque<Type>.
+         * @brief Method that swaps internal value with outside STL std::deque.
          *
-         * @tparam [in,out] other - Swapped value reference.
-         * @return TRUE - if swap is successful, otherwise - FALSE.
+         * @tparam [in,out] other - Lvalue reference of swapped value.
+         * @return TRUE - if swapping is successful, otherwise - FALSE.
          */
         bool Swap (std::deque<Type>& other) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                std::swap(deque, other);
+            }
             catch (const std::system_error& /*err*/) {
                 return false;
             }
-            std::swap(deque, other);
             return true;
         }
 
         /**
          * @brief Method that clears the deque.
          *
-         * @return TRUE - if clear is successful, otherwise - FALSE.
+         * @return TRUE - if clearing is successful, otherwise - FALSE.
          */
         bool Clear(void) noexcept
         {
-            try { std::lock_guard<std::mutex> lock { mutex }; }
+            try
+            {
+                std::lock_guard<std::mutex> lock { mutex };
+                deque.clear();
+            }
             catch (const std::system_error& /*err*/) {
                 return false;
             }
-            deque.clear();
             return true;
         }
     };
