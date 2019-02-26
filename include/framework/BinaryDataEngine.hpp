@@ -95,11 +95,17 @@ namespace analyzer::framework::common::types
 
 
     /**
-     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
-     * @brief Forward declaration of BinaryStructuredDataEngine class.
+     * @class BinaryStructuredDataEngineBase   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
+     * @brief Forward declaration of BinaryStructuredDataEngineBase class.
      */
     template <typename BinaryDataType>
-    class BinaryStructuredDataEngine;
+    class BinaryStructuredDataEngineBase;
+
+    /**
+     * @class IntegerValue   IntegerValue.hpp   "include/framework/IntegerValue.hpp"
+     * @brief Forward declaration of IntegerValue class.
+     */
+    class IntegerValue;
 
 
     /**
@@ -110,8 +116,11 @@ namespace analyzer::framework::common::types
      */
     class BinaryDataEngine
     {
-        friend class BinaryStructuredDataEngine<BinaryDataEngine>;
-        friend class BinaryStructuredDataEngine<const BinaryDataEngine>;
+        friend class IntegerValue;
+
+        template <typename BinaryDataType>
+        friend class BinaryStructuredDataEngineBase;
+
         //friend class BinaryDataEngineIterator<8>;
         //friend class BinaryDataEngineConstIterator<BinaryDataEngine>;
 
@@ -149,10 +158,12 @@ namespace analyzer::framework::common::types
          */
         class BitStreamInformationEngine
         {
+            friend class IntegerValue;
             friend class BinaryDataEngine;
             friend class BitStreamTransformEngine;
-            friend class BinaryStructuredDataEngine<BinaryDataEngine>;
-            friend class BinaryStructuredDataEngine<const BinaryDataEngine>;
+
+            template <typename BinaryDataType>
+            friend class BinaryStructuredDataEngineBase;
 
         private:
             /**
@@ -531,10 +542,12 @@ namespace analyzer::framework::common::types
          */
         class BitStreamTransformEngine
         {
+            friend class IntegerValue;
             friend class BinaryDataEngine;
             friend class BitStreamInformationEngine;
-            friend class BinaryStructuredDataEngine<BinaryDataEngine>;
-            friend class BinaryStructuredDataEngine<const BinaryDataEngine>;
+
+            template <typename BinaryDataType>
+            friend class BinaryStructuredDataEngineBase;
 
         private:
             /**
@@ -981,9 +994,13 @@ namespace analyzer::framework::common::types
          */
         class ByteStreamEngine
         {
+            friend class IntegerValue;
             friend class BinaryDataEngine;
-            friend class BinaryStructuredDataEngine<BinaryDataEngine>;
-            friend class BinaryStructuredDataEngine<const BinaryDataEngine>;
+            friend class BitStreamTransformEngine;
+            friend class BitStreamInformationEngine;
+
+            template <typename BinaryDataType>
+            friend class BinaryStructuredDataEngineBase;
 
         private:
             /**
@@ -1571,20 +1588,6 @@ namespace analyzer::framework::common::types
          * @attention The correct result can only be obtained if the data dependent modes are the same.
          */
         BinaryDataEngine & operator^= (const BinaryDataEngine & /*other*/) noexcept;
-
-        /**
-         * @brief Arithmetic assignment ADD operator.
-         *
-         * @param [in] other - Constant lvalue reference of the BinaryDataEngine class as right operand.
-         * @return Lvalue reference of transformed (by operation ADD) BinaryDataEngine class.
-         *
-         * @note If operands have different data length then result data will be the length of the largest among the operands.
-         * @note If the result length will be increased if it greater than the largest of the length among the operands.
-         * @note If data handling mode type is DATA_MODE_SAFE_OPERATOR then the length of result data will be saved.
-         *
-         * @attention The correct result can only be obtained if the data dependent modes are the same.
-         */
-        //BinaryDataEngine & operator+= (const BinaryDataEngine & /*other*/) noexcept;
 
     };
 

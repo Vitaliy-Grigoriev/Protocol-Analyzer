@@ -16,20 +16,35 @@ namespace analyzer::framework::common::types
 {
 /**
  * @def STRUCTURED_DATA_HANDLING_MODE;
- * @brief Marco that include a default settings for structured data handling mode in BinaryStructuredDataEngine class.
+ * @brief Marco that include a default settings for structured data handling mode in BinaryStructuredDataEngineBase class.
  */
 #define STRUCTURED_DATA_HANDLING_MODE   (DATA_MODE_INDEPENDENT | DATA_MODE_SAFE_OPERATOR)
 
     /**
      * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
+     * @brief Forward declaration of BinaryStructuredDataEngine class.
+     */
+    class BinaryStructuredDataEngine;
+
+    /**
+     * @class ConstantBinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
+     * @brief Forward declaration of ConstantBinaryStructuredDataEngine class.
+     */
+    class ConstantBinaryStructuredDataEngine;
+
+    /**
+     * @class BinaryStructuredDataEngineBase   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
      * @brief Main class of analyzer framework that contains binary structured data and gives an interface to work with it.
      *
      * @note This class is cross-platform.
      */
     template <typename BinaryDataType>
-    class BinaryStructuredDataEngine
+    class BinaryStructuredDataEngineBase
     {
-    private:
+        friend class BinaryStructuredDataEngine;
+        friend class ConstantBinaryStructuredDataEngine;
+
+    protected:
         /**
          * @brief Variable that stores pointer to the binary structured data.
          *
@@ -62,10 +77,12 @@ namespace analyzer::framework::common::types
          */
         class StructuredDataConstructor
         {
-            friend class BinaryStructuredDataEngine<BinaryDataType>;
+            friend class BinaryStructuredDataEngine;
+            friend class ConstantBinaryStructuredDataEngine;
+            friend class BinaryStructuredDataEngineBase<BinaryDataType>;
             
         private:
-            BinaryStructuredDataEngine<BinaryDataType> * const storedStructuredData = nullptr;
+            BinaryStructuredDataEngineBase<BinaryDataType> * const storedStructuredData = nullptr;
         
         public:
             StructuredDataConstructor (StructuredDataConstructor &&) = delete;
@@ -78,7 +95,7 @@ namespace analyzer::framework::common::types
              *
              * @param [in] owner - Constant pointer BinaryStructuredDataEngine owner class.
              */
-            explicit StructuredDataConstructor (BinaryStructuredDataEngine<BinaryDataType>* const owner) noexcept
+            explicit StructuredDataConstructor (BinaryStructuredDataEngineBase<BinaryDataType>* const owner) noexcept
                 : storedStructuredData(owner)
             { }
 
@@ -229,34 +246,34 @@ namespace analyzer::framework::common::types
         StructuredDataConstructor constructor;
 
     public:
-        // Disable copy assignment constructor of BinaryStructuredDataEngine class.
-        BinaryStructuredDataEngine (const BinaryStructuredDataEngine<BinaryDataType> &) = delete;
-        // Disable copy assignment operator of BinaryStructuredDataEngine class.
-        BinaryStructuredDataEngine & operator= (const BinaryStructuredDataEngine<BinaryDataType> &) = delete;
+        // Disable copy assignment constructor of BinaryStructuredDataEngineBase class.
+        BinaryStructuredDataEngineBase (const BinaryStructuredDataEngineBase<BinaryDataType> &) = delete;
+        // Disable copy assignment operator of BinaryStructuredDataEngineBase class.
+        BinaryStructuredDataEngineBase & operator= (const BinaryStructuredDataEngineBase<BinaryDataType> &) = delete;
 
         /**
-         * @brief Constructor of BinaryStructuredDataEngine class with prepared structured data.
+         * @brief Constructor of BinaryStructuredDataEngineBase class with prepared structured data.
          *
          * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
-         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngine class is exists.
+         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngineBase class is exists.
          */
-        BinaryStructuredDataEngine<BinaryDataEngine>(void) noexcept
+        BinaryStructuredDataEngineBase(void) noexcept
             : constructor(this)
         { }
 
         /**
-         * @brief Constructor of BinaryStructuredDataEngine class with prepared structured data.
+         * @brief Constructor of BinaryStructuredDataEngineBase class with prepared structured data.
          *
-         * @param [in] input - Lvalue reference of moved BinaryDataEngine class.
+         * @param [in] input - Lvalue reference of moved BinaryDataType class.
          * @param [in] pattern - Array that contains the byte-pattern in which stored structured data are represented.
          * @param [in] count - Number of elements in pattern.
          * @param [in] validation - Flag that indicates whether the input data should be validated or not. Default: TRUE.
          *
          * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
-         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngine class is exists.
+         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngineBase class is exists.
          */
-        BinaryStructuredDataEngine (BinaryDataType& input, const uint16_t* const pattern, const uint16_t count, const bool validation = true) noexcept
-            : data(&input), constructor(this)
+        BinaryStructuredDataEngineBase (BinaryDataType& input, const uint16_t* const pattern, const uint16_t count, const bool validation = true) noexcept
+            : data(&input), isDataAllocated(false), previousDataHandlingMode(data->dataModeType), constructor(this)
         {
             if (validation == true)
             {
@@ -268,8 +285,6 @@ namespace analyzer::framework::common::types
 
             if (count != 0)
             {
-                isDataAllocated = false;
-                previousDataHandlingMode = data->dataModeType;
                 data->SetDataModeType(STRUCTURED_DATA_HANDLING_MODE);
                 patternFieldsCount = count;
                 dataBytePattern.reset(pattern);
@@ -277,31 +292,51 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @brief Move assignment constructor of BinaryStructuredDataEngine class.
+         * @brief Move assignment constructor of BinaryStructuredDataEngineBase class.
          *
-         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
+         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngineBase class.
          */
-        BinaryStructuredDataEngine (BinaryStructuredDataEngine<BinaryDataType>&& other) noexcept
+        BinaryStructuredDataEngineBase (BinaryStructuredDataEngineBase<BinaryDataType>&& other) noexcept
+            : constructor(this)
         {
             if (other == true)
             {
-                data = std::move(other.data);
-                isDataAllocated = other.isDataAllocated;
-                previousDataHandlingMode = other.previousDataHandlingMode;
-                patternFieldsCount = other.patternFieldsCount;
-                dataBytePattern = std::move(other.dataBytePattern);
+                std::swap(data, other.data);
+                std::swap(isDataAllocated, other.isDataAllocated);
+                std::swap(previousDataHandlingMode, other.previousDataHandlingMode);
+                std::swap(patternFieldsCount, other.patternFieldsCount);
+                std::swap(dataBytePattern, other.dataBytePattern);
             }
         }
 
         /**
-         * @brief Method that returns the endian type of stored data in BinaryStructuredDataEngine class.
+         * @brief Move assignment operator of BinaryStructuredDataEngineBase class.
+         *
+         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngineBase class.
+         * @return Lvalue reference of moved BinaryStructuredDataEngineBase class.
+         */
+        BinaryStructuredDataEngineBase<BinaryDataType>& operator= (BinaryStructuredDataEngineBase<BinaryDataType>&& other) noexcept
+        {
+            if (this != &other && other == true)
+            {
+                std::swap(data, other.data);
+                std::swap(isDataAllocated, other.isDataAllocated);
+                std::swap(previousDataHandlingMode, other.previousDataHandlingMode);
+                std::swap(patternFieldsCount, other.patternFieldsCount);
+                std::swap(dataBytePattern, other.dataBytePattern);
+            }
+            return *this;
+        }
+
+        /**
+         * @brief Method that returns the endian type of stored data in BinaryStructuredDataEngineBase class.
          *
          * @return The endian type of stored data.
          */
         inline DATA_ENDIAN_TYPE GetDataEndian(void) const noexcept { return data->dataEndianType; }
 
         /**
-         * @brief Method that returns the constructor of BinaryStructuredDataEngine class.
+         * @brief Method that returns the constructor of BinaryStructuredDataEngineBase class.
          *
          * @return Lvalue reference of the StructuredDataConstructor class.
          */
@@ -330,7 +365,7 @@ namespace analyzer::framework::common::types
                 sequence.SetDataEndianType(data->dataEndianType);  // Change data endian type to internal endian format.
 
                 // Calculate byte offset to start byte in selected field.
-                const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataBytePattern, dataBytePattern + fieldIndex, 0));
+                const std::size_t offset = static_cast<std::size_t>(std::accumulate(dataBytePattern.get(), dataBytePattern.get() + fieldIndex, 0));
 
                 // Copy new field value.
                 for (std::size_t idx = 0; idx < dataBytePattern[fieldIndex]; ++idx) {
@@ -426,7 +461,7 @@ namespace analyzer::framework::common::types
             {
                 const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
                 if (bitOffset != BinaryDataType::npos) {
-                    data->bitStremTransform.Set(bitOffset, value);
+                    data->bitStreamTransform.Set(bitOffset, value);
                     return true;
                 }
             }
@@ -491,7 +526,7 @@ namespace analyzer::framework::common::types
          *
          * @return Lvalue pointer of BinaryDataType format.
          */
-        inline BinaryDataType* Release(void) const noexcept
+        inline BinaryDataType* Release(void) noexcept
         {
             isDataAllocated = false;
             return data.release();
@@ -507,41 +542,22 @@ namespace analyzer::framework::common::types
         std::string ToFormattedString(void) const noexcept;
 
         /**
-         * @brief Operator that returns the internal state of BinaryStructuredDataEngine class.
+         * @brief Operator that returns the internal state of BinaryStructuredDataEngineBase class.
          *
-         * @return TRUE - if BinaryStructuredDataEngine class is not empty, otherwise - FALSE.
+         * @return TRUE - if BinaryStructuredDataEngineBase class is not empty, otherwise - FALSE.
          */
         inline operator bool(void) const noexcept { return (data != nullptr && *data == true && dataBytePattern != nullptr); }
-
-        /**
-         * @brief Move assignment operator of BinaryStructuredDataEngine class.
-         *
-         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
-         * @return Lvalue reference of moved BinaryStructuredDataEngine class.
-         */
-        BinaryStructuredDataEngine& operator= (BinaryStructuredDataEngine<BinaryDataType>&& other) noexcept
-        {
-            if (this != &other && other == true)
-            {
-                data = std::move(other.data);
-                isDataAllocated = other.isDataAllocated;
-                previousDataHandlingMode = other.previousDataHandlingMode;
-                patternFieldsCount = other.patternFieldsCount;
-                dataBytePattern = std::move(other.dataBytePattern);
-            }
-            return *this;
-        }
 
         /**
          * @brief Operator that outputs internal binary structured data in binary string format.
          *
          * @param [in,out] stream - Reference of the output stream engine.
-         * @param [in] engine - Constant lvalue reference of the BinaryStructuredDataEngine class.
+         * @param [in] engine - Constant lvalue reference of the BinaryStructuredDataEngineBase class.
          * @return Lvalue reference of the inputted STL std::ostream class.
          *
          * @note Data is always outputs in DATA_BIG_ENDIAN endian type.
          */
-        friend inline std::ostream& operator<< (std::ostream& stream, const BinaryStructuredDataEngine<BinaryDataType>& engine) noexcept
+        friend inline std::ostream& operator<< (std::ostream& stream, const BinaryStructuredDataEngineBase<BinaryDataType>& engine) noexcept
         {
             try
             {
@@ -550,9 +566,9 @@ namespace analyzer::framework::common::types
                     stream.unsetf(std::ios_base::boolalpha);
                     uint16_t patternBlock = 0, blockBitCount = 0;
 
-                    if (engine.DataEndianType() == DATA_BIG_ENDIAN)
+                    if (engine.data->dataEndianType == DATA_BIG_ENDIAN)
                     {
-                        for (std::size_t idx = 0; idx < engine.data.bitStreamInformation.Length(); ++idx)
+                        for (std::size_t idx = 0; idx < engine.data->bitStreamInformation.Length(); ++idx)
                         {
                             if (idx % 8 == 0 && blockBitCount != 0) { stream << ' '; }
                             stream << engine.data->bitStreamInformation.Test(idx);
@@ -599,19 +615,184 @@ namespace analyzer::framework::common::types
         /**
          * @brief Bitwise AND operator that transforms internal binary structured data.
          *
+         * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngineBase class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation AND) BinaryStructuredDataEngineBase class.
+         *
+         * @note Result BinaryStructuredDataEngineBase class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator& (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngineBase<BinaryDataType>();
+            }
+
+            BinaryStructuredDataEngineBase<BinaryDataType> result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data &= *right.data;
+            }
+            return result;
+        }
+
+        /**
+         * @brief Bitwise OR operator that transforms internal binary structured data.
+         *
+         * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngineBase class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation OR) BinaryStructuredDataEngineBase class.
+         *
+         * @note Result BinaryStructuredDataEngineBase class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator| (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngineBase<BinaryDataType>();
+            }
+
+            BinaryStructuredDataEngineBase<BinaryDataType> result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data |= *right.data;
+            }
+            return result;
+        }
+
+        /**
+         * @brief Bitwise XOR operator that transforms internal binary structured data.
+         *
+         * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngineBase class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation XOR) BinaryStructuredDataEngineBase class.
+         *
+         * @note Result BinaryStructuredDataEngineBase class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator^ (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngineBase<BinaryDataType>();
+            }
+
+            BinaryStructuredDataEngineBase<BinaryDataType> result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data ^= *right.data;
+            }
+            return result;
+        }
+
+        /**
+         * @brief Virtual destructor of BinaryStructuredDataEngineBase class.
+         */
+        virtual ~BinaryStructuredDataEngineBase(void) noexcept
+        {
+            patternFieldsCount = 0;
+            if (data != nullptr && isDataAllocated == false)
+            {
+                // Restore previous data mode type.
+                data->SetDataModeType(previousDataHandlingMode);
+                [[maybe_unused]] auto unused1 = data.release();
+                [[maybe_unused]] auto unused2 = dataBytePattern.release();
+            }
+            else if (data != nullptr)  // If data are allocated in Constructor nested class.
+            {
+                data.reset(nullptr);
+                dataBytePattern.reset(nullptr);
+            }
+        }
+    };
+
+
+    /**
+     * @class BinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
+     * @brief Main class of analyzer framework that contains binary structured data and gives an interface to work with it.
+     */
+    class BinaryStructuredDataEngine final : public BinaryStructuredDataEngineBase<BinaryDataEngine>
+    {
+        friend class ConstantBinaryStructuredDataEngine;
+
+    private:
+        using Base = BinaryStructuredDataEngineBase<BinaryDataEngine>;
+
+    public:
+        /**
+         * @brief Constructor of BinaryStructuredDataEngine class with prepared structured data.
+         *
+         * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
+         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngine class is exists.
+         */
+        BinaryStructuredDataEngine(void) noexcept
+            : Base()
+        { }
+
+        /**
+         * @brief Constructor of BinaryStructuredDataEngine class with prepared structured data.
+         *
+         * @param [in] input - Lvalue reference of moved BinaryDataEngine class.
+         * @param [in] pattern - Array that contains the byte-pattern in which stored structured data are represented.
+         * @param [in] count - Number of elements in pattern.
+         * @param [in] validation - Flag that indicates whether the input data should be validated or not. Default: TRUE.
+         *
+         * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
+         * @attention Data handling mode will be changed during the instance of BinaryStructuredDataEngine class is exists.
+         */
+        BinaryStructuredDataEngine (BinaryDataEngine& input, const uint16_t* const pattern, const uint16_t count, const bool validation = true) noexcept
+            : Base(input, pattern, count, validation)
+        { }
+
+        /**
+         * @brief Move assignment constructor of BinaryStructuredDataEngine class.
+         *
+         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
+         */
+        BinaryStructuredDataEngine (BinaryStructuredDataEngine&& other) noexcept
+            : Base(std::move(other))
+        { }
+
+        /**
+         * @brief Move assignment operator of BinaryStructuredDataEngine class.
+         *
+         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
+         */
+        BinaryStructuredDataEngine& operator= (BinaryStructuredDataEngine&& other) noexcept
+        {
+            Base::operator=(std::move(other));
+            return *this;
+        }
+
+        /**
+         * @brief Method that transform internal data to temporary ConstantBinaryStructuredDataEngine type.
+         *
+         * @return Internal data in temporary ConstantBinaryStructuredDataEngine representation.
+         */
+        ConstantBinaryStructuredDataEngine ToTemporaryConstantDataEngine(void) const noexcept;
+
+        /**
+         * @brief Bitwise AND operator that transforms internal binary structured data.
+         *
          * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngine class as left operand.
-         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngine class as right operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
          * @return New temporary object of transformed (by operation AND) BinaryStructuredDataEngine class.
          *
-         * @note If operands have different endian and mode then result BinaryStructuredDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LESSER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note Result BinaryStructuredDataEngine class is always has attributes of the left operand.
          *
-         * @attention Result BinaryStructuredDataEngine class is always processing in data mode type of left operand.
-         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         * @attention If left and right operands have different sizes then an empty result will be returned.
          */
-        friend inline BinaryStructuredDataEngine operator& (const BinaryStructuredDataEngine<BinaryDataType>& left, const BinaryStructuredDataEngine<BinaryDataType>& right) noexcept
+        template <typename BinaryDataType>
+        friend inline BinaryStructuredDataEngine operator& (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            BinaryStructuredDataEngine<BinaryDataType> result(left);
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
                 *result.data &= *right.data;
             }
@@ -622,18 +803,22 @@ namespace analyzer::framework::common::types
          * @brief Bitwise OR operator that transforms internal binary structured data.
          *
          * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngine class as left operand.
-         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngine class as right operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
          * @return New temporary object of transformed (by operation OR) BinaryStructuredDataEngine class.
          *
-         * @note If operands have different endian and mode then result BinaryStructuredDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note Result BinaryStructuredDataEngine class is always has attributes of the left operand.
          *
-         * @attention Result BinaryStructuredDataEngine class is always processing in data mode type of left operand.
-         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         * @attention If left and right operands have different sizes then an empty result will be returned.
          */
-        friend inline BinaryStructuredDataEngine operator| (const BinaryStructuredDataEngine<BinaryDataType>& left, const BinaryStructuredDataEngine<BinaryDataType>& right) noexcept
+        template <typename BinaryDataType>
+        friend inline BinaryStructuredDataEngine operator| (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            BinaryStructuredDataEngine<BinaryDataType> result(left);
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
                 *result.data |= *right.data;
             }
@@ -644,18 +829,22 @@ namespace analyzer::framework::common::types
          * @brief Bitwise XOR operator that transforms internal binary structured data.
          *
          * @param [in] left - Constant lvalue reference of the BinaryStructuredDataEngine class as left operand.
-         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngine class as right operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
          * @return New temporary object of transformed (by operation XOR) BinaryStructuredDataEngine class.
          *
-         * @note If operands have different endian and mode then result BinaryStructuredDataEngine will have endian and mode of the left operand.
-         * @note To improve the speed and less memory consumption, it is necessary that the left operand has data of a LONGER length (DATA_MODE_UNSAFE_OPERATOR mode).
+         * @note Result BinaryStructuredDataEngine class is always has attributes of the left operand.
          *
-         * @attention Result BinaryStructuredDataEngine class is always processing in data mode type of left operand.
-         * @attention The correct result can only be obtained if the data dependent modes are the same.
+         * @attention If left and right operands have different sizes then an empty result will be returned.
          */
-        friend inline BinaryStructuredDataEngine operator^ (const BinaryStructuredDataEngine<BinaryDataType>& left, const BinaryStructuredDataEngine<BinaryDataType>& right) noexcept
+        template <typename BinaryDataType>
+        friend inline BinaryStructuredDataEngine operator^ (const BinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            BinaryStructuredDataEngine<BinaryDataType> result(left);
+            if (left.data->Size() != right.data->Size()) {
+                return BinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
             if (result == true) {
                 *result.data ^= *right.data;
             }
@@ -663,35 +852,187 @@ namespace analyzer::framework::common::types
         }
 
         /**
-         * @brief Destructor of BinaryStructuredDataEngine class.
+         * @brief Default destructor of BinaryStructuredDataEngine class.
          */
-        ~BinaryStructuredDataEngine(void) noexcept
-        {
-            patternFieldsCount = 0;
-            if (data != nullptr && isDataAllocated == false)
-            {
-                data->SetDataModeType(previousDataHandlingMode);
-                data.release();
-                dataBytePattern.release();
-            }
-            else if (data != nullptr)  // If data are allocated in constructor.
-            {
-                data.reset(nullptr);
-                dataBytePattern.reset(nullptr);
-            }
-        }
+        ~BinaryStructuredDataEngine(void) override = default;
     };
 
+
+    /**
+     * @class ConstantBinaryStructuredDataEngine   BinaryStructuredDataEngine.hpp   "include/framework/BinaryStructuredDataEngine.hpp"
+     * @brief Main class of analyzer framework that contains constant binary structured data and gives an interface to work with it.
+     */
+    class ConstantBinaryStructuredDataEngine final : public BinaryStructuredDataEngineBase<const BinaryDataEngine>
+    {
+        friend class BinaryStructuredDataEngine;
+
+    private:
+        using Base = BinaryStructuredDataEngineBase<const BinaryDataEngine>;
+
+    public:
+        /**
+         * @brief Constructor of ConstantBinaryStructuredDataEngine class with prepared structured data.
+         *
+         * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
+         * @attention Data handling mode will be changed during the instance of ConstantBinaryStructuredDataEngine class is exists.
+         */
+        ConstantBinaryStructuredDataEngine(void) noexcept
+            : Base()
+        { }
+
+        /**
+         * @brief Constructor of ConstantBinaryStructuredDataEngine class with prepared structured data.
+         *
+         * @param [in] input - Lvalue reference of moved constant BinaryDataEngine class.
+         * @param [in] pattern - Array that contains the byte-pattern in which stored structured data are represented.
+         * @param [in] count - Number of elements in pattern.
+         * @param [in] validation - Flag that indicates whether the input data should be validated or not. Default: TRUE.
+         *
+         * @attention Need to check the existence of data after use this constructor by calling operator 'bool'.
+         * @attention Data handling mode will be changed during the instance of ConstantBinaryStructuredDataEngine class is exists.
+         */
+        ConstantBinaryStructuredDataEngine (const BinaryDataEngine& input, const uint16_t* const pattern, const uint16_t count, const bool validation = true) noexcept
+            : Base(input, pattern, count, validation)
+        { }
+
+        /**
+         * @brief Move assignment constructor of ConstantBinaryStructuredDataEngine class.
+         *
+         * @param [in] other - Rvalue reference of moved ConstantBinaryStructuredDataEngine class.
+         */
+        ConstantBinaryStructuredDataEngine (ConstantBinaryStructuredDataEngine&& other) noexcept
+            : Base(std::move(other))
+        { }
+
+        /**
+         * @brief Move assignment operator of ConstantBinaryStructuredDataEngine class.
+         *
+         * @param [in] other - Rvalue reference of moved ConstantBinaryStructuredDataEngine class.
+         */
+        ConstantBinaryStructuredDataEngine& operator= (ConstantBinaryStructuredDataEngine&& other) noexcept
+        {
+            Base::operator=(std::move(other));
+            return *this;
+        }
+
+        /**
+         * @brief Move assignment constructor of ConstantBinaryStructuredDataEngine class.
+         *
+         * @param [in] other - Rvalue reference of moved BinaryStructuredDataEngine class.
+         */
+        explicit ConstantBinaryStructuredDataEngine (BinaryStructuredDataEngine&& other) noexcept
+            : Base()
+        {
+            if (other == true)
+            {
+                data = std::move(other.data);
+                isDataAllocated = other.isDataAllocated;
+                previousDataHandlingMode = other.previousDataHandlingMode;
+                patternFieldsCount = other.patternFieldsCount;
+                dataBytePattern = std::move(other.dataBytePattern);
+            }
+        }
+
+        /**
+         * @brief Bitwise AND operator that transforms internal binary structured data.
+         *
+         * @param [in] left - Constant lvalue reference of the ConstantBinaryStructuredDataEngine class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation AND) ConstantBinaryStructuredDataEngine class.
+         *
+         * @note Result ConstantBinaryStructuredDataEngine class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        template <typename BinaryDataType>
+        friend inline ConstantBinaryStructuredDataEngine operator& (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return ConstantBinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data &= *right.data;
+            }
+            return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
+        }
+
+        /**
+         * @brief Bitwise OR operator that transforms internal binary structured data.
+         *
+         * @param [in] left - Constant lvalue reference of the ConstantBinaryStructuredDataEngine class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation OR) ConstantBinaryStructuredDataEngine class.
+         *
+         * @note Result ConstantBinaryStructuredDataEngine class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        template <typename BinaryDataType>
+        friend inline ConstantBinaryStructuredDataEngine operator| (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return ConstantBinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data |= *right.data;
+            }
+            return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
+        }
+
+        /**
+         * @brief Bitwise XOR operator that transforms internal binary structured data.
+         *
+         * @param [in] left - Constant lvalue reference of the ConstantBinaryStructuredDataEngine class as left operand.
+         * @param [in] right - Constant lvalue reference of the BinaryStructuredDataEngineBase class as right operand.
+         * @return New temporary object of transformed (by operation XOR) ConstantBinaryStructuredDataEngine class.
+         *
+         * @note Result ConstantBinaryStructuredDataEngine class is always has attributes of the left operand.
+         *
+         * @attention If left and right operands have different sizes then an empty result will be returned.
+         */
+        template <typename BinaryDataType>
+        friend inline ConstantBinaryStructuredDataEngine operator^ (const ConstantBinaryStructuredDataEngine& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
+        {
+            if (left.data->Size() != right.data->Size()) {
+                return ConstantBinaryStructuredDataEngine();
+            }
+
+            BinaryStructuredDataEngine result;
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            if (result == true) {
+                *result.data ^= *right.data;
+            }
+            return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
+        }
+
+        /**
+         * @brief Default destructor of ConstantBinaryStructuredDataEngine class.
+         */
+        ~ConstantBinaryStructuredDataEngine(void) override = default;
+    };
+
+
+    // Method that transform internal data to temporary ConstantBinaryStructuredDataEngine type.
+    ConstantBinaryStructuredDataEngine BinaryStructuredDataEngine::ToTemporaryConstantDataEngine(void) const noexcept
+    {
+        return { *data, dataBytePattern.get(), patternFieldsCount, false };
+    }
 
 
     // Method that returns field value of structured data under selected index by reference.
     template <typename BinaryDataType>
-    std::optional<BinaryDataType> BinaryStructuredDataEngine<BinaryDataType>::GetFieldByReference (const uint16_t fieldIndex) const noexcept
+    std::optional<BinaryDataType> BinaryStructuredDataEngineBase<BinaryDataType>::GetFieldByReference (const uint16_t fieldIndex) const noexcept
     {
         if (fieldIndex < patternFieldsCount)
         {
             // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
-            const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataBytePattern, dataBytePattern + fieldIndex, 0));
+            const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataBytePattern.get(), dataBytePattern.get() + fieldIndex, 0));
             BinaryDataType result(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType);
             return result;
         }
@@ -700,7 +1041,7 @@ namespace analyzer::framework::common::types
 
     // Method that returns index of the first field in the selected bit-pattern where at least one bit is set.
     template <typename BinaryDataType>
-    std::optional<uint16_t> BinaryStructuredDataEngine<BinaryDataType>::GetNonemptyFieldIndex (const uint16_t start, const uint16_t* const pattern, const uint16_t size) const noexcept
+    std::optional<uint16_t> BinaryStructuredDataEngineBase<BinaryDataType>::GetNonemptyFieldIndex (const uint16_t start, const uint16_t* const pattern, const uint16_t size) const noexcept
     {
         // Check inputted 'start' and 'size' variables in one condition.
         if (*this == false || start >= size) { return std::nullopt; }
@@ -737,12 +1078,12 @@ namespace analyzer::framework::common::types
                 offset += dataBytePattern[field] * 8;
             }
         }
-        return std::numeric_limits<uint16_t>::max();
+        return std::nullopt;
     }
 
     // Method that returns the internal byte-pattern with length from the specified position.
     template <typename BinaryDataType>
-    std::pair<uint16_t, const uint16_t*> BinaryStructuredDataEngine<BinaryDataType>::GetPattern (const uint16_t fieldIndex) const noexcept
+    std::pair<uint16_t, const uint16_t*> BinaryStructuredDataEngineBase<BinaryDataType>::GetPattern (const uint16_t fieldIndex) const noexcept
     {
         if (fieldIndex < patternFieldsCount) {
             return { patternFieldsCount - fieldIndex, &dataBytePattern[fieldIndex] };
@@ -752,7 +1093,7 @@ namespace analyzer::framework::common::types
 
     // Method that outputs internal binary structured data by pattern in string format.
     template <typename BinaryDataType>
-    std::string BinaryStructuredDataEngine<BinaryDataType>::ToFormattedString(void) const noexcept
+    std::string BinaryStructuredDataEngineBase<BinaryDataType>::ToFormattedString(void) const noexcept
     {
         std::ostringstream result;
         if (data->IsEmpty() == false)

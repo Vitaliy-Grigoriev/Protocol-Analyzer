@@ -16,6 +16,7 @@
 #include "Mutex.hpp"
 #include "System.hpp"
 #include "LockedDeque.hpp"
+#include "IntegerValue.hpp"
 #include "BinaryStructuredDataEngine.hpp"  // In this header file also defined "BinaryDataEngine.hpp".
 #include "Parser.hpp"
 #include "NetlinkInterface.hpp"  // In this header file also defined "Socket.hpp".

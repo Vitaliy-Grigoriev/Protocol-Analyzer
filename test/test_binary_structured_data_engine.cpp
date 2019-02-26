@@ -1,3 +1,12 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
+// ============================================================================
+// Copyright (c) 2017-2019, by Vitaly Grigoriev, <Vit.link420@gmail.com>.
+// This file is part of ProtocolAnalyzer open source project under MIT License.
+// ============================================================================
+
+
 #include <bitset>
 #include <cassert>
 #include <iostream>
@@ -25,14 +34,42 @@ const uint16_t byte_pattern[7] = { 4, 4, 1, 1, 2, 2, 2 };
 const uint16_t bit_pattern[9] = { 32, 32, 4, 3, 3, 6, 16, 16, 16 };
 
 
+std::string CreateTcpFingerprintFromPacket (const ConstantBinaryStructuredDataEngine& tcp) noexcept
+{
+    std::string result;
+    result.reserve(100);
+
+    // Get Sequence Number.
+    const uint32_t sequenceNumber = tcp.GetField(0).value().BitsInformation().Convert<uint32_t>(0, 31).value();
+    result += std::to_string(sequenceNumber) + '|';
+
+    // Get Acknowledgment Number.
+    const uint32_t acknowledgmentNumber = tcp.GetField(1).value().BitsInformation().Convert<uint32_t>(0, 31).value();
+    result += std::to_string(acknowledgmentNumber) + '|';
+    return result;
+}
+
+
 int32_t main (int32_t size, char** data)
 {
-    BinaryStructuredDataEngine<BinaryDataEngine> buffer;
-    const bool res = buffer.Constructor().AssignStructuredData<DATA_BIG_ENDIAN>(&tcp, 1, byte_pattern, 7, true);
+    BinaryStructuredDataEngine buffer1;
+    const bool res = buffer1.Constructor().AssignStructuredData<DATA_BIG_ENDIAN>(&tcp, 1, byte_pattern, 7, true);
     assert(res == true);
 
+    CreateTcpFingerprintFromPacket(buffer1.ToTemporaryConstantDataEngine());
+
     const BinaryDataEngine binData(reinterpret_cast<const std::byte*>(&tcp), sizeof(tcp), DATA_BIG_ENDIAN);
-    const BinaryStructuredDataEngine<const BinaryDataEngine> buffer1(binData, byte_pattern, sizeof(byte_pattern) / sizeof(uint16_t));
+    ConstantBinaryStructuredDataEngine buffer(binData, byte_pattern, sizeof(byte_pattern) / sizeof(uint16_t));
+    const auto bitCount = buffer.Data().BitsInformation().Count();
+
+    ConstantBinaryStructuredDataEngine res1(buffer1 ^ buffer1);
+    assert(res1.Data().BitsInformation().Any() == false && res1.Data().Size() == buffer.Data().Size());
+
+    buffer = std::move(res1);
+    assert(buffer.Data().BitsInformation().Count() == 0 && res1.Data().BitsInformation().Count() == bitCount);
+    res1 = std::move(buffer);
+    assert(buffer.Data().BitsInformation().Count() == bitCount && res1.Data().BitsInformation().Count() == 0);
+
     assert(binData == true && buffer == true);
     std::cout << buffer.Data().ToHexString() << std::endl;
     std::cout << buffer.ToFormattedString() << std::endl;

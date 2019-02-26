@@ -20,7 +20,7 @@ namespace analyzer::framework::modules
         MODULE_SOCKET = 0,                   // Socket class.
         MODULE_SOCKET_SSL,                   // SocketSSL class.
         MODULE_BINARY_DATA_ENGINE,           // BinaryDataEngine class.
-        MODULE_BINARY_STRUCTED_DATA_ENGINE,  // BinaryStructuredDataEngine class.
+        MODULE_BINARY_STRUCTED_DATA_ENGINE,  // BinaryStructuredDataEngineBase class.
         FRAMEWORK_MODULE_TYPES_SIZE
     };
 

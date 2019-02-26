@@ -102,6 +102,7 @@ set(SOCKET_TEST               ${TESTS}/test_socket.cpp)
 set(NETLINK_TEST              ${TESTS}/test_netlink.cpp)
 set(COMMON_TEST               ${TESTS}/test_common.cpp)
 set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp)
+set(INTEGER_VALUE_TEST        ${TESTS}/test_integer_value.cpp)
 set(BINARY_STRUCTURED_DATA_ENGINE_TEST   ${TESTS}/test_binary_structured_data_engine.cpp)
 set(TIMING_TEST               ${TESTS}/test_timing.cpp)
 set(LOGGING_TEST              ${TESTS}/test_logging.cpp)
@@ -117,6 +118,7 @@ add_executable(test_netlink              ${NETLINK_TEST})
 add_executable(test_common               ${COMMON_TEST})
 add_executable(test_timing               ${TIMING_TEST})
 add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
+add_executable(test_integer_value        ${INTEGER_VALUE_TEST})
 add_executable(test_binary_structured_data_engine   ${BINARY_STRUCTURED_DATA_ENGINE_TEST})
 add_executable(test_logging              ${LOGGING_TEST})
 add_executable(test_anything             ${ANYTHING_TEST})
@@ -132,6 +134,7 @@ set_target_properties(
         test_common
         test_timing
         test_binary_data_engine
+        test_integer_value
         test_binary_structured_data_engine
         test_logging
         test_anything
@@ -148,6 +151,7 @@ target_link_libraries(test_socket              AnalyzerFramework)
 target_link_libraries(test_netlink             AnalyzerFramework)
 target_link_libraries(test_common              AnalyzerFramework)
 target_link_libraries(test_binary_data_engine  AnalyzerFramework)
+target_link_libraries(test_integer_value       AnalyzerFramework)
 target_link_libraries(test_binary_structured_data_engine  AnalyzerFramework)
 target_link_libraries(test_timing              AnalyzerFramework)
 target_link_libraries(test_anything            AnalyzerFramework)
