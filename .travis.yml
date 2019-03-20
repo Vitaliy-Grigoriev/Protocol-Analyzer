@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: cpp
 
@@ -55,7 +55,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-6.0
           packages:
             - clang-6.0
       env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Release
@@ -65,7 +65,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-6.0
           packages:
             - clang-6.0
       env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Debug
@@ -75,7 +75,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-xenial-7
           packages:
             - clang-7
       env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Release
@@ -85,10 +85,30 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-xenial-7
           packages:
             - clang-7
       env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Debug
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-8
+          packages:
+            - clang-8
+      env: COMPILER=clang++-8 CXX=clang++-8 BUILD_TYPE=Release
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-8
+          packages:
+            - clang-8
+      env: COMPILER=clang++-8 CXX=clang++-8 BUILD_TYPE=Debug
 
     - os: linux
       addons:
