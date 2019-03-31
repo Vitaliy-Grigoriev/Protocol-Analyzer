@@ -20,23 +20,23 @@ namespace analyzer::framework::common::types
         if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U)
         {
             if (storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
-                return { index >> 3, std::byte(0x01) << (index % 8) };
+                return { index >> 3, LowBitInByte << (index % 8) };
             }
             else if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
-                return { storedData->length - (index >> 3) - 1, std::byte(0x01) << (index % 8) };
+                return { storedData->length - (index >> 3) - 1, LowBitInByte << (index % 8) };
             }
             // If data endian type is DATA_REVERSE_BIG_ENDIAN.
-            return { storedData->length - (index >> 3) - 1, std::byte(0x80) >> (index % 8) };
+            return { storedData->length - (index >> 3) - 1, HighBitInByte >> (index % 8) };
         }
         // If data handling mode type is DATA_MODE_INDEPENDENT.
-        return { index >> 3, std::byte(0x80) >> (index % 8) };
+        return { index >> 3, HighBitInByte >> (index % 8) };
     }
 
     // Method that returns bit value under the specified index.
     bool BinaryDataEngine::BitStreamInformationEngine::GetBitValue (const std::size_t index) const noexcept
     {
         const auto [part, shift] = GetBitPosition(index);
-        return ((storedData->data[part] & shift) != std::byte(0x00));
+        return ((storedData->data[part] & shift) != LowByte);
     }
 
     // Method that checks the bit under the specified index.
@@ -57,7 +57,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < size / 8; ++idx)
             {
-                if (storedData->data[GetBitPosition(first).first] != std::byte(0xFF)) {
+                if (storedData->data[GetBitPosition(first).first] != HighByte) {
                     return false;
                 }
                 first += 8;
@@ -86,7 +86,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < size / 8; ++idx)
             {
-                if (storedData->data[GetBitPosition(first).first] != std::byte(0x00)) {
+                if (storedData->data[GetBitPosition(first).first] != LowByte) {
                     return true;
                 }
                 first += 8;
@@ -115,7 +115,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < size / 8; ++idx)
             {
-                if (storedData->data[GetBitPosition(first).first] != std::byte(0x00)) {
+                if (storedData->data[GetBitPosition(first).first] != LowByte) {
                     return false;
                 }
                 first += 8;
@@ -218,7 +218,7 @@ namespace analyzer::framework::common::types
     {
         if (*storedData == true && shift != 0)
         {
-            const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
+            const std::byte fillByte = (fillBit == false ? LowByte : HighByte);
             if (shift >= Length()) {
                 memset(storedData->data.get(), static_cast<int32_t>(fillByte), storedData->length);
                 return *this;
@@ -241,7 +241,7 @@ namespace analyzer::framework::common::types
                         }
                         storedData->data[0] <<= tailBits;
                         if (fillBit == true) {
-                            storedData->data[0] |= (std::byte(0xFF) >> (8 - tailBits));
+                            storedData->data[0] |= (HighByte >> (8 - tailBits));
                         }
                     }
                     else if (storedData->dataEndianType == DATA_REVERSE_BIG_ENDIAN)
@@ -252,7 +252,7 @@ namespace analyzer::framework::common::types
                         }
                         storedData->data[lastIndex] >>= tailBits;
                         if (fillBit == true) {
-                            storedData->data[lastIndex] |= (std::byte(0xFF) << (8 - tailBits));
+                            storedData->data[lastIndex] |= (HighByte << (8 - tailBits));
                         }
                     }
                 }
@@ -264,7 +264,7 @@ namespace analyzer::framework::common::types
                     }
                     storedData->data[lastIndex] <<= tailBits;
                     if (fillBit == true) {
-                        storedData->data[lastIndex] |= (std::byte(0xFF) >> (8 - tailBits));
+                        storedData->data[lastIndex] |= (HighByte >> (8 - tailBits));
                     }
                 }
             }
@@ -277,7 +277,7 @@ namespace analyzer::framework::common::types
     {
         if (*storedData == true && shift != 0)
         {
-            const std::byte fillByte = (fillBit == false ? std::byte(0x00) : std::byte(0xFF));
+            const std::byte fillByte = (fillBit == false ? LowByte : HighByte);
             if (shift >= Length()) {
                 memset(storedData->data.get(), static_cast<int32_t>(fillByte), storedData->length);
                 return *this;
@@ -299,7 +299,7 @@ namespace analyzer::framework::common::types
                     }
                     storedData->data[lastIndex] >>= tailBits;
                     if (fillBit == true) {
-                        storedData->data[lastIndex] |= (std::byte(0xFF) << (8 - tailBits));
+                        storedData->data[lastIndex] |= (HighByte << (8 - tailBits));
                     }
                 }
                 else  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
@@ -309,7 +309,7 @@ namespace analyzer::framework::common::types
                     }
                     storedData->data[0] >>= tailBits;
                     if (fillBit == true) {
-                        storedData->data[0] |= (std::byte(0xFF) << (8 - tailBits));
+                        storedData->data[0] |= (HighByte << (8 - tailBits));
                     }
                 }
             }
@@ -419,8 +419,8 @@ namespace analyzer::framework::common::types
             const auto [partFirst, shiftFirst] = storedData->bitStreamInformation.GetBitPosition(first);
             const auto [partLast, shiftLast] = storedData->bitStreamInformation.GetBitPosition(last);
 
-            if (((storedData->data[partFirst] & shiftFirst) != std::byte(0x00)) !=
-                ((storedData->data[partLast] & shiftLast) != std::byte(0x00)))
+            if (((storedData->data[partFirst] & shiftFirst) != LowByte) !=
+                ((storedData->data[partLast] & shiftLast) != LowByte))
             {
                 storedData->data[partFirst] ^= shiftFirst;
                 storedData->data[partLast] ^= shiftLast;
@@ -459,23 +459,23 @@ namespace analyzer::framework::common::types
         if (*storedData == true)
         {
             const auto& currentByteEngine = storedData->BytesTransform();
-            const auto& otherByteEngine = other.storedData->BytesTransform();
+            const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.
             if (storedData->length >= other.storedData->length)
             {
-                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx].value();
+                for (std::size_t idx = 0; idx < otherByteInformationEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) &= otherByteInformationEngine[idx].value();
                 }
-                for (std::size_t idx = otherByteEngine.Length(); idx < currentByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) &= std::byte(0x00);
+                for (std::size_t idx = otherByteInformationEngine.Length(); idx < currentByteEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) &= LowByte;
                 }
             }
             // If right operand (other) has data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
             else if ((storedData->dataModeType & DATA_MODE_SAFE_OPERATOR) != 0U)
             {
                 for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx].value();
+                    (*currentByteEngine.GetAt(idx)) &= otherByteInformationEngine[idx].value();
                 }
             }
             else  // If right operand (other) has data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
@@ -488,7 +488,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) &= otherByteInformationEngine[idx].value();
                         }
                     }
                 }
@@ -503,7 +503,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) &= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) &= otherByteInformationEngine[idx].value();
                         }
                     }
                 }
@@ -518,20 +518,20 @@ namespace analyzer::framework::common::types
         if (*storedData == true)
         {
             const auto& currentByteEngine = storedData->BytesTransform();
-            const auto& otherByteEngine = other.storedData->BytesTransform();
+            const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.
             if (storedData->length >= other.storedData->length)
             {
-                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx].value();
+                for (std::size_t idx = 0; idx < otherByteInformationEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) |= otherByteInformationEngine[idx].value();
                 }
             }
             // If right operand (other) has data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
             else if ((storedData->dataModeType & DATA_MODE_SAFE_OPERATOR) != 0U)
             {
                 for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx].value();
+                    (*currentByteEngine.GetAt(idx)) |= otherByteInformationEngine[idx].value();
                 }
             }
             else  // If right operand (other) has data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
@@ -544,7 +544,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) |= otherByteInformationEngine[idx].value();
                         }
                     }
                 }
@@ -559,7 +559,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) |= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) |= otherByteInformationEngine[idx].value();
                         }
                     }
                 }
@@ -574,20 +574,20 @@ namespace analyzer::framework::common::types
         if (*storedData == true)
         {
             const auto& currentByteEngine = storedData->BytesTransform();
-            const auto& otherByteEngine = other.storedData->BytesTransform();
+            const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.
             if (storedData->length >= other.storedData->length)
             {
-                for (std::size_t idx = 0; idx < otherByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx].value();
+                for (std::size_t idx = 0; idx < otherByteInformationEngine.Length(); ++idx) {
+                    (*currentByteEngine.GetAt(idx)) ^= otherByteInformationEngine[idx].value();
                 }
             }
             // If right operand (other) has data with longer length but data handling mode DATA_MODE_SAFE_OPERATOR is set.
             else if ((storedData->dataModeType & DATA_MODE_SAFE_OPERATOR) != 0U)
             {
                 for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                    (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx].value();
+                    (*currentByteEngine.GetAt(idx)) ^= otherByteInformationEngine[idx].value();
                 }
             }
             else  // If right operand (other) has data with longer length and data handling mode is DATA_MODE_UNSAFE_OPERATOR.
@@ -600,7 +600,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) ^= otherByteInformationEngine[idx].value();
                         }
                     }
                 }
@@ -615,7 +615,7 @@ namespace analyzer::framework::common::types
                         storedData->data = std::move(newData);
                         storedData->length = other.storedData->length;
                         for (std::size_t idx = 0; idx < currentByteEngine.Length(); ++idx) {
-                            (*currentByteEngine.GetAt(idx)) ^= otherByteEngine[idx].value();
+                            (*currentByteEngine.GetAt(idx)) ^= otherByteInformationEngine[idx].value();
                         }
                     }
                 }

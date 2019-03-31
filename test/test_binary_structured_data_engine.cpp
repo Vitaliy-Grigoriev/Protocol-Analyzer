@@ -44,7 +44,22 @@ int32_t main (int32_t size, char** data)
     ConstantBinaryStructuredDataEngine buffer(binData, byte_pattern, sizeof(byte_pattern) / sizeof(uint16_t));
     const auto bitCount = buffer.Data().BitsInformation().Count();
 
-    ConstantBinaryStructuredDataEngine res1(buffer1 ^ buffer1);
+    timer Timer1(true);
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer.GetNumericalField<uint16_t>(5).value();
+    }
+    std::cout << Timer1.GetCount().NanoSeconds() / 100 << std::endl;
+    Timer1.Reset(true);
+    for (uint16_t idx = 0; idx < 100; ++idx) {
+        buffer.GetFieldByReference(5).value().To16Bit().value();
+    }
+    std::cout << Timer1.PauseAndGetCount().NanoSeconds() / 100 << std::endl;
+
+
+    assert(buffer.GetNumericalField<uint16_t>(4).value() == 0x6874);
+    assert(buffer.GetNumericalField<uint16_t>(5).value() == 0xD55C);
+
+    ConstantBinaryStructuredDataEngine res1 = buffer ^ buffer1;
     assert(res1.Data().BitsInformation().Any() == false && res1.Data().Size() == buffer.Data().Size());
 
     buffer = std::move(res1);
@@ -91,7 +106,7 @@ int32_t main (int32_t size, char** data)
     for (uint16_t idx = 0; idx < 100; ++idx) {
         buffer.GetNonemptyFieldIndex(0, bit_pattern, 9).value();
     }
-    std::cout << Timer.UpdateAndGetCount().MicroSeconds() / 100 << std::endl;
+    std::cout << Timer.GetCount().MicroSeconds() / 100 << std::endl;
     for (uint16_t idx = 0; idx < 100; ++idx) {
         buffer.GetNonemptyFieldIndex(1, bit_pattern, 9).value();
     }

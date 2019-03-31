@@ -72,7 +72,7 @@ namespace analyzer::framework::common::types
      * @param [in] newHead - Byte to which the left direct byte shift is performed.
      * @param [in] fillByte - Value of the fill byte after the left byte shift. Default: 0x00.
      */
-    static void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, std::byte* newHead, const std::byte fillByte = std::byte(0x00)) noexcept
+    static void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, std::byte* newHead, const std::byte fillByte = LowByte) noexcept
     {
         if (head >= end || newHead <= head || newHead >= end) { return; }
         std::byte* next = newHead;
@@ -95,7 +95,7 @@ namespace analyzer::framework::common::types
      * @param [in] newEnd - Byte to which the right direct byte shift is performed.
      * @param [in] fillByte - Value of the fill byte after the right byte shift. Default: 0x00.
      */
-    static void rightDirectBytesShiftBE (std::byte* head, std::byte* end, std::byte* newEnd, const std::byte fillByte = std::byte(0x00)) noexcept
+    static void rightDirectBytesShiftBE (std::byte* head, std::byte* end, std::byte* newEnd, const std::byte fillByte = LowByte) noexcept
     {
         if (head >= end || newEnd < head || (newEnd >= --end)) { return; }
         std::byte* prev = newEnd;
@@ -167,7 +167,7 @@ namespace analyzer::framework::common::types
      * @param [in] shift - Byte offset for left direct byte shift.
      * @param [in] fillByte - Value of the fill byte after the left direct byte shift. Default: 0x00.
      */
-    static inline void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    static inline void leftDirectBytesShiftBE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = LowByte) noexcept
     {
         leftDirectBytesShiftBE(head, end, head + shift, fillByte);
     }
@@ -180,7 +180,7 @@ namespace analyzer::framework::common::types
      * @param [in] shift - Byte offset for left direct byte shift.
      * @param [in] fillByte - Value of the fill byte after the left direct byte shift. Default: 0x00.
      */
-    static inline void leftDirectBytesShiftLE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    static inline void leftDirectBytesShiftLE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = LowByte) noexcept
     {
         rightDirectBytesShiftBE(head, end, end - shift - 1, fillByte);
     }
@@ -193,7 +193,7 @@ namespace analyzer::framework::common::types
      * @param [in] shift - Byte offset for right direct byte shift.
      * @param [in] fillByte - Value of the fill byte after the right direct byte shift. Default: 0x00.
      */
-    static inline void rightDirectBytesShiftBE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    static inline void rightDirectBytesShiftBE (std::byte* head, std::byte* end, const std::size_t shift, const std::byte fillByte = LowByte) noexcept
     {
         rightDirectBytesShiftBE(head, end, end - shift - 1, fillByte);
     }
@@ -206,7 +206,7 @@ namespace analyzer::framework::common::types
      * @param [in] shift - Byte offset for right direct byte shift.
      * @param [in] fillByte - Value of the fill byte after the right direct byte shift. Default: 0x00.
      */
-    static inline void rightDirectBytesShiftLE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = std::byte(0x00)) noexcept
+    static inline void rightDirectBytesShiftLE (std::byte* head, const std::byte* end, const std::size_t shift, const std::byte fillByte = LowByte) noexcept
     {
         leftDirectBytesShiftBE(head, end, head + shift, fillByte);
     }
@@ -216,15 +216,67 @@ namespace analyzer::framework::common::types
 
 
     // Method that returns the correct position of selected byte in stored data in any data endian.
-    std::size_t BinaryDataEngine::ByteStreamEngine::GetBytePosition (const std::size_t index) const noexcept
+    std::size_t BinaryDataEngine::ByteStreamInformationEngine::GetBytePosition (const std::size_t index) const noexcept
     {
-        if (storedData.dataEndianType == DATA_LITTLE_ENDIAN || (storedData.dataModeType & DATA_MODE_INDEPENDENT) != 0U)
+        if (storedData->dataEndianType == DATA_LITTLE_ENDIAN || (storedData->dataModeType & DATA_MODE_INDEPENDENT) != 0U)
         {
             return index;
         }
         // If data endian type is DATA_BIG_ENDIAN.
-        return storedData.length - index - 1;
+        return storedData->length - index - 1;
     }
+
+    // Method that checks the byte under the specified index.
+    bool BinaryDataEngine::ByteStreamInformationEngine::Test (const std::size_t index, const std::byte value) const noexcept
+    {
+        return (index < Length() && storedData->data[GetBytePosition(index)] == value);
+    }
+
+    // Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
+    bool BinaryDataEngine::ByteStreamInformationEngine::All (std::size_t first, std::size_t last, const std::byte value) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
+    bool BinaryDataEngine::ByteStreamInformationEngine::Any (std::size_t first, std::size_t last, const std::byte value) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
+    bool BinaryDataEngine::ByteStreamInformationEngine::None (std::size_t first, std::size_t last, const std::byte value) const noexcept
+    {
+        if (last == npos) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return false; }
+
+        while (first <= last)
+        {
+            if (Test(first++, value) == true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     // Method that performs direct left byte shift by a specified byte offset.
     const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) const noexcept
@@ -305,61 +357,10 @@ namespace analyzer::framework::common::types
         return *this;
     }
 
-    // Method that checks the byte under the specified index.
-    bool BinaryDataEngine::ByteStreamEngine::Test (const std::size_t index, const std::byte value) const noexcept
-    {
-        return (index < Length() && storedData.data[GetBytePosition(index)] == value);
-    }
-
-    // Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
-    bool BinaryDataEngine::ByteStreamEngine::All (const std::byte value, std::size_t first, std::size_t last) const noexcept
-    {
-        if (last == npos) { last = Length() - 1; }
-        if (first > last || last >= Length()) { return false; }
-
-        while (first <= last)
-        {
-            if (Test(first++, value) == false) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
-    bool BinaryDataEngine::ByteStreamEngine::Any (const std::byte value, std::size_t first, std::size_t last) const noexcept
-    {
-        if (last == npos) { last = Length() - 1; }
-        if (first > last || last >= Length()) { return false; }
-
-        while (first <= last)
-        {
-            if (Test(first++, value) == true) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
-    bool BinaryDataEngine::ByteStreamEngine::None (const std::byte value, std::size_t first, std::size_t last) const noexcept
-    {
-        if (last == npos) { last = Length() - 1; }
-        if (first > last || last >= Length()) { return false; }
-
-        while (first <= last)
-        {
-            if (Test(first++, value) == true) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     // Method that returns a pointer to the value of byte under the specified index.
     std::byte* BinaryDataEngine::ByteStreamEngine::GetAt (const std::size_t index) const noexcept
     {
-        return (index < Length() ? &storedData.data[GetBytePosition(index)] : nullptr);
+        return (index < Length() ? &storedData.data[storedData.byteStreamInformation.GetBytePosition(index)] : nullptr);
     }
 
 }  // namespace types.

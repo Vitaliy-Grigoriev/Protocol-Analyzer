@@ -403,6 +403,37 @@ namespace analyzer::framework::common::types
         }
 
         /**
+         * @brief Method that returns field value of structured data under selected index in numeric representation.
+         *
+         * @tparam [in] Type - Typename of output arithmetic data.
+         * @param [in] fieldIndex - Index of field in structured data.
+         * @return Field value under selected index in numeric format in system endian.
+         */
+        template <typename Type>
+        std::optional<Type> GetNumericalField (const uint16_t fieldIndex) const noexcept
+        {
+            static_assert(std::is_arithmetic<Type>::value == true, "Arithmetic type is needed.");
+
+            if (fieldIndex < patternFieldsCount && dataBytePattern[fieldIndex] <= sizeof(Type))
+            {
+                // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
+                const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataBytePattern.get(), dataBytePattern.get() + fieldIndex, 0));
+                Type value = { };
+                // Create wrapper over result value with system endian.
+                BinaryDataEngine valueWrapper(reinterpret_cast<std::byte*>(&value), sizeof(Type));
+                // Create wrapper over field with stored data endian type.
+                BinaryDataType fieldWrapper(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType);
+
+                // Copy field to result value.
+                for (std::size_t idx = 0; idx < dataBytePattern[fieldIndex]; ++idx) {
+                    *valueWrapper.BytesTransform().GetAt(idx) = fieldWrapper.BytesInformation()[idx].value();
+                }
+                return value;
+            }
+            return std::nullopt;
+        }
+
+        /**
          * @brief Method that returns subfield value of structured data under selected index from low to high bit order.
          *
          * @tparam [in] Type - Typename of variable to which subfield will be converted.
@@ -457,13 +488,10 @@ namespace analyzer::framework::common::types
         {
             if (*this == false) { return false; }
 
-            if (fieldIndex < patternFieldsCount && bitIndex < dataBytePattern[fieldIndex] * 8)
-            {
-                const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
-                if (bitOffset != BinaryDataType::npos) {
-                    data->bitStreamTransform.Set(bitOffset, value);
-                    return true;
-                }
+            const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
+            if (bitOffset != BinaryDataType::npos) {
+                data->bitStreamTransform.Set(bitOffset, value);
+                return true;
             }
             return false;
         }
@@ -481,12 +509,9 @@ namespace analyzer::framework::common::types
         template <uint8_t Mode = DATA_MODE_DEPENDENT>
         bool GetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
         {
-            if (fieldIndex < patternFieldsCount && bitIndex < dataBytePattern[fieldIndex] * 8)
-            {
-                const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
-                if (bitOffset != BinaryDataType::npos) {
-                    return data->bitStreamInformation.GetBitValue(bitOffset);
-                }
+            const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
+            if (bitOffset != BinaryDataType::npos) {
+                return data->bitStreamInformation.GetBitValue(bitOffset);
             }
             return false;
         }
@@ -497,10 +522,10 @@ namespace analyzer::framework::common::types
          * @param [in] start - Start index in pattern from which nonempty field will be searched. Default: 0.
          * @param [in] pattern - Array that contains the bit-pattern of data. Default: nullptr.
          * @param [in] size - Size of the bit-pattern array. Default: 0.
-         * @return Index of first binary nonempty field, otherwise - '0xFFFF'.
+         * @return Index of first binary nonempty field or 'size + 1' value if all fields are empty, otherwise - 'std::nullopt'.
          *
          * @note Method does not returns a value if an error occurred.
-         * @note If a specific pattern is not passed into the method then will be used internal byte-pattern.
+         * @note If a specific bit-pattern is not passed into the method then will be used internal byte-pattern.
          *
          * @warning This method is always used DATA_MODE_INDEPENDENT data handling mode.
          */
@@ -625,13 +650,16 @@ namespace analyzer::framework::common::types
          */
         friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator& (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->length != right.data->length) {
                 return BinaryStructuredDataEngineBase<BinaryDataType>();
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
                 *result.data &= *right.data;
             }
             return result;
@@ -650,13 +678,16 @@ namespace analyzer::framework::common::types
          */
         friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator| (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->length != right.data->length) {
                 return BinaryStructuredDataEngineBase<BinaryDataType>();
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
                 *result.data |= *right.data;
             }
             return result;
@@ -675,14 +706,17 @@ namespace analyzer::framework::common::types
          */
         friend inline BinaryStructuredDataEngineBase<BinaryDataType> operator^ (const BinaryStructuredDataEngineBase<BinaryDataType>& left, const BinaryStructuredDataEngineBase<BinaryDataType>& right) noexcept
         {
-            if (left.data->Size() != right.data->Size()) {
+            if (left.data->length != right.data->length) {
                 return BinaryStructuredDataEngineBase<BinaryDataType>();
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
-                *result.data ^= *right.data;
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
+                result.data ^= *right.data;
             }
             return result;
         }
@@ -793,7 +827,10 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
                 *result.data &= right.Data();
             }
             return result;
@@ -819,7 +856,10 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
                 *result.data |= right.Data();
             }
             return result;
@@ -845,7 +885,10 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
+            if (result == true)
+            {
+                result.data->SetDataEndianType(left.GetDataEndian(), false);
+                result.data->SetDataModeType(left.data->DataModeType());
                 *result.data ^= right.Data();
             }
             return result;
@@ -953,8 +996,11 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
-                *result.data &= right.Data();
+            if (result == true)
+            {
+                result.Data().SetDataEndianType(left.GetDataEndian(), false);
+                result.Data().SetDataModeType(left.data->DataModeType());
+                result.Data() &= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
@@ -979,8 +1025,11 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
-                *result.data |= right.Data();
+            if (result == true)
+            {
+                result.Data().SetDataEndianType(left.GetDataEndian(), false);
+                result.Data().SetDataModeType(left.data->DataModeType());
+                result.Data() |= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
@@ -1005,8 +1054,11 @@ namespace analyzer::framework::common::types
 
             BinaryStructuredDataEngine result;
             result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
-            if (result == true) {
-                *result.data ^= right.Data();
+            if (result == true)
+            {
+                result.Data().SetDataEndianType(left.GetDataEndian(), false);
+                result.Data().SetDataModeType(left.data->DataModeType());
+                result.Data() ^= right.Data();
             }
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
@@ -1047,7 +1099,7 @@ namespace analyzer::framework::common::types
         if (*this == false || start >= size) { return std::nullopt; }
 
         std::size_t offset = 0;  // Current bit offset.
-        if (pattern != nullptr)
+        if (pattern != nullptr)  // In this case the external bit-pattern is used.
         {
             const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
             if (bitCount != data->bitStreamInformation.Length()) { return std::nullopt; }
@@ -1072,13 +1124,15 @@ namespace analyzer::framework::common::types
 
             for (uint16_t field = start; field < patternFieldsCount; ++field)
             {
-                if (data->bitStreamInformation.Any(offset, offset + dataBytePattern[field] * 8 - 1) == true) {
-                    return field;
+                for ( ; offset < offset + dataBytePattern[field]; ++offset)
+                {
+                    if (data->data[data->byteStreamInformation.GetBytePosition(offset)] != LowByte) {
+                        return field;
+                    }
                 }
-                offset += dataBytePattern[field] * 8;
             }
         }
-        return std::nullopt;
+        return size + 1;  // All fields are empty.
     }
 
     // Method that returns the internal byte-pattern with length from the specified position.

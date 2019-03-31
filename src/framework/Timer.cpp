@@ -33,11 +33,12 @@ namespace analyzer::framework::diagnostic
         return *this;
     }
 
-    void Timer::Reset (const bool start) noexcept
+    Timer& Timer::Reset (const bool start) noexcept
     {
         count.totalTime = { };
         count.lastStartTime = { };
         if (start == true) { Start(); }
+        return *this;
     }
 
     Timer::TimerCount& Timer::PauseAndGetCount(void) noexcept
@@ -50,7 +51,7 @@ namespace analyzer::framework::diagnostic
         return count;
     }
 
-    const Timer::TimerCount & Timer::UpdateAndGetCount(void) noexcept
+    const Timer::TimerCount& Timer::UpdateAndGetCount(void) noexcept
     {
         if (count.state == true)
         {

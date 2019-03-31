@@ -253,8 +253,10 @@ namespace analyzer::framework::diagnostic
          * @brief Method that resets the timer and starts it if needed.
          *
          * @param [in] start - Flag that indicates status of the timer. Default: false.
+         *
+         * @return Reference of the 'Timer' class.
          */
-        void Reset (bool /*start*/ = false) noexcept;
+        Timer & Reset (bool /*start*/ = false) noexcept;
 
         /**
          * @brief Method that pauses the timer, updates the total time in timer and return a process ticks.

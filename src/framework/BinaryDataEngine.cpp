@@ -26,8 +26,8 @@ namespace analyzer::framework::common::types
 
     // Copy constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine& other) noexcept
-        : bitStreamTransform(this), bitStreamInformation(this),
-          byteStreamTransform(*this)
+        : bitStreamInformation(this), bitStreamTransform(this),
+          byteStreamInformation(this), byteStreamTransform(*this)
     {
         if (other == true)
         {
@@ -44,8 +44,8 @@ namespace analyzer::framework::common::types
 
     // Move assignment constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (BinaryDataEngine&& other) noexcept
-        : bitStreamTransform(this), bitStreamInformation(this),
-          byteStreamTransform(*this)
+        : bitStreamInformation(this), bitStreamTransform(this),
+          byteStreamInformation(this), byteStreamTransform(*this)
     {
         if (other == true)
         {
@@ -60,8 +60,8 @@ namespace analyzer::framework::common::types
     // Constructor that allocates specified amount of bytes.
     BinaryDataEngine::BinaryDataEngine (const std::size_t size, const uint8_t mode, const DATA_ENDIAN_TYPE endian) noexcept
         : dataModeType(mode), dataEndianType(endian),
-          bitStreamTransform(this), bitStreamInformation(this),
-          byteStreamTransform(*this)
+          bitStreamInformation(this), bitStreamTransform(this),
+          byteStreamInformation(this), byteStreamTransform(*this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr)
@@ -78,8 +78,8 @@ namespace analyzer::framework::common::types
     // Constructor that accepts a pointer to allocated binary data.
     BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode, bool destruct) noexcept
         : data(memory), dataModeType(mode), dataEndianType(endian),
-          bitStreamTransform(this), bitStreamInformation(this),
-          byteStreamTransform(*this)
+          bitStreamInformation(this), bitStreamTransform(this),
+          byteStreamInformation(this), byteStreamTransform(*this)
     {
         if (data != nullptr && size != 0)
         {
@@ -94,8 +94,8 @@ namespace analyzer::framework::common::types
     // Constructor that accepts a pointer to const allocated binary data.
     BinaryDataEngine::BinaryDataEngine (const std::byte* const memory, const std::size_t size, DATA_ENDIAN_TYPE endian, const uint8_t mode) noexcept
         : data(const_cast<std::byte*>(memory)), dataModeType(mode), dataEndianType(endian),
-          bitStreamTransform(this), bitStreamInformation(this),
-          byteStreamTransform(*this)
+          bitStreamInformation(this), bitStreamTransform(this),
+          byteStreamInformation(this), byteStreamTransform(*this)
     {
         if (data != nullptr && size != 0)
         {
@@ -213,9 +213,9 @@ namespace analyzer::framework::common::types
             {
                 for (std::size_t idx = 0; idx < length; ++idx)
                 {
-                    data[idx] = (data[idx] & std::byte(0xF0)) >> 4 | (data[idx] & std::byte(0x0F)) << 4;
-                    data[idx] = (data[idx] & std::byte(0xCC)) >> 2 | (data[idx] & std::byte(0x33)) << 2;
-                    data[idx] = (data[idx] & std::byte(0xAA)) >> 1 | (data[idx] & std::byte(0x55)) << 1;
+                    data[idx] = (data[idx] & HighPartByte) >> 4 | (data[idx] & LowPartByte) << 4;
+                    data[idx] = (data[idx] & HighBitsInHalvesByte) >> 2 | (data[idx] & LowBitsInHalvesByte) << 2;
+                    data[idx] = (data[idx] & HighAlternateByte) >> 1 | (data[idx] & LowAlternateByte) << 1;
                 }
             }
             else if ((endian == DATA_LITTLE_ENDIAN && dataEndianType == DATA_REVERSE_BIG_ENDIAN) ||
@@ -223,20 +223,20 @@ namespace analyzer::framework::common::types
             {
                 if (length == 1)
                 {
-                    data[0] = (data[0] & std::byte(0xF0)) >> 4 | (data[0] & std::byte(0x0F)) << 4;
-                    data[0] = (data[0] & std::byte(0xCC)) >> 2 | (data[0] & std::byte(0x33)) << 2;
-                    data[0] = (data[0] & std::byte(0xAA)) >> 1 | (data[0] & std::byte(0x55)) << 1;
+                    data[0] = (data[0] & HighPartByte) >> 4 | (data[0] & LowPartByte) << 4;
+                    data[0] = (data[0] & HighBitsInHalvesByte) >> 2 | (data[0] & LowBitsInHalvesByte) << 2;
+                    data[0] = (data[0] & HighAlternateByte) >> 1 | (data[0] & LowAlternateByte) << 1;
                 }
                 else
                 {
                     for (std::size_t idx = 0; idx < length / 2; ++idx)
                     {
-                        data[idx] = (data[idx] & std::byte(0xF0)) >> 4 | (data[idx] & std::byte(0x0F)) << 4;
-                        data[idx] = (data[idx] & std::byte(0xCC)) >> 2 | (data[idx] & std::byte(0x33)) << 2;
-                        data[idx] = (data[idx] & std::byte(0xAA)) >> 1 | (data[idx] & std::byte(0x55)) << 1;
-                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xF0)) >> 4 | (data[length - idx - 1] & std::byte(0x0F)) << 4;
-                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xCC)) >> 2 | (data[length - idx - 1] & std::byte(0x33)) << 2;
-                        data[length - idx - 1] = (data[length - idx - 1] & std::byte(0xAA)) >> 1 | (data[length - idx - 1] & std::byte(0x55)) << 1;
+                        data[idx] = (data[idx] & HighPartByte) >> 4 | (data[idx] & LowPartByte) << 4;
+                        data[idx] = (data[idx] & HighBitsInHalvesByte) >> 2 | (data[idx] & LowBitsInHalvesByte) << 2;
+                        data[idx] = (data[idx] & HighAlternateByte) >> 1 | (data[idx] & LowAlternateByte) << 1;
+                        data[length - idx - 1] = (data[length - idx - 1] & HighPartByte) >> 4 | (data[length - idx - 1] & LowPartByte) << 4;
+                        data[length - idx - 1] = (data[length - idx - 1] & HighBitsInHalvesByte) >> 2 | (data[length - idx - 1] & LowBitsInHalvesByte) << 2;
+                        data[length - idx - 1] = (data[length - idx - 1] & HighAlternateByte) >> 1 | (data[length - idx - 1] & LowAlternateByte) << 1;
                         data[idx] ^= data[length - idx - 1];
                         data[length - idx - 1] ^= data[idx];
                         data[idx] ^= data[length - idx - 1];

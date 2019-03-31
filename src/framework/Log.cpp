@@ -447,7 +447,7 @@ namespace analyzer::framework::log
                     } else {
                         hex_dump.replace(line + hex_data + 18 + i, 1, 1, '.');
                     }
-                };
+                }
                 pSource++;
                 size--;
             }
