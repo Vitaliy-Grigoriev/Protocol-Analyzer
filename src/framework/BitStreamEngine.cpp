@@ -458,7 +458,7 @@ namespace analyzer::framework::common::types
     {
         if (*storedData == true)
         {
-            const auto& currentByteEngine = storedData->BytesTransform();
+            auto& currentByteEngine = storedData->BytesTransform();
             const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.
@@ -517,7 +517,7 @@ namespace analyzer::framework::common::types
     {
         if (*storedData == true)
         {
-            const auto& currentByteEngine = storedData->BytesTransform();
+            auto& currentByteEngine = storedData->BytesTransform();
             const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.
@@ -573,7 +573,7 @@ namespace analyzer::framework::common::types
     {
         if (*storedData == true)
         {
-            const auto& currentByteEngine = storedData->BytesTransform();
+            auto& currentByteEngine = storedData->BytesTransform();
             const auto& otherByteInformationEngine = other.storedData->BytesInformation();
 
             // If left operand (current) has data with longer or equal length.

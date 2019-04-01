@@ -27,7 +27,7 @@ namespace analyzer::framework::common::types
     // Copy constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (const BinaryDataEngine& other) noexcept
         : bitStreamInformation(this), bitStreamTransform(this),
-          byteStreamInformation(this), byteStreamTransform(*this)
+          byteStreamInformation(this), byteStreamTransform(this)
     {
         if (other == true)
         {
@@ -45,7 +45,7 @@ namespace analyzer::framework::common::types
     // Move assignment constructor of BinaryDataEngine class.
     BinaryDataEngine::BinaryDataEngine (BinaryDataEngine&& other) noexcept
         : bitStreamInformation(this), bitStreamTransform(this),
-          byteStreamInformation(this), byteStreamTransform(*this)
+          byteStreamInformation(this), byteStreamTransform(this)
     {
         if (other == true)
         {
@@ -61,7 +61,7 @@ namespace analyzer::framework::common::types
     BinaryDataEngine::BinaryDataEngine (const std::size_t size, const uint8_t mode, const DATA_ENDIAN_TYPE endian) noexcept
         : dataModeType(mode), dataEndianType(endian),
           bitStreamInformation(this), bitStreamTransform(this),
-          byteStreamInformation(this), byteStreamTransform(*this)
+          byteStreamInformation(this), byteStreamTransform(this)
     {
         data = system::allocMemoryForArray<std::byte>(size);
         if (data != nullptr)
@@ -79,7 +79,7 @@ namespace analyzer::framework::common::types
     BinaryDataEngine::BinaryDataEngine (std::byte* const memory, const std::size_t size, const DATA_ENDIAN_TYPE endian, const uint8_t mode, bool destruct) noexcept
         : data(memory), dataModeType(mode), dataEndianType(endian),
           bitStreamInformation(this), bitStreamTransform(this),
-          byteStreamInformation(this), byteStreamTransform(*this)
+          byteStreamInformation(this), byteStreamTransform(this)
     {
         if (data != nullptr && size != 0)
         {
@@ -95,7 +95,7 @@ namespace analyzer::framework::common::types
     BinaryDataEngine::BinaryDataEngine (const std::byte* const memory, const std::size_t size, DATA_ENDIAN_TYPE endian, const uint8_t mode) noexcept
         : data(const_cast<std::byte*>(memory)), dataModeType(mode), dataEndianType(endian),
           bitStreamInformation(this), bitStreamTransform(this),
-          byteStreamInformation(this), byteStreamTransform(*this)
+          byteStreamInformation(this), byteStreamTransform(this)
     {
         if (data != nullptr && size != 0)
         {

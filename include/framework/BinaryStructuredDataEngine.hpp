@@ -1085,7 +1085,7 @@ namespace analyzer::framework::common::types
         {
             // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
             const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataBytePattern.get(), dataBytePattern.get() + fieldIndex, 0));
-            BinaryDataType result(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType);
+            BinaryDataType result(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType, data->dataModeType);
             return result;
         }
         return std::nullopt;

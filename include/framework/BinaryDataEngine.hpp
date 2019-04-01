@@ -175,7 +175,7 @@ namespace analyzer::framework::common::types
          * @struct ByteStreamEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
          * @brief Forward declaration of ByteStreamEngine structure.
          */
-        class ByteStreamEngine;
+        class ByteStreamTransformEngine;
 
         /**
          * @struct ByteStreamInformationEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
@@ -497,7 +497,8 @@ namespace analyzer::framework::common::types
             friend inline BinaryDataEngine operator| (const BitStreamInformationEngine& left, const BitStreamInformationEngine& right) noexcept
             {
                 BinaryDataEngine result(left.DataEngine());
-                if (result == true) {
+                if (result == true)
+                {
                     result.BitsTransform() |= right;
                 }
                 return result;
@@ -1147,13 +1148,13 @@ namespace analyzer::framework::common::types
 
 
         /**
-         * @class ByteStreamEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
+         * @class ByteStreamTransformEngine   BinaryDataEngine.hpp   "include/framework/BinaryDataEngine.hpp"
          *
          * @brief Class that operates on a sequence of bytes and offers an interface for working with them.
          *
          * @attention This class MUST BE initialized in all constructors of owner class.
          */
-        class ByteStreamEngine
+        class ByteStreamTransformEngine
         {
             friend class IntegerValue;
             friend class BinaryDataEngine;
@@ -1166,71 +1167,80 @@ namespace analyzer::framework::common::types
 
         private:
             /**
-             * @brief Lvalue reference of the BinaryDataEngine owner class.
+             * @brief Constant pointer to the BinaryDataEngine owner class.
              */
-            BinaryDataEngine & storedData;
+            BinaryDataEngine * const storedData;
 
         public:
-            ByteStreamEngine(void) = delete;
-            ByteStreamEngine (ByteStreamEngine &&) = delete;
-            ByteStreamEngine (const ByteStreamEngine &) = delete;
-            ByteStreamEngine & operator= (ByteStreamEngine &&) = delete;
-            ByteStreamEngine & operator= (const ByteStreamEngine &) = delete;
+            ByteStreamTransformEngine(void) = delete;
+            ByteStreamTransformEngine (ByteStreamTransformEngine &&) = delete;
+            ByteStreamTransformEngine (const ByteStreamTransformEngine &) = delete;
+            ByteStreamTransformEngine & operator= (ByteStreamTransformEngine &&) = delete;
+            ByteStreamTransformEngine & operator= (const ByteStreamTransformEngine &) = delete;
 
             /**
-             * @brief Constructor of nested ByteStreamEngine class.
+             * @brief Constructor of nested ByteStreamTransformEngine class.
              *
              * @param [in] owner - Lvalue reference of BinaryDataEngine owner class.
              */
-            explicit ByteStreamEngine (BinaryDataEngine& owner) noexcept
+            explicit ByteStreamTransformEngine (BinaryDataEngine * const owner) noexcept
                 : storedData(owner)
             { }
 
             /**
-             * @brief Default destructor of nested ByteStreamEngine class.
+             * @brief Default destructor of nested ByteStreamTransformEngine class.
              */
-            ~ByteStreamEngine(void) noexcept = default;
+            ~ByteStreamTransformEngine(void) noexcept = default;
 
             /**
              * @brief Method that returns the length of stored data in bytes.
              *
              * @return Length of byte sequence of stored data.
              */
-            inline std::size_t Length(void) const noexcept { return storedData.length; }
+            inline std::size_t Length(void) const noexcept { return storedData->length; }
+
+            /**
+             * @brief Method that sets the byte under the specified index to new value.
+             *
+             * @param [in] index - Index of byte in byte sequence.
+             * @param [in] fillByte - New value of selected byte. Default: 0xFF.
+             * @return Lvalue reference of modified ByteStreamTransformEngine class.
+             */
+            ByteStreamTransformEngine & Set (std::size_t /*index*/, std::byte /*fillByte*/ = HighByte) noexcept;
 
             /**
              * @brief Method that performs direct left byte shift by a specified byte offset.
              *
              * @param [in] shift - Byte offset for direct left byte shift.
              * @param [in] fillByte - Value of the fill byte after the left shift. Default: 0x00.
-             * @return Const lvalue reference of ByteStreamEngine class.
+             * @return Lvalue reference of ByteStreamTransformEngine class.
              */
-            const ByteStreamEngine & ShiftLeft (std::size_t /*shift*/, std::byte /*fillByte*/ = LowByte) const noexcept;
+            ByteStreamTransformEngine & ShiftLeft (std::size_t /*shift*/, std::byte /*fillByte*/ = LowByte) noexcept;
 
             /**
              * @brief Method that performs direct right byte shift by a specified byte offset.
              *
              * @param [in] shift - Byte offset for direct right byte shift.
              * @param [in] fillByte - Value of the fill byte after the right shift. Default: 0x00.
-             * @return Constant lvalue reference of ByteStreamEngine class.
+             * @return Lvalue reference of ByteStreamTransformEngine class.
              */
-            const ByteStreamEngine & ShiftRight (std::size_t /*shift*/, std::byte /*fillByte*/ = LowByte) const noexcept;
+            ByteStreamTransformEngine & ShiftRight (std::size_t /*shift*/, std::byte /*fillByte*/ = LowByte) noexcept;
 
             /**
              * @brief Method that performs round left byte shift by a specified byte offset.
              *
              * @param [in] shift - Byte offset for round left byte shift.
-             * @return Constant lvalue reference of ByteStreamEngine class.
+             * @return Lvalue reference of ByteStreamTransformEngine class.
              */
-            const ByteStreamEngine & RoundShiftLeft (std::size_t /*shift*/) const noexcept;
+            ByteStreamTransformEngine & RoundShiftLeft (std::size_t /*shift*/) noexcept;
 
             /**
              * @brief Method that performs round right byte shift by a specified byte offset.
              *
              * @param [in] shift - Byte offset for round right byte shift.
-             * @return Constant lvalue reference of ByteStreamEngine class.
+             * @return Lvalue reference of ByteStreamTransformEngine class.
              */
-            const ByteStreamEngine & RoundShiftRight (std::size_t /*shift*/) const noexcept;
+            ByteStreamTransformEngine & RoundShiftRight (std::size_t /*shift*/) noexcept;
 
             /**
              * @brief Operator that returns the value of byte under the specified index.
@@ -1240,10 +1250,10 @@ namespace analyzer::framework::common::types
              *
              * @note This method considers the endian type in which binary stored data are presented.
              */
-            inline std::optional<std::byte*> operator[] (const std::size_t index) const noexcept
+            inline std::optional<std::byte*> operator[] (const std::size_t index) noexcept
             {
                 if (index >= Length()) { return std::nullopt; }
-                return &storedData.data[storedData.byteStreamInformation.GetBytePosition(index)];
+                return &storedData->data[storedData->byteStreamInformation.GetBytePosition(index)];
             }
 
             /**
@@ -1255,7 +1265,7 @@ namespace analyzer::framework::common::types
              * @note This method considers the endian type in which binary stored data are presented.
              */
             [[nodiscard]]
-            std::byte * GetAt (std::size_t /*index*/) const noexcept;
+            std::byte * GetAt (std::size_t /*index*/) noexcept;
         };
 
     private:
@@ -1290,7 +1300,7 @@ namespace analyzer::framework::common::types
         /**
          * @brief Transformation engine for working with sequence of bytes.
          */
-        ByteStreamEngine byteStreamTransform;
+        ByteStreamTransformEngine byteStreamTransform;
 
 
     public:
@@ -1303,7 +1313,7 @@ namespace analyzer::framework::common::types
         explicit BinaryDataEngine (const uint8_t mode = DATA_MODE_DEFAULT, const DATA_ENDIAN_TYPE endian = DATA_SYSTEM_ENDIAN) noexcept
             : dataModeType(mode), dataEndianType(endian),
               bitStreamInformation(this), bitStreamTransform(this),
-              byteStreamInformation(this), byteStreamTransform(*this)
+              byteStreamInformation(this), byteStreamTransform(this)
         {
             if (dataEndianType == DATA_SYSTEM_ENDIAN) {
                 dataEndianType = system_endian;
@@ -1494,9 +1504,9 @@ namespace analyzer::framework::common::types
         /**
          * @brief Method that returns lvalue reference of the nested ByteStreamEngine class for working with bytes.
          *
-         * @return Lvalue reference of the ByteStreamEngine class.
+         * @return Lvalue reference of the ByteStreamTransformEngine class.
          */
-        inline ByteStreamEngine& BytesTransform(void) noexcept { return byteStreamTransform; }
+        inline ByteStreamTransformEngine& BytesTransform(void) noexcept { return byteStreamTransform; }
 
         /**
          * @brief Method that returns lvalue reference of the nested ByteStreamInformationEngine class for working with bytes.

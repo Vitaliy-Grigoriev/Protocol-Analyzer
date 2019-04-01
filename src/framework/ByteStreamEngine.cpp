@@ -278,89 +278,99 @@ namespace analyzer::framework::common::types
     }
 
 
-    // Method that performs direct left byte shift by a specified byte offset.
-    const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) const noexcept
+    // Method that sets the byte under the specified index to new value.
+    BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::Set (const std::size_t index, const std::byte fillByte) noexcept
     {
-        if (storedData == true && shift != 0)
+        if (*storedData == true)
         {
-            if (shift >= storedData.length) {
-                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
+            storedData->data[storedData->byteStreamInformation.GetBytePosition(index)] = fillByte;
+        }
+        return *this;
+    }
+
+    // Method that performs direct left byte shift by a specified byte offset.
+    BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::ShiftLeft (const std::size_t shift, const std::byte fillByte) noexcept
+    {
+        if (*storedData == true && shift != 0)
+        {
+            if (shift >= storedData->length) {
+                memset(storedData->data.get(), static_cast<int32_t>(fillByte), storedData->length);
                 return *this;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN)
+            if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData->dataEndianType == DATA_LITTLE_ENDIAN)
             {
-                leftDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+                leftDirectBytesShiftLE(storedData->data.get(), storedData->data.get() + storedData->length, shift, fillByte);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or DATA_REVERSE_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
-                leftDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+                leftDirectBytesShiftBE(storedData->data.get(), storedData->data.get() + storedData->length, shift, fillByte);
             }
         }
         return *this;
     }
 
     // Method that performs direct right byte shift by a specified byte offset.
-    const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::ShiftRight (const std::size_t shift, const std::byte fillByte) const noexcept
+    BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::ShiftRight (const std::size_t shift, const std::byte fillByte) noexcept
     {
-        if (storedData == true && shift != 0)
+        if (*storedData == true && shift != 0)
         {
-            if (shift >= storedData.length) {
-                memset(storedData.data.get(), static_cast<int32_t>(fillByte), storedData.length);
+            if (shift >= storedData->length) {
+                memset(storedData->data.get(), static_cast<int32_t>(fillByte), storedData->length);
                 return *this;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
-                rightDirectBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+            if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
+                rightDirectBytesShiftLE(storedData->data.get(), storedData->data.get() + storedData->length, shift, fillByte);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
-                rightDirectBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift, fillByte);
+                rightDirectBytesShiftBE(storedData->data.get(), storedData->data.get() + storedData->length, shift, fillByte);
             }
         }
         return *this;
     }
 
     // Method that performs round left bit shift by a specified byte offset.
-    const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::RoundShiftLeft (std::size_t shift) const noexcept
+    BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::RoundShiftLeft (std::size_t shift) noexcept
     {
-        if (storedData == true && shift != 0)
+        if (*storedData == true && shift != 0)
         {
-            if (shift >= storedData.length) {
-                shift %= storedData.length;
+            if (shift >= storedData->length) {
+                shift %= storedData->length;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
-                leftRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
+                leftRoundBytesShiftLE(storedData->data.get(), storedData->data.get() + storedData->length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
-                leftRoundBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+                leftRoundBytesShiftBE(storedData->data.get(), storedData->data.get() + storedData->length, shift);
             }
         }
         return *this;
     }
 
     // Method that performs round right bit shift by a specified byte offset.
-    const BinaryDataEngine::ByteStreamEngine& BinaryDataEngine::ByteStreamEngine::RoundShiftRight (std::size_t shift) const noexcept
+    BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::RoundShiftRight (std::size_t shift) noexcept
     {
-        if (storedData == true && shift != 0)
+        if (*storedData == true && shift != 0)
         {
-            if (shift >= storedData.length) {
-                shift %= storedData.length;
+            if (shift >= storedData->length) {
+                shift %= storedData->length;
             }
 
-            if ((storedData.dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData.dataEndianType == DATA_LITTLE_ENDIAN) {
-                rightRoundBytesShiftLE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+            if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U && storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
+                rightRoundBytesShiftLE(storedData->data.get(), storedData->data.get() + storedData->length, shift);
             }
             else {  // If data endian type is DATA_BIG_ENDIAN or if data handling mode type is DATA_MODE_INDEPENDENT.
-                rightRoundBytesShiftBE(storedData.data.get(), storedData.data.get() + storedData.length, shift);
+                rightRoundBytesShiftBE(storedData->data.get(), storedData->data.get() + storedData->length, shift);
             }
         }
         return *this;
     }
 
     // Method that returns a pointer to the value of byte under the specified index.
-    std::byte* BinaryDataEngine::ByteStreamEngine::GetAt (const std::size_t index) const noexcept
+    std::byte* BinaryDataEngine::ByteStreamTransformEngine::GetAt (const std::size_t index) noexcept
     {
-        return (index < Length() ? &storedData.data[storedData.byteStreamInformation.GetBytePosition(index)] : nullptr);
+        return (index < Length() ? &storedData->data[storedData->byteStreamInformation.GetBytePosition(index)] : nullptr);
     }
 
 }  // namespace types.
