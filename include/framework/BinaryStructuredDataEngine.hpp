@@ -1151,6 +1151,7 @@ namespace analyzer::framework::common::types
             }
             return patternFieldsCount + 1;  // All fields are empty.
         }
+        return std::nullopt;
     }
 
     // Method that returns the internal byte-pattern with length from the specified position.
