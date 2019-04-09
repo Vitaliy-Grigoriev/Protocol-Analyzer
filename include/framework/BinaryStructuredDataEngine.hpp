@@ -57,6 +57,8 @@ namespace analyzer::framework::common::types
         bool isDataAllocated = false;
         /**
          * @brief Previous settings of data handling mode.
+         *
+         * @note This mode settings recover after destruction BinaryStructuredDataEngine class object.
          */
         uint8_t previousDataHandlingMode = DATA_MODE_DEFAULT;
         /**
@@ -122,7 +124,7 @@ namespace analyzer::framework::common::types
                     }
                 }
 
-                if (storedStructuredData->isDataAllocated == false)
+                if (storedStructuredData->isDataAllocated == false || bytes != storedStructuredData->data->length)
                 {
                     storedStructuredData->data = system::allocMemoryForObject<BinaryDataType>(bytes);
                     if (*storedStructuredData->data == false) {
@@ -152,7 +154,7 @@ namespace analyzer::framework::common::types
              *
              * @note Input type MUST be a POD type.
              */
-            template <DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, uint8_t Mode = DATA_MODE_DEFAULT, typename Type>
+            template <DATA_ENDIAN_TYPE Endian = DATA_NO_ENDIAN, uint8_t Mode = DATA_MODE_DEFAULT, typename Type>
             bool AssignData (const Type* const memory, const uint16_t count, const bool validation = true) noexcept
             {
                 static_assert(is_pod_type<Type>::value == true, "It is not possible to use not POD type for this method.");
@@ -167,11 +169,17 @@ namespace analyzer::framework::common::types
                     }
                 }
 
-                storedStructuredData->data = system::allocMemoryForObject<BinaryDataType>(size, Mode, Endian);
-                if (*storedStructuredData->data == false) {
-                    return false;
+                if (storedStructuredData->isDataAllocated == false || size != storedStructuredData->data->length)
+                {
+                    storedStructuredData->data = system::allocMemoryForObject<BinaryDataType>(size, Mode, Endian);
+                    if (*storedStructuredData->data == false) {
+                        return false;
+                    }
+                    storedStructuredData->isDataAllocated = true;
                 }
-                storedStructuredData->isDataAllocated = true;
+                else if (Endian != DATA_NO_ENDIAN) {
+                    storedStructuredData->data->SetDataEndianType(Endian, false);
+                }
 
                 if (storedStructuredData->data->AssignData(memory, count) == false) {
                     return false;
@@ -196,7 +204,7 @@ namespace analyzer::framework::common::types
              *
              * @note Input type MUST be a POD type.
              */
-            template <DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, uint8_t Mode = DATA_MODE_DEFAULT, typename Type>
+            template <DATA_ENDIAN_TYPE Endian = DATA_NO_ENDIAN, uint8_t Mode = DATA_MODE_DEFAULT, typename Type>
             bool AssignStructuredData (const Type* const memory, const uint16_t count, const uint16_t* const pattern, const uint16_t fieldsCount, const bool validation = true) noexcept
             {
                 if (CreateStructureTemplate(pattern, fieldsCount, validation) == false) { return false; }
@@ -243,6 +251,10 @@ namespace analyzer::framework::common::types
             return BinaryDataType::npos;
         }
 
+    protected:
+        /**
+         * @brief Variable that stores StructuredDataConstructor class object.
+         */
         StructuredDataConstructor constructor;
 
     public:
@@ -395,7 +407,7 @@ namespace analyzer::framework::common::types
                 if (result.AssignData(data->Data() + byteIndex, data->Data() + byteIndex + dataBytePattern[fieldIndex]) == true)
                 {
                     // Change data endian type to specified output endian format.
-                    result.SetDataEndianType((Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian);
+                    result.SetDataEndianType((Endian == DATA_SYSTEM_ENDIAN) ? BinaryDataEngine::system_endian : Endian, true);
                     return result;
                 }
             }
@@ -440,6 +452,7 @@ namespace analyzer::framework::common::types
          * @tparam [in] Mode - Type of output data handling mode (dependent or not). Default: DATA_MODE_DEPENDENT.
          * @param [in] fieldIndex - Index of field in structured data.
          * @param [in] bitIndex - Bit index in selected field of structured data.
+         * @param [in] length - Length of bit sequence.
          * @return Subfield value under selected index in selected format from low to high bit order.
          */
         template <typename Type, uint8_t Mode = DATA_MODE_DEPENDENT>
@@ -449,7 +462,7 @@ namespace analyzer::framework::common::types
                           std::is_default_constructible<Type>::value == true,
                           "It is not possible for this method to use type without binary operators and default constructor.");
 
-            if (fieldIndex < patternFieldsCount && bitIndex + length - 1 < dataBytePattern[fieldIndex] * 8 && length <= sizeof(Type) * 8)
+            if (bitIndex + length - 1 < dataBytePattern[fieldIndex] * 8 && length <= sizeof(Type) * 8)
             {
                 Type result = { };
                 for (uint16_t idx = 0; idx < length; ++idx)
@@ -458,6 +471,7 @@ namespace analyzer::framework::common::types
                     if (bitOffset != BinaryDataType::npos) {
                         result = static_cast<Type>((result << 1) | (data->bitStreamInformation.GetBitValue(bitOffset) == true ? 0x01 : 0x00));
                     }
+                    else { return std::nullopt; }
                 }
                 return result;
             }
@@ -655,13 +669,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 *result.data &= *right.data;
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -683,13 +698,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 *result.data |= *right.data;
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -711,13 +727,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngineBase<BinaryDataType> result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 result.data ^= *right.data;
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -734,11 +751,8 @@ namespace analyzer::framework::common::types
                 [[maybe_unused]] auto unused1 = data.release();
                 [[maybe_unused]] auto unused2 = dataBytePattern.release();
             }
-            else if (data != nullptr)  // If data are allocated in Constructor nested class.
-            {
-                data.reset(nullptr);
-                dataBytePattern.reset(nullptr);
-            }
+            data.reset(nullptr);
+            dataBytePattern.reset(nullptr);
         }
     };
 
@@ -826,13 +840,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 *result.data &= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -855,13 +870,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 *result.data |= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -884,13 +900,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.data->SetDataEndianType(left.GetDataEndian(), false);
                 result.data->SetDataModeType(left.data->DataModeType());
                 *result.data ^= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return result;
         }
 
@@ -995,13 +1012,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.Data().SetDataEndianType(left.GetDataEndian(), false);
                 result.Data().SetDataModeType(left.data->DataModeType());
                 result.Data() &= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
 
@@ -1024,13 +1042,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.Data().SetDataEndianType(left.GetDataEndian(), false);
                 result.Data().SetDataModeType(left.data->DataModeType());
                 result.Data() |= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
 
@@ -1053,13 +1072,14 @@ namespace analyzer::framework::common::types
             }
 
             BinaryStructuredDataEngine result;
-            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount);
+            result.Constructor().AssignStructuredData(left.data->Data(), uint16_t(left.data->Size()), left.dataBytePattern.get(), left.patternFieldsCount, false);
             if (result == true)
             {
                 result.Data().SetDataEndianType(left.GetDataEndian(), false);
                 result.Data().SetDataModeType(left.data->DataModeType());
                 result.Data() ^= right.Data();
             }
+            result.Data().SetDataModeType(DATA_MODE_ALLOCATION);
             return ConstantBinaryStructuredDataEngine(std::forward<BinaryStructuredDataEngine>(result));
         }
 
@@ -1085,7 +1105,7 @@ namespace analyzer::framework::common::types
         {
             // Get index of first byte of selected field (Not consider the type of endian in which data are presented).
             const std::size_t byteIndex = static_cast<std::size_t>(std::accumulate(dataBytePattern.get(), dataBytePattern.get() + fieldIndex, 0));
-            BinaryDataType result(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType, data->dataModeType);
+            BinaryDataType result(data->GetAt(byteIndex), dataBytePattern[fieldIndex], data->dataEndianType, DATA_MODE_DEFAULT);
             return result;
         }
         return std::nullopt;
@@ -1101,9 +1121,6 @@ namespace analyzer::framework::common::types
         std::size_t offset = 0;  // Current bit offset.
         if (pattern != nullptr)  // In this case the external bit-pattern is used.
         {
-            const std::size_t bitCount = static_cast<std::size_t>(std::accumulate(pattern, pattern + size, 0));
-            if (bitCount != data->bitStreamInformation.Length()) { return std::nullopt; }
-
             if (start != 0) {
                 offset = static_cast<std::size_t>(std::accumulate(pattern, pattern + start, 0));
             }

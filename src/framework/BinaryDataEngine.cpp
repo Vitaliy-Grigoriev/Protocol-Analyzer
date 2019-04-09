@@ -302,7 +302,7 @@ namespace analyzer::framework::common::types
     }
 
     // Operator that returns a const reference to an element by selected index.
-    inline std::optional<std::byte> BinaryDataEngine::operator[] (const std::size_t index) const noexcept
+    std::optional<std::byte> BinaryDataEngine::operator[] (const std::size_t index) const noexcept
     {
         if (index >= length) { return std::nullopt; }
         return data[index];
@@ -311,21 +311,69 @@ namespace analyzer::framework::common::types
     // Bitwise assignment AND operator.
     BinaryDataEngine& BinaryDataEngine::operator&= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform &= other.BitsInformation();
+        if (dataEndianType == other.dataEndianType && length == other.length)
+        {
+            for (std::size_t idx = 0; idx < length; )
+            {
+                if (idx + sizeof(uint32_t) < length)
+                {
+                    (*reinterpret_cast<uint32_t*>(&data[idx])) ^= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
+                    idx += sizeof(uint32_t);
+                }
+                else
+                {
+                    data[idx] &= other[idx].value();
+                    ++idx;
+                }
+            }
+        }
+        else { bitStreamTransform &= other.BitsInformation(); }
         return *this;
     }
 
     // Bitwise assignment OR operator.
     BinaryDataEngine& BinaryDataEngine::operator|= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform |= other.BitsInformation();
+        if (dataEndianType == other.dataEndianType && length == other.length)
+        {
+            for (std::size_t idx = 0; idx < length; )
+            {
+                if (idx + sizeof(uint32_t) < length)
+                {
+                    (*reinterpret_cast<uint32_t*>(&data[idx])) |= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
+                    idx += sizeof(uint32_t);
+                }
+                else
+                {
+                    data[idx] |= other[idx].value();
+                    ++idx;
+                }
+            }
+        }
+        else { bitStreamTransform |= other.BitsInformation(); }
         return *this;
     }
 
     // Bitwise assignment XOR operator.
     BinaryDataEngine& BinaryDataEngine::operator^= (const BinaryDataEngine& other) noexcept
     {
-        bitStreamTransform ^= other.BitsInformation();
+        if (dataEndianType == other.dataEndianType && length == other.length)
+        {
+            for (std::size_t idx = 0; idx < length; )
+            {
+                if (idx + sizeof(uint32_t) < length)
+                {
+                    (*reinterpret_cast<uint32_t*>(&data[idx])) ^= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
+                    idx += sizeof(uint32_t);
+                }
+                else
+                {
+                    data[idx] ^= other[idx].value();
+                    ++idx;
+                }
+            }
+        }
+        else { bitStreamTransform ^= other.BitsInformation(); }
         return *this;
     }
 

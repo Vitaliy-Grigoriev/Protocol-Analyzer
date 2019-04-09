@@ -17,7 +17,7 @@
 
 // In Common library MUST NOT use any another functional framework libraries because it is a core library.
 
-//////////////// DATA ENDIAN TYPE ////////////////
+// ////////////// DATA ENDIAN TYPE ////////////////
 //
 //  Little Endian Model.
 //  |7______0|15______8|23______16|31______24|
@@ -40,7 +40,7 @@
 //  Middle Endian Little Model. (Honeywell 316)
 //  |15______8|7______0|31______24|23______16|
 //
-//////////////////////////////////////////////////
+// ////////////////////////////////////////////////
 
 /**
  * @defgroup BYTE_CONSTANTS   Byte defines.
@@ -77,7 +77,8 @@ namespace analyzer::framework::common::types
         DATA_BIG_ENDIAN = 0x01,     // First byte of the multibyte data-type is stored first.
         DATA_LITTLE_ENDIAN = 0x02,  // Last byte of the multibyte data-type is stored first.
         DATA_REVERSE_BIG_ENDIAN = 0x03,  // First byte of the multibyte data-type is stored first in reverse bit sequence.
-        DATA_SYSTEM_ENDIAN = 0xFF   // This endian type determine the system endian type and using only in constructors.
+        DATA_SYSTEM_ENDIAN = 0xFE,  // This endian type determine the system endian type and using only in constructors.
+        DATA_NO_ENDIAN = 0xFF       // This endian type means that endian value does not set.
     };
 
     /**
@@ -206,6 +207,16 @@ namespace analyzer::framework::common::types
              * @brief Constant pointer to the constant BinaryDataEngine owner class.
              */
             const BinaryDataEngine * const storedData = nullptr;
+
+            /**
+             * @brief Method that returns the correct position of byte which store the selected bit under specified index in stored binary data in any data endian.
+             *
+             * @param [in] index - Index of bit in stored binary data.
+             * @return Index of byte of binary stored data.
+             *
+             * @attention Before using this method, MUST be checked that the index does not out-of-range.
+             */
+            std::size_t GetByteIndex (std::size_t /*index*/) const noexcept;
 
             /**
              * @brief Method that returns the correct position of selected bit in stored binary data in any data endian.
@@ -1144,6 +1155,17 @@ namespace analyzer::framework::common::types
                 if (index >= Length()) { return std::nullopt; }
                 return storedData->data[GetBytePosition(index)];
             }
+
+            /**
+             * @brief Method that returns a constant pointer to the value of byte under the specified endian-oriented byte index.
+             *
+             * @param [in] index - Index of byte in stored binary data.
+             * @return Return a constant pointer to the value of byte under the specified index or nullptr if index is out-of-range.
+             *
+             * @note This method considers the endian type in which binary stored data are presented.
+             */
+            [[nodiscard]]
+            const std::byte * GetAt (std::size_t /*index*/) const noexcept;
         };
 
 
@@ -1437,7 +1459,9 @@ namespace analyzer::framework::common::types
                 SetDataModeType(DATA_MODE_ALLOCATION);
                 length = bytes;
             }
-            else { memcpy(data.get(), memory, length); }
+            else {
+                memcpy(data.get(), memory, length);
+            }
             return true;
         }
 
@@ -1736,8 +1760,26 @@ namespace analyzer::framework::common::types
     inline BinaryDataEngine operator& (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
     {
         BinaryDataEngine result(left);
-        if (result == true) {
-            result.BitsTransform() &= right.BitsInformation();
+        if (result == true)
+        {
+            if (result.DataEndianType() == right.DataEndianType() && result.Size() == right.Size())
+            {
+                const std::size_t length = result.Size();
+                for (std::size_t idx = 0; idx < length; )
+                {
+                    if (idx + sizeof(uint32_t) < length)
+                    {
+                        (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) &= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
+                        idx += sizeof(uint32_t);
+                    }
+                    else
+                    {
+                        (*result.GetAt(idx)) &= right[idx].value();
+                        ++idx;
+                    }
+                }
+            }
+            else { result.BitsTransform() &= right.BitsInformation(); }
         }
         return result;
     }
@@ -1758,8 +1800,26 @@ namespace analyzer::framework::common::types
     inline BinaryDataEngine operator| (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
     {
         BinaryDataEngine result(left);
-        if (result == true) {
-            result.BitsTransform() |= right.BitsInformation();
+        if (result == true)
+        {
+            if (result.DataEndianType() == right.DataEndianType() && result.Size() == right.Size())
+            {
+                const std::size_t length = result.Size();
+                for (std::size_t idx = 0; idx < length; )
+                {
+                    if (idx + sizeof(uint32_t) < length)
+                    {
+                        (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) |= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
+                        idx += sizeof(uint32_t);
+                    }
+                    else
+                    {
+                        (*result.GetAt(idx)) |= right[idx].value();
+                        ++idx;
+                    }
+                }
+            }
+            else { result.BitsTransform() |= right.BitsInformation(); }
         }
         return result;
     }
@@ -1780,8 +1840,26 @@ namespace analyzer::framework::common::types
     inline BinaryDataEngine operator^ (const BinaryDataEngine& left, const BinaryDataEngine& right) noexcept
     {
         BinaryDataEngine result(left);
-        if (result == true) {
-            result.BitsTransform() ^= right.BitsInformation();
+        if (result == true)
+        {
+            if (result.DataEndianType() == right.DataEndianType() && result.Size() == right.Size())
+            {
+                const std::size_t length = result.Size();
+                for (std::size_t idx = 0; idx < length; )
+                {
+                    if (idx + sizeof(uint32_t) < length)
+                    {
+                        (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) ^= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
+                        idx += sizeof(uint32_t);
+                    }
+                    else
+                    {
+                        (*result.GetAt(idx)) ^= right[idx].value();
+                        ++idx;
+                    }
+                }
+            }
+            else { result.BitsTransform() ^= right.BitsInformation(); }
         }
         return result;
     }

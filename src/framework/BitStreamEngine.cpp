@@ -8,12 +8,31 @@
 
 
 #include <sstream>  // std::ostringstream.
+#include <netinet/in.h>  // htonl.
 
 #include "../../include/framework/BinaryDataEngine.hpp"
 
 
 namespace analyzer::framework::common::types
 {
+    // Method that returns the correct position of byte which store the selected bit under specified index in stored binary data in any data endian.
+    std::size_t BinaryDataEngine::BitStreamInformationEngine::GetByteIndex (const std::size_t index) const noexcept
+    {
+        if ((storedData->dataModeType & DATA_MODE_DEPENDENT) != 0U)
+        {
+            if (storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
+                return index >> 3;
+            }
+            else if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
+                return storedData->length - (index >> 3) - 1;
+            }
+            // If data endian type is DATA_REVERSE_BIG_ENDIAN.
+            return storedData->length - (index >> 3) - 1;
+        }
+        // If data handling mode type is DATA_MODE_INDEPENDENT.
+        return index >> 3;
+    }
+
     // Method that returns the correct position of selected bit in stored data in any data endian.
     std::pair<std::size_t, std::byte> BinaryDataEngine::BitStreamInformationEngine::GetBitPosition (const std::size_t index) const noexcept
     {
@@ -80,13 +99,54 @@ namespace analyzer::framework::common::types
         if (last == npos) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
-        const std::size_t size = last - first + 1;
-        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
-        if (first % 8 == 0 && size >= 8)
+        const std::size_t bits = last - first + 1;
+        // If bit sequence size less then 64-bit value.
+        if (bits <= 24 || (first % 8 == 0 && bits <= 32))
         {
-            for (std::size_t idx = 0; idx < size / 8; ++idx)
+            std::size_t startByteIndex = 0, endByteIndex = 0;
+            if (storedData->dataEndianType == DATA_LITTLE_ENDIAN || storedData->IsDependentDataMode() == false)
             {
-                if (storedData->data[GetBitPosition(first).first] != LowByte) {
+                startByteIndex = GetByteIndex(first);
+                endByteIndex = GetByteIndex(last);
+            }
+            else
+            {
+                startByteIndex = GetByteIndex(last);
+                endByteIndex = GetByteIndex(first);
+            }
+            const std::size_t bytes = endByteIndex - startByteIndex + 1;
+
+            uint32_t value = 0;
+            if (startByteIndex + sizeof(uint32_t) < storedData->length) {
+                value = *reinterpret_cast<uint32_t*>(&storedData->data[startByteIndex]);
+            }
+            else {
+                memcpy(&value, &storedData->data[startByteIndex], bytes);
+            }
+
+            if (BinaryDataEngine::system_endian == DATA_LITTLE_ENDIAN) {
+                value = htonl(value);
+            }
+
+            value <<= first % 8;
+            value >>= bytes * 8 - bits;
+            return value != 0;
+        }
+
+        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
+        if (first % 8 == 0 && bits >= 8)
+        {
+            std::size_t startIndex = 0;
+            if (storedData->dataEndianType == DATA_LITTLE_ENDIAN || storedData->IsDependentDataMode() == false) {
+                startIndex = GetByteIndex(first);
+            }
+            else {
+                startIndex = GetByteIndex(first + (bits / 8) * 8 - 1);
+            }
+
+            for (std::size_t idx = 0; idx < bits / 8; ++idx)
+            {
+                if (storedData->data[startIndex + idx] != LowByte) {
                     return true;
                 }
                 first += 8;

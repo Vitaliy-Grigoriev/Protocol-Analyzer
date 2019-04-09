@@ -277,6 +277,12 @@ namespace analyzer::framework::common::types
         return true;
     }
 
+    // Method that returns a constant pointer to the value of byte under the specified index.
+    const std::byte* BinaryDataEngine::ByteStreamInformationEngine::GetAt (const std::size_t index) const noexcept
+    {
+        return (index < Length() ? &storedData->data[storedData->byteStreamInformation.GetBytePosition(index)] : nullptr);
+    }
+
 
     // Method that sets the byte under the specified index to new value.
     BinaryDataEngine::ByteStreamTransformEngine& BinaryDataEngine::ByteStreamTransformEngine::Set (const std::size_t index, const std::byte fillByte) noexcept
