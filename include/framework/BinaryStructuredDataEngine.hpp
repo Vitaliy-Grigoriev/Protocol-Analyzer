@@ -1132,6 +1132,7 @@ namespace analyzer::framework::common::types
                 }
                 offset += pattern[field];
             }
+            return size + 1;  // All fields are empty.
         }
         else if (dataBytePattern != nullptr)  // In this case the internal byte-pattern is used.
         {
@@ -1148,8 +1149,8 @@ namespace analyzer::framework::common::types
                     }
                 }
             }
+            return patternFieldsCount + 1;  // All fields are empty.
         }
-        return size + 1;  // All fields are empty.
     }
 
     // Method that returns the internal byte-pattern with length from the specified position.
