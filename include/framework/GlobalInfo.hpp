@@ -127,7 +127,7 @@ namespace analyzer::framework::storage
     /**
      * @brief Global variable that consist of the instance of the GlobalInfo singleton class.
      */
-    inline GlobalInfo& GI = GlobalInfo::Instance();
+    inline static GlobalInfo& GI = GlobalInfo::Instance();
 
     /**
      * @brief Global variable that consist of the start time of Protocol Analyzer Framework.

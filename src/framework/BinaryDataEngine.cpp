@@ -8,7 +8,6 @@
 
 
 #include <utility>  // std::move.
-#include <climits>  // UINT*_MAX.
 
 #include "../../include/framework/BinaryDataEngine.hpp"
 
@@ -315,7 +314,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < length; )
             {
-                if (idx + sizeof(uint32_t) < length)
+                if (idx + sizeof(uint32_t) <= length)
                 {
                     (*reinterpret_cast<uint32_t*>(&data[idx])) ^= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
                     idx += sizeof(uint32_t);
@@ -338,7 +337,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < length; )
             {
-                if (idx + sizeof(uint32_t) < length)
+                if (idx + sizeof(uint32_t) <= length)
                 {
                     (*reinterpret_cast<uint32_t*>(&data[idx])) |= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
                     idx += sizeof(uint32_t);
@@ -361,7 +360,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < length; )
             {
-                if (idx + sizeof(uint32_t) < length)
+                if (idx + sizeof(uint32_t) <= length)
                 {
                     (*reinterpret_cast<uint32_t*>(&data[idx])) ^= (*reinterpret_cast<const uint32_t*>(other.GetAt(idx)));
                     idx += sizeof(uint32_t);

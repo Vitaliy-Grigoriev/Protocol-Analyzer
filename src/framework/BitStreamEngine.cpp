@@ -23,7 +23,7 @@ namespace analyzer::framework::common::types
             if (storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
                 return index >> 3;
             }
-            else if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
+            if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
                 return storedData->length - (index >> 3) - 1;
             }
             // If data endian type is DATA_REVERSE_BIG_ENDIAN.
@@ -41,7 +41,7 @@ namespace analyzer::framework::common::types
             if (storedData->dataEndianType == DATA_LITTLE_ENDIAN) {
                 return { index >> 3, LowBitInByte << (index % 8) };
             }
-            else if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
+            if (storedData->dataEndianType == DATA_BIG_ENDIAN) {
                 return { storedData->length - (index >> 3) - 1, LowBitInByte << (index % 8) };
             }
             // If data endian type is DATA_REVERSE_BIG_ENDIAN.
@@ -67,7 +67,7 @@ namespace analyzer::framework::common::types
     // Method that returns bit sequence characteristic when all bit are set in block of stored data.
     bool BinaryDataEngine::BitStreamInformationEngine::All (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         const std::size_t size = last - first + 1;
@@ -96,11 +96,11 @@ namespace analyzer::framework::common::types
     // Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
     bool BinaryDataEngine::BitStreamInformationEngine::Any (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         const std::size_t bits = last - first + 1;
-        // If bit sequence size less then 64-bit value.
+        // Bit sequence size less then 32-bit value.
         if (bits <= 24 || (first % 8 == 0 && bits <= 32))
         {
             std::size_t startByteIndex = 0, endByteIndex = 0;
@@ -109,7 +109,7 @@ namespace analyzer::framework::common::types
                 startByteIndex = GetByteIndex(first);
                 endByteIndex = GetByteIndex(last);
             }
-            else
+            else  // DATA_BIG_ENDIAN or DATA_REVERSE_BIG_ENDIAN or DATA_DEPENDENT_MODE.
             {
                 startByteIndex = GetByteIndex(last);
                 endByteIndex = GetByteIndex(first);
@@ -117,23 +117,49 @@ namespace analyzer::framework::common::types
             const std::size_t bytes = endByteIndex - startByteIndex + 1;
 
             uint32_t value = 0;
-            if (startByteIndex + sizeof(uint32_t) < storedData->length) {
-                value = *reinterpret_cast<uint32_t*>(&storedData->data[startByteIndex]);
-            }
-            else {
-                memcpy(&value, &storedData->data[startByteIndex], bytes);
-            }
+            memcpy(&value, &storedData->data[startByteIndex], bytes);
 
-            if (BinaryDataEngine::system_endian == DATA_LITTLE_ENDIAN) {
-                value = htonl(value);
+            // Data mode is DATA_MODE_INDEPENDENT.
+            if (storedData->IsDependentDataMode() == false)
+            {
+                // Local endian is DATA_LITTLE_ENDIAN.
+                if (BinaryDataEngine::system_endian == DATA_LITTLE_ENDIAN) {
+                    value = htonl(value);
+                }
+                value <<= first % 8;
+                value >>= 32 - bits;
             }
-
-            value <<= first % 8;
-            value >>= bytes * 8 - bits;
+            else  // Data mode is DATA_MODE_DEPENDENT.
+            {
+                if (storedData->dataEndianType == DATA_LITTLE_ENDIAN)
+                {
+                    if (BinaryDataEngine::system_endian == DATA_BIG_ENDIAN) {
+                        value = htonl(value);
+                    }
+                    value >>= first % 8;
+                    value <<= 32 - bits;
+                }
+                else if (storedData->dataEndianType == DATA_BIG_ENDIAN)
+                {
+                    if (BinaryDataEngine::system_endian == DATA_LITTLE_ENDIAN) {
+                        value = htonl(value);
+                    }
+                    value <<= 8 - (last % 8) - 1;
+                    value >>= 32 - bits;
+                }
+                else  // Data endian is DATA_REVERSE_BIG_ENDIAN.
+                {
+                    if (BinaryDataEngine::system_endian == DATA_BIG_ENDIAN) {
+                        value = htonl(value);
+                    }
+                    value >>= 8 - (last % 8);
+                    value <<= 32 - bits;
+                }
+            }
             return value != 0;
         }
 
-        // If first index starts at the beginning of the byte and test sequence length more then eight bits.
+        // First index starts at the beginning of the byte and test sequence length more then eight bits.
         if (first % 8 == 0 && bits >= 8)
         {
             std::size_t startIndex = 0;
@@ -166,7 +192,7 @@ namespace analyzer::framework::common::types
     // Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
     bool BinaryDataEngine::BitStreamInformationEngine::None (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         const std::size_t size = last - first + 1;
@@ -175,7 +201,7 @@ namespace analyzer::framework::common::types
         {
             for (std::size_t idx = 0; idx < size / 8; ++idx)
             {
-                if (storedData->data[GetBitPosition(first).first] != LowByte) {
+                if (storedData->data[GetByteIndex(first)] != LowByte) {
                     return false;
                 }
                 first += 8;
@@ -195,8 +221,8 @@ namespace analyzer::framework::common::types
     // Method that returns the number of bits that are set in the selected interval of stored data.
     std::size_t BinaryDataEngine::BitStreamInformationEngine::Count (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
-        if (first > last || last >= Length()) { return npos; }
+        if (last == NPOS) { last = Length() - 1; }
+        if (first > last || last >= Length()) { return NPOS; }
 
         std::size_t count = 0;
         while (first <= last) {
@@ -208,7 +234,7 @@ namespace analyzer::framework::common::types
     // Method that returns position of the first set bit in the selected interval of stored data.
     std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetFirstIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return std::nullopt; }
 
         std::size_t index = first;
@@ -219,13 +245,13 @@ namespace analyzer::framework::common::types
             }
             index++;
         }
-        return npos;
+        return NPOS;
     }
 
     // Method that returns position of the last set bit in the selected interval of stored data.
     std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetLastIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return std::nullopt; }
 
         std::size_t index = last;
@@ -236,13 +262,13 @@ namespace analyzer::framework::common::types
             }
             index--;
         }
-        return npos;
+        return NPOS;
     }
 
     // Method that outputs internal binary data in string format.
     std::string BinaryDataEngine::BitStreamInformationEngine::ToString (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return std::string(); }
 
         std::ostringstream result;
@@ -471,7 +497,7 @@ namespace analyzer::framework::common::types
     // Method that reverses a sequence of bits under the specified first/last indexes.
     const BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::Reverse (std::size_t first, std::size_t last) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return *this; }
 
         while (first < last)
@@ -504,7 +530,7 @@ namespace analyzer::framework::common::types
     // Method that inverts the range of bits under the specified first/last indexes.
     BinaryDataEngine::BitStreamTransformEngine& BinaryDataEngine::BitStreamTransformEngine::InvertBlock (std::size_t first, std::size_t last) noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return *this; }
 
         while (first <= last) {

@@ -7,6 +7,7 @@
 #ifndef PROTOCOL_ANALYZER_BINARY_STRUCTURED_DATA_ENGINE_HPP
 #define PROTOCOL_ANALYZER_BINARY_STRUCTURED_DATA_ENGINE_HPP
 
+#include <numeric>  // std::accumulate.
 #include <optional>  // std::optional.
 
 #include "BinaryDataEngine.hpp"  // types::BinaryDataEngine.
@@ -227,7 +228,7 @@ namespace analyzer::framework::common::types
          * @param [in] bitIndex - Bit index in selected field of structured data.
          * @return Bit offset under selected field bit index of structured data.
          *
-         * @note Method returns index 'BinaryDataEngine::npos' if selected index is out-of-range.
+         * @note Method returns index 'BinaryDataEngine::NPOS' if selected index is out-of-range.
          */
         template <uint8_t Mode = DATA_MODE_INDEPENDENT>
         [[nodiscard]]
@@ -248,7 +249,7 @@ namespace analyzer::framework::common::types
                 // If data endian type is DATA_REVERSE_BIG_ENDIAN.
                 return offset + (dataBytePattern[fieldIndex] - (bitIndex >> 3) - 1) * 8 + (bitIndex % 8);
             }
-            return BinaryDataType::npos;
+            return BinaryDataType::NPOS;
         }
 
     protected:
@@ -462,14 +463,14 @@ namespace analyzer::framework::common::types
                           std::is_default_constructible<Type>::value == true,
                           "It is not possible for this method to use type without binary operators and default constructor.");
 
-            if (bitIndex + length - 1 < dataBytePattern[fieldIndex] * 8 && length <= sizeof(Type) * 8)
+            if (fieldIndex < patternFieldsCount && bitIndex + length - 1 < dataBytePattern[fieldIndex] * 8 && length <= sizeof(Type) * 8)
             {
                 Type result = { };
                 for (uint16_t idx = 0; idx < length; ++idx)
                 {
                     const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex + idx);
-                    if (bitOffset != BinaryDataType::npos) {
-                        result = static_cast<Type>((result << 1) | (data->bitStreamInformation.GetBitValue(bitOffset) == true ? 0x01 : 0x00));
+                    if (bitOffset != BinaryDataType::NPOS) {
+                        result = static_cast<Type>((result << 1U) | (data->bitStreamInformation.GetBitValue(bitOffset) == true ? 0x01 : 0x00));
                     }
                     else { return std::nullopt; }
                 }
@@ -503,7 +504,7 @@ namespace analyzer::framework::common::types
             if (*this == false) { return false; }
 
             const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
-            if (bitOffset != BinaryDataType::npos) {
+            if (bitOffset != BinaryDataType::NPOS) {
                 data->bitStreamTransform.Set(bitOffset, value);
                 return true;
             }
@@ -524,7 +525,7 @@ namespace analyzer::framework::common::types
         bool GetFieldBit (const uint16_t fieldIndex, const uint16_t bitIndex) const noexcept
         {
             const std::size_t bitOffset = GetBitOffset<Mode>(fieldIndex, bitIndex);
-            if (bitOffset != BinaryDataType::npos) {
+            if (bitOffset != BinaryDataType::NPOS) {
                 return data->bitStreamInformation.GetBitValue(bitOffset);
             }
             return false;

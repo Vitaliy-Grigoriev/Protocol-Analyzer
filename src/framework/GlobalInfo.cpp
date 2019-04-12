@@ -69,8 +69,10 @@ namespace analyzer::framework::storage
         return false;
     }
 
-
-    std::once_flag flag;
+    /**
+     * @brief Variable for single initialization for network information.
+     */
+    static std::once_flag flag;
 
     // Method that returns reference of the SystemNetworkConfiguration class with filled information.
     system::SystemNetworkConfiguration& GlobalInfo::GetNetworkInformation(void) noexcept

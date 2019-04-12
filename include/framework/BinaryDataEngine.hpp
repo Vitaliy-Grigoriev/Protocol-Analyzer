@@ -150,7 +150,7 @@ namespace analyzer::framework::common::types
         /**
          * @brief Variable that indicates about the end of sequence.
          */
-        static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
+        static constexpr std::size_t NPOS = std::numeric_limits<std::size_t>::max();
         /**
          * @brief Variable that stores system endian.
          */
@@ -292,7 +292,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Method that returns bit sequence characteristic when any of the bits are set in block of stored data.
@@ -303,7 +303,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Method that returns bit sequence characteristic when none of the bits are set in block of stored data.
@@ -314,7 +314,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Method that returns the number of bits that are set in the selected interval of stored data.
@@ -325,7 +325,7 @@ namespace analyzer::framework::common::types
              *
              * @note Method returns 'npos' value if an error occurred.
              */
-            std::size_t Count (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            std::size_t Count (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Method that returns position of the first set bit in the selected interval of stored data.
@@ -337,7 +337,7 @@ namespace analyzer::framework::common::types
              *
              * @note Method returns 'npos' value if there are no set bits on the specified interval.
              */
-            std::optional<std::size_t> GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
+            std::optional<std::size_t> GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool isRelative = true) const noexcept;
 
             /**
              * @brief Method that returns position of the last set bit in the selected interval of stored data.
@@ -349,7 +349,7 @@ namespace analyzer::framework::common::types
              *
              * @note Method returns 'npos' value if there are no set bits on the specified interval.
              */
-            std::optional<std::size_t> GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, bool isRelative = true) const noexcept;
+            std::optional<std::size_t> GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool isRelative = true) const noexcept;
 
             /**
              * @brief Method that outputs internal binary data in string format.
@@ -360,7 +360,7 @@ namespace analyzer::framework::common::types
              *
              * @note Data is always outputs in DATA_BIG_ENDIAN endian type if data handling mode type is DATA_MODE_DEPENDENT.
              */
-            std::string ToString (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            std::string ToString (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Operator that returns the value of bit under the specified index.
@@ -392,12 +392,12 @@ namespace analyzer::framework::common::types
              * @attention If output real data size (in case structure/class) less then sizeof(Type) then MUST specify their size.
              */
             template <typename Type, DATA_ENDIAN_TYPE Endian = DATA_SYSTEM_ENDIAN, std::size_t Size = sizeof(Type)>
-            std::optional<Type> Convert (std::size_t first = 0, std::size_t last = npos) const noexcept
+            std::optional<Type> Convert (std::size_t first = 0, std::size_t last = NPOS) const noexcept
             {
                 static_assert(std::is_default_constructible<Type>::value == true,
                               "It is not possible for this method to use type without default constructor.");
 
-                if (last == npos) { last = Length() - 1; }
+                if (last == NPOS) { last = Length() - 1; }
                 if (first > last || last >= Length()) { return std::nullopt; }
                 if (last - first + 1 > Size * 8) { return std::nullopt; }
 
@@ -718,7 +718,7 @@ namespace analyzer::framework::common::types
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be reversed. Default: npos.
              * @return Constant lvalue reference of BitStreamTransformEngine class.
              */
-            const BitStreamTransformEngine & Reverse (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) const noexcept;
+            const BitStreamTransformEngine & Reverse (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) const noexcept;
 
             /**
              * @brief Method that inverts the bit under the specified index.
@@ -735,7 +735,7 @@ namespace analyzer::framework::common::types
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be inverted. Default: npos.
              * @return Lvalue reference of BitStreamTransformEngine class.
              */
-            BitStreamTransformEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos) noexcept;
+            BitStreamTransformEngine & InvertBlock (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS) noexcept;
 
             /**
              * @brief Operator that outputs internal binary data in binary string format.
@@ -1118,7 +1118,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, std::byte /*value*/ = HighByte) const noexcept;
+            bool All (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, std::byte /*value*/ = HighByte) const noexcept;
 
             /**
              * @brief Method that returns byte sequence characteristic when any of the bytes have a specified value in block of stored data.
@@ -1130,7 +1130,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, std::byte /*byte*/ = HighByte) const noexcept;
+            bool Any (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, std::byte /*byte*/ = HighByte) const noexcept;
 
             /**
              * @brief Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
@@ -1142,7 +1142,7 @@ namespace analyzer::framework::common::types
              *
              * @warning Method always returns 'false' if the index is out-of-range.
              */
-            bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = npos, std::byte /*byte*/ = LowByte) const noexcept;
+            bool None (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, std::byte /*byte*/ = LowByte) const noexcept;
 
             /**
              * @brief Operator that returns the value of byte under the specified index.
@@ -1272,10 +1272,10 @@ namespace analyzer::framework::common::types
              *
              * @note This method considers the endian type in which binary stored data are presented.
              */
-            inline std::optional<std::byte*> operator[] (const std::size_t index) noexcept
+            inline std::optional<std::byte> operator[] (const std::size_t index) const noexcept
             {
                 if (index >= Length()) { return std::nullopt; }
-                return &storedData->data[storedData->byteStreamInformation.GetBytePosition(index)];
+                return storedData->data[storedData->byteStreamInformation.GetBytePosition(index)];
             }
 
             /**
@@ -1767,7 +1767,7 @@ namespace analyzer::framework::common::types
                 const std::size_t length = result.Size();
                 for (std::size_t idx = 0; idx < length; )
                 {
-                    if (idx + sizeof(uint32_t) < length)
+                    if (idx + sizeof(uint32_t) <= length)
                     {
                         (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) &= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
                         idx += sizeof(uint32_t);
@@ -1807,7 +1807,7 @@ namespace analyzer::framework::common::types
                 const std::size_t length = result.Size();
                 for (std::size_t idx = 0; idx < length; )
                 {
-                    if (idx + sizeof(uint32_t) < length)
+                    if (idx + sizeof(uint32_t) <= length)
                     {
                         (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) |= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
                         idx += sizeof(uint32_t);
@@ -1847,7 +1847,7 @@ namespace analyzer::framework::common::types
                 const std::size_t length = result.Size();
                 for (std::size_t idx = 0; idx < length; )
                 {
-                    if (idx + sizeof(uint32_t) < length)
+                    if (idx + sizeof(uint32_t) <= length)
                     {
                         (*reinterpret_cast<uint32_t*>(result.GetAt(idx))) ^= (*reinterpret_cast<const uint32_t*>(right.GetAt(idx)));
                         idx += sizeof(uint32_t);

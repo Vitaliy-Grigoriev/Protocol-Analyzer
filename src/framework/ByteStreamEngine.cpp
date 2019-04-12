@@ -235,7 +235,7 @@ namespace analyzer::framework::common::types
     // Method that returns byte sequence characteristic when all bytes have specified value in block of stored data.
     bool BinaryDataEngine::ByteStreamInformationEngine::All (std::size_t first, std::size_t last, const std::byte value) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         while (first <= last)
@@ -250,7 +250,7 @@ namespace analyzer::framework::common::types
     // Method that returns byte sequence characteristic when any of the bytes have specified value in block of stored data.
     bool BinaryDataEngine::ByteStreamInformationEngine::Any (std::size_t first, std::size_t last, const std::byte value) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         while (first <= last)
@@ -265,7 +265,7 @@ namespace analyzer::framework::common::types
     // Method that returns byte sequence characteristic when none of the bytes have a specified value in block of stored data.
     bool BinaryDataEngine::ByteStreamInformationEngine::None (std::size_t first, std::size_t last, const std::byte value) const noexcept
     {
-        if (last == npos) { last = Length() - 1; }
+        if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return false; }
 
         while (first <= last)
@@ -280,7 +280,7 @@ namespace analyzer::framework::common::types
     // Method that returns a constant pointer to the value of byte under the specified index.
     const std::byte* BinaryDataEngine::ByteStreamInformationEngine::GetAt (const std::size_t index) const noexcept
     {
-        return (index < Length() ? &storedData->data[storedData->byteStreamInformation.GetBytePosition(index)] : nullptr);
+        return (index < Length() ? &storedData->data[GetBytePosition(index)] : nullptr);
     }
 
 
