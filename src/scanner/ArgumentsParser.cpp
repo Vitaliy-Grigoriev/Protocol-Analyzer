@@ -14,12 +14,26 @@
 
 namespace analyzer::scanner::settings
 {
+    // Method that returns the pointer to ArgumentEntry structure by specified argument name.
+    ArgumentsParser::ArgumentEntry* ArgumentsParser::InternalGetArgumentEntryByName (std::string_view argumentName) noexcept
+    {
+        ArgumentsContainer::iterator it = std::find_if(argumentsStorage.begin(), argumentsStorage.end(),
+            [argumentName] (const ArgumentEntry& entry) -> bool
+            {
+                if (argumentName == entry.first.argumentName || argumentName == entry.first.aliasName) {
+                    return true;
+                }
+                return false;
+            });
+        return (it != argumentsStorage.end() ? &(*it) : nullptr);
+    }
+
     // Method that adds new expected argument at the program input and its handler.
     void ArgumentsParser::Add (std::string_view argumentName,
-                               std::string_view aliasName,
+                               std::string_view aliasName,                               
                                const ArgumentHandler handler,
                                const bool isRequired,
-                               const bool isValueExpected) noexcept
+                               uint16_t numberOfValues) noexcept
     {
         if (argumentName.size() >= ARGUMENT_NAME_LENGTH)
         {
@@ -37,14 +51,14 @@ namespace analyzer::scanner::settings
             numberOfRequiredArguments++;
         }
 
-        argumentsStorage.emplace_back(ProgramArgumentEntry(isRequired, isValueExpected, argumentName, aliasName, handler), "");
+        argumentsStorage.emplace_back(ProgramArgumentEntry(isRequired, argumentName, aliasName, numberOfValues, handler), std::list<std::string>());
     }
 
 
     // Method that returns the pointer to ArgumentEntry structure by specified argument name.
     const ArgumentsParser::ArgumentEntry* ArgumentsParser::GetArgumentEntryByName (std::string_view argumentName) const noexcept
-    {        
-        ArgumentsContainer::const_iterator it = std::find_if(argumentsStorage.begin(), argumentsStorage.end(),
+    {
+        ArgumentsContainer::const_iterator it = std::find_if(argumentsStorage.cbegin(), argumentsStorage.cend(),
             [argumentName] (const ArgumentEntry& entry) -> bool
             {
                 if (argumentName == entry.first.argumentName || argumentName == entry.first.aliasName) {
@@ -52,18 +66,21 @@ namespace analyzer::scanner::settings
                 }
                 return false;
             });
-        return (it != argumentsStorage.end() ? &(*it) : nullptr);
+        return (it != argumentsStorage.cend() ? &(*it) : nullptr);
     }
 
 
     // Method that parses and handles arguments on program input.
     bool ArgumentsParser::Parse (const char* const* const arguments, const std::size_t count) noexcept
     {
+        bool flagSearchNextValue = false;
+        ArgumentEntry* previousArg = nullptr;
+
         // If no any arguments on program input but some of them are expected.
         if (count <= 1 && numberOfRequiredArguments > 0)
         {
             if (errorHandler != nullptr) {
-                errorHandler(this, "", "");
+                errorHandler(this, "", "", ERROR_REQUIRED_ARGUMENTS_NOT_APPEARED);
             }
             return false;
         }
@@ -76,83 +93,190 @@ namespace analyzer::scanner::settings
         {
             // Search correct argument entry in ArgumentsContainer.
             const std::string_view arg(arguments[idx]);
-            ArgumentsContainer::iterator it = std::find_if(argumentsStorage.begin(), argumentsStorage.end(),
-                [arg] (const ArgumentEntry& entry) -> bool
+            ArgumentEntry* const it = InternalGetArgumentEntryByName(arg);
+
+            // If several arguments are expected on program input.
+            if (flagSearchNextValue == true && it == nullptr && previousArg != nullptr)
+            {
+                const ProgramArgumentEntry& entry = previousArg->first;
+
+                // If handler for current argument's value is defined.
+                if (entry.valueHandler != nullptr)
                 {
-                    if (arg == entry.first.argumentName || arg == entry.first.aliasName) {
-                        return true;
+                    if (entry.valueHandler(arg) == true)
+                    {
+                        previousArg->second.emplace_back(arg);
+                        if (entry.numberOfValues == ARG_DOUBLE && previousArg->second.size() == 2) {
+                            flagSearchNextValue = false;
+                        }
+                        else if (entry.numberOfValues == ARG_TRIPLE && previousArg->second.size() == 3) {
+                            flagSearchNextValue = false;
+                        }
+                        continue;
+                    }
+
+                    // If handler function return FALSE value.
+                    if (errorHandler != nullptr) {
+                        errorHandler(this, entry.argumentName, arg, ERROR_VALUE_INCORRECT);
                     }
                     return false;
-                });
-
+                }
+                else
+                {
+                    previousArg->second.emplace_back(arg);
+                    if (entry.numberOfValues == ARG_DOUBLE && previousArg->second.size() == 2) {
+                        flagSearchNextValue = false;
+                    }
+                    else if (entry.numberOfValues == ARG_TRIPLE && previousArg->second.size() == 3) {
+                        flagSearchNextValue = false;
+                    }
+                }
+            }
             // If entry found.
-            if (it != argumentsStorage.end())
+            else if (it != nullptr)
             {
-                const ProgramArgumentEntry& entry = it->first;
+                if (flagSearchNextValue == true)
+                {
+                    const ProgramArgumentEntry& entry = previousArg->first;
+                    if ((entry.numberOfValues == ARG_DOUBLE && previousArg->second.size() != 2) ||
+                        (entry.numberOfValues == ARG_TRIPLE && previousArg->second.size() != 3) ||
+                        (entry.numberOfValues == ARG_MULTIPLE && previousArg->second.size() < 2))
+                    {
+                        if (errorHandler != nullptr) {
+                            errorHandler(this, entry.argumentName, "", ERROR_INCORRECT_NUMBER_OF_INPUTTED_VALUES);
+                        }
+                        return false;
+                    }
+                    flagSearchNextValue = false;
+                }
 
+                const ProgramArgumentEntry& entry = it->first;
                 if (entry.isRequired == true) {
                     numberOfInputtedRequiredArguments++;
                 }
 
-                // If argument's value is expected.
-                if (entry.isValueExpected == true)
+                // If argument's value may be expected.
+                if (entry.numberOfValues >= ARG_ZERO_OR_SINGLE)
                 {
                     if (idx + 1 < count)
                     {
                         const std::string_view nextParam(arguments[++idx]);
-                        // If next parameter is an argument.
+                        // If next inputted parameter is similar as a program argument.
                         if (nextParam[0] == '-')
                         {
-                            if (errorHandler != nullptr) {
-                                errorHandler(this, arg, "");
+                            const ArgumentEntry* const itt = InternalGetArgumentEntryByName(nextParam);
+
+                            // If next inputted parameter is a program argument.
+                            if (itt != nullptr)
+                            {
+                                if (entry.numberOfValues != ARG_ZERO_OR_SINGLE && entry.numberOfValues != ARG_ZERO_OR_MORE)
+                                {
+                                    // If value for current argument is required but not appeared on program input.
+                                    if (errorHandler != nullptr) {
+                                        errorHandler(this, arg, "", ERROR_VALUE_NOT_FOUND);
+                                    }
+                                    return false;
+                                }
+
+                                // Argument's value does not inputted and value may be not expected.
+                                if (entry.valueHandler != nullptr)
+                                {
+                                    if (entry.valueHandler("") == true) {
+                                        it->second.emplace_back("true");
+                                    }
+                                    // Value handler failed.
+                                    else if (errorHandler != nullptr) {
+                                        errorHandler(this, arg, "", ERROR_VALUE_INCORRECT);
+                                    }
+                                }
+                                else { it->second.emplace_back("true"); }
+
+                                if (entry.numberOfValues >= ARG_ZERO_OR_MORE) {
+                                    flagSearchNextValue = true;
+                                    previousArg = it;
+                                }
+                                continue;
                             }
-                            return false;
                         }
 
-                        // If handler for current argument's value is defined.
+                        // If next inputted parameter is argument's value.
                         if (entry.valueHandler != nullptr)
                         {
                             if (entry.valueHandler(nextParam) == true)
                             {
-                                it->second = nextParam;
+                                it->second.emplace_back(nextParam);
+                                if (entry.numberOfValues >= ARG_ZERO_OR_MORE) {
+                                    flagSearchNextValue = true;
+                                    previousArg = it;
+                                }
                                 continue;
                             }
+
+                            // If handler function return FALSE value.
+                            if (errorHandler != nullptr) {
+                                errorHandler(this, arg, nextParam, ERROR_VALUE_INCORRECT);
+                            }
+                            return false;
                         }
-                        else  // Handler undefined.
+
+                        it->second.emplace_back(nextParam);
+                        if (entry.numberOfValues >= ARG_ZERO_OR_MORE) {
+                            flagSearchNextValue = true;
+                            previousArg = it;
+                        }
+                        continue;
+                    }
+                    else  // If value for current argument is required but not appeared on program input.
+                    {
+                        if (entry.numberOfValues != ARG_ZERO_OR_SINGLE && entry.numberOfValues != ARG_ZERO_OR_MORE)
                         {
-                            it->second = nextParam;
-                            continue;
+                            // If value for current argument is required but not appeared on program input.
+                            if (errorHandler != nullptr) {
+                                errorHandler(this, arg, "", ERROR_VALUE_NOT_FOUND);
+                            }
+                            return false;
                         }
 
-                        // If handler function return FALSE value.
-                        if (errorHandler != nullptr) {
-                            errorHandler(this, arg, nextParam);
+                        // Argument's value does not inputted and value may be not expected.
+                        if (entry.valueHandler != nullptr)
+                        {
+                            if (entry.valueHandler("") == true) {
+                                it->second.emplace_back("true");
+                            }
+                            // Value handler failed.
+                            else if (errorHandler != nullptr) {
+                                errorHandler(this, arg, "", ERROR_VALUE_INCORRECT);
+                            }
                         }
-                        return false;
-                    }
+                        else { it->second.emplace_back("true"); }
 
-                    // If value for current argument is required but not appeared on program input.
-                    if (errorHandler != nullptr) {
-                        errorHandler(this, arg, "");
+                        if (entry.numberOfValues >= ARG_ZERO_OR_MORE) {
+                            flagSearchNextValue = true;
+                            previousArg = it;
+                        }
+                        continue;
                     }
-                    return false;
                 }
-                else  // Argument's value do not expected.
+                else  // Argument's value does not expected.
                 {
                     // If handler for current argument's value is defined.
                     if (entry.valueHandler != nullptr)
                     {
                         if (entry.valueHandler("") == true) {
-                            it->second = "true";
+                            it->second.emplace_back("true");
+                        }
+                        // Value handler failed.
+                        else if (errorHandler != nullptr) {
+                            errorHandler(this, arg, "", ERROR_VALUE_INCORRECT);
                         }
                     }
-                    else { it->second = "true"; }
+                    else { it->second.emplace_back("true"); }
                 }
             }
             else  // Entry not found.
             {
                 if (errorHandler != nullptr) {
-                    errorHandler(this, arg, "");
+                    errorHandler(this, arg, "", ERROR_ARGUMENT_NOT_FOUND);
                 }
                 return false;
             }
@@ -161,7 +285,7 @@ namespace analyzer::scanner::settings
         if (numberOfInputtedRequiredArguments != numberOfRequiredArguments)
         {
             if (errorHandler != nullptr) {
-                errorHandler(this, "", "");
+                errorHandler(this, "", "", ERROR_REQUIRED_ARGUMENTS_NOT_APPEARED);
             }
             return false;
         }

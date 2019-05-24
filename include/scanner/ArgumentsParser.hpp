@@ -16,6 +16,28 @@
 #define ARGUMENT_ALIAS_NAME_LENGTH   16
 
 
+enum ARGUMENTS_AMOUNT : uint16_t
+{
+    ARG_ZERO = 0x00,
+    ARG_ZERO_OR_SINGLE = 0x01,
+    ARG_SINGLE = 0x02,
+    ARG_ZERO_OR_MORE = 0x03,
+    ARG_SINGLE_OR_MORE = 0x04,
+    ARG_DOUBLE = 0x05,
+    ARG_TRIPLE = 0x06,
+    ARG_MULTIPLE = 0x07
+};
+
+enum ERROR_REASONS : uint16_t
+{
+    ERROR_ARGUMENT_NOT_FOUND = 0x00,
+    ERROR_VALUE_NOT_FOUND = 0x01,
+    ERROR_VALUE_INCORRECT = 0x02,
+    ERROR_REQUIRED_ARGUMENTS_NOT_APPEARED = 0x03,
+    ERROR_INCORRECT_NUMBER_OF_INPUTTED_VALUES = 0x04
+};
+
+
 namespace analyzer::scanner::settings
 {
     class ArgumentsParser;
@@ -35,8 +57,9 @@ namespace analyzer::scanner::settings
      * @param [in] parser - Pointer to ArgumentsParser object which calls error handler.
      * @param [in] argumentName - Inputted argument's name.
      * @param [in] argumentValue - Inputted argument's value.
+     * @param [in] reason - Reason from ArgumentsParser that describes the place where error was occurred.
      */
-    using ArgumentErrorHandler = void (*) (const ArgumentsParser * /*parser*/, std::string_view /*argumentName*/, std::string_view /*argumentValue*/) noexcept;
+    using ArgumentErrorHandler = void (*) (const ArgumentsParser * /*parser*/, std::string_view /*argumentName*/, std::string_view /*argumentValue*/, uint16_t /*reason*/) noexcept;
 
 
     /**
@@ -50,10 +73,6 @@ namespace analyzer::scanner::settings
          */
         bool isRequired = false;
         /**
-         * @brief Flag that indicates is the value expected after this argument.
-         */
-        bool isValueExpected = false;
-        /**
          * @brief Short name of the argument.
          */
         char argumentName[ARGUMENT_NAME_LENGTH] = { };
@@ -62,10 +81,19 @@ namespace analyzer::scanner::settings
          */
         char aliasName[ARGUMENT_ALIAS_NAME_LENGTH] = { };
         /**
+         * @brief Number of values which expected after argument.
+         */
+        uint16_t numberOfValues = ARG_ZERO;
+        /**
          * @brief Pointer to the function that handles inputted value.
          */
         ArgumentHandler valueHandler = nullptr;
 
+
+        /**
+         * @brief Default constructor of ProgramArgumentEntry structure.
+         */
+        ProgramArgumentEntry(void) noexcept = default;
 
         /**
          * @brief Constructor of ProgramArgumentEntry structure.
@@ -76,11 +104,13 @@ namespace analyzer::scanner::settings
          * @param [in] alias - Full alias name of the argument.
          * @param [in] handler - Pointer to the function that handles inputted value.
          */
-        ProgramArgumentEntry (const bool required, const bool valueExpected,
-                              std::string_view name, std::string_view alias,
+        ProgramArgumentEntry (const bool required,
+                              std::string_view name,
+                              std::string_view alias,
+                              uint16_t valuesAmount,
                               const ArgumentHandler handler) noexcept
             : isRequired(required),
-              isValueExpected(valueExpected),
+              numberOfValues(valuesAmount),
               valueHandler(handler)
         {
             std::strncpy(argumentName, name.data(), std::min<std::size_t>(name.size(), ARGUMENT_NAME_LENGTH - 1));
@@ -96,7 +126,7 @@ namespace analyzer::scanner::settings
     class ArgumentsParser
     {
     public:
-        using ArgumentEntry = std::pair<ProgramArgumentEntry, std::string>;
+        using ArgumentEntry = std::pair<ProgramArgumentEntry, std::list<std::string>>;
         using ArgumentsContainer = std::list<ArgumentEntry>;
 
     private:
@@ -113,6 +143,14 @@ namespace analyzer::scanner::settings
         */
         uint16_t numberOfRequiredArguments = 0;
 
+
+        /**
+         * @brief Method that returns the pointer to ArgumentEntry structure by specified argument name.
+         *
+         * @param [in] argumentName - Argument name or alias.
+         * @return Pointer to constant ArgumentEntry structure that describes specified argument or nullptr.
+         */
+        ArgumentEntry* InternalGetArgumentEntryByName (std::string_view /*argumentName*/) noexcept;
 
     public:
         ArgumentsParser (ArgumentsParser &&) = delete;
@@ -132,7 +170,7 @@ namespace analyzer::scanner::settings
          * @param [in] aliasName - Full alias name of the argument. Default: NONE.
          * @param [in] handler - Pointer to the function that handles inputted value. Default: NONE.
          * @param [in] isRequired - Flag that indicates is this argument required on program input. Default: false.
-         * @param [in] isValueExpected - Flag that indicates is the value expected after this argument. Default: false.
+         * @param [in] numberOfValues - Number of values which expected after argument (ARGUMENTS_AMOUNT). Default: ARG_ZERO.
          *
          * @warning ArgumentHandler MUST NOT throw any exceptions.
          */
@@ -140,7 +178,7 @@ namespace analyzer::scanner::settings
                   std::string_view /*aliasName*/     = "",
                   ArgumentHandler /*handler*/        = nullptr,
                   bool /*isRequired*/                = false,
-                  bool /*isValueExpected*/           = false) noexcept;
+                  uint16_t /*numberOfValues*/        = ARG_ZERO) noexcept;
 
         /**
          * @brief Method that returns the pointer to ArgumentEntry structure by specified argument name.
@@ -181,6 +219,26 @@ namespace analyzer::scanner::settings
          */
         [[nodiscard]]
         bool Parse (const char * const * /*arguments*/, std::size_t /*count*/) noexcept;
+
+        /**
+         * @brief Operator that outputs parsed arguments in string format.
+         *
+         * @param [in,out] stream - Reference of the output stream engine.
+         * @param [in] parser - Constant lvalue reference of the ArgumentsParser class.
+         * @return Lvalue reference of the inputted STL std::ostream class.
+         */
+        friend inline std::ostream& operator<< (std::ostream& stream, const ArgumentsParser& parser) noexcept
+        {
+            for (const ArgumentEntry& entry : parser.argumentsStorage)
+            {
+                stream << entry.first.argumentName << " (" << entry.first.aliasName << ')' << ':' << std::endl;
+                for (const std::string& value : entry.second) {
+                    stream << '\t' << value << std::endl;
+                }
+            }
+            stream << std::endl;
+            return stream;
+        }
 
         /**
          * @brief Default destructor of ArgumentsParser class.

@@ -10,6 +10,8 @@
 #include <cstdlib>  // std::exit.
 #include <iostream>  // std::cerr.
 
+#include <Log.hpp>  // MACROS LOG_*.
+
 #include "../../include/scanner/ArgumentsParser.hpp"  // std::string_view, settings::ArgumentsParser.
 
 
@@ -23,49 +25,39 @@ namespace analyzer::scanner::settings
      * @return Exit with error code from the program with help message.
      */
     [[noreturn]]
-    void ErrorHandler (const ArgumentsParser* parser, std::string_view argumentName, std::string_view argumentValue) noexcept
+    void DefaultErrorHandler (const ArgumentsParser* parser, std::string_view argumentName, std::string_view argumentValue, const uint16_t reason) noexcept
     {
-        if (argumentName.empty() == false)
+        switch (reason)
         {
-            // If inputted argument is not found in ArgumentsContainer.
-            if (parser->GetArgumentEntryByName(argumentName) == nullptr)
-            {
-                std::cerr << "Error: Unknown inputted argument name - '" << argumentName << "'." << std::endl;
+            case ERROR_ARGUMENT_NOT_FOUND:
+                std::cerr << "Error: Unknown program argument '" << argumentName << "'." << std::endl;
                 std::exit(1);
-            }
-            // If argument is found and its value undefined.
-            else if (argumentValue.empty() == true)
-            {
+            case ERROR_VALUE_NOT_FOUND:
                 std::cerr << "Error: Value for '" << argumentName << "' argument is required." << std::endl;
                 std::exit(2);
-            }
-            // If argument and its value are found.
-            else
-            {
+            case ERROR_VALUE_INCORRECT:
                 std::cerr << "Error: Incorrect value '" << argumentValue << "' for '" << argumentName << "' argument." << std::endl;
                 std::exit(3);
-            }
-        }
-        // If argument and its value are not found.
-        else if (argumentValue.empty() == true)
-        {
-            for (auto&& it : parser->GetArguments())
-            {
-                if (it.first.isRequired == true && it.second.empty() == true)
+            case ERROR_REQUIRED_ARGUMENTS_NOT_APPEARED:
+                for (auto&& it : parser->GetArguments())
                 {
-                    std::cerr << "Error: Not found required '" << it.first.argumentName << "' argument on program input." << std::endl;
-                    std::exit(4);
+                    if (it.first.isRequired == true && it.second.empty() == true) {
+                        std::cerr << "Error: Not found required argument '" << it.first.argumentName << "' on program input." << std::endl;
+                    }
                 }
-            }
+                std::exit(4);
+            case ERROR_INCORRECT_NUMBER_OF_INPUTTED_VALUES:
+                std::cerr << "Error: Incorrect number of values for argument '" << argumentName << "'." << std::endl;
+                std::exit(5);
+            default:
+                std::cerr << "Unknown Error." << std::flush << std::endl;
+                std::exit(1);
         }
-
-        std::cerr << "Error message." << std::flush << std::endl;
-        std::exit(1);
     }
 
 
     /**
-     * @brief Function that handles '-h' program argument.
+     * @brief Function that handles '-h' ('--help') program argument.
      *
      * @param [in] argumentValue - Inputted argument's value.
      * @return Normally exit from the program with help message.
@@ -85,7 +77,22 @@ namespace analyzer::scanner::settings
      */
     bool ProgramConfigHandler (std::string_view argumentValue) noexcept
     {
-        return false;
+        return true;
+    }
+
+    /**
+     * @brief Function that handles '-v' ('--verbose') program argument.
+     *
+     * @param [in] argumentValue - Inputted argument's value.
+     * @return TRUE - if program verbose level parses correctly and valid, otherwise - FALSE.
+     */
+    bool LoggingHandler (std::string_view argumentValue) noexcept
+    {
+        using namespace analyzer::framework;
+
+        log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
+
+        return true;
     }
 
 }  // namespace settings.

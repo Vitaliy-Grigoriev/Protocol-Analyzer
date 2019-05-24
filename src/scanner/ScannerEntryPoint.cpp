@@ -7,8 +7,6 @@
 // ============================================================================
 
 
-#include <Log.hpp>  // MACROS LOG_*.
-
 #include "../../include/scanner/ArgumentsHandlers.hpp"  // settings::ArgumentsParser, settings::HelpHandler.
 
 using namespace analyzer::scanner;
@@ -17,15 +15,22 @@ using namespace analyzer::framework;
 
 int32_t main (const int32_t size, const char* const* const data)
 {
-    log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
     log::Logger::Instance().SwitchLoggingEngine();
 
     settings::ArgumentsParser arguments;
-    arguments.Add("-h", "--help", settings::HelpHandler, false, false);
-    arguments.Add("-c", "--config", settings::ProgramConfigHandler, true, true);
-    arguments.Add("-p", "--protocol", nullptr, true, true);
+    arguments.Add("-h", "--help", settings::HelpHandler, false);
+    arguments.Add("-c", "--config", settings::ProgramConfigHandler, true, ARG_SINGLE);
+    arguments.Add("-p", "--protocol", nullptr, true, ARG_SINGLE);
+    arguments.Add("-v", "--verbose", settings::LoggingHandler, false);
+    arguments.Add("-o", "--output", nullptr, false, ARG_SINGLE);
+    arguments.Add("-V", "--volume", nullptr, false, ARG_SINGLE);
+    arguments.Add("-t1", "--test1", nullptr, false, ARG_MULTIPLE);
+    arguments.Add("-t2", "--test2", nullptr, false, ARG_SINGLE);
+    arguments.Add("-t3", "--test3", nullptr, false, ARG_ZERO_OR_MORE);
+    arguments.Add("-t4", "--test4", nullptr, false, ARG_ZERO);
+    arguments.Add("-t5", "--test5", nullptr, false, ARG_DOUBLE);
 
-    arguments.AddActionOnError(settings::ErrorHandler);
+    arguments.AddActionOnError(settings::DefaultErrorHandler);
 
     if (arguments.Parse(data, static_cast<std::size_t>(size)) == false)
     {
@@ -33,6 +38,7 @@ int32_t main (const int32_t size, const char* const* const data)
         return EXIT_FAILURE;
     }
 
+    std::cout << arguments << std::endl;
 
     return EXIT_SUCCESS;
 }
