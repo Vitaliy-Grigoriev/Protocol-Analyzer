@@ -21,7 +21,7 @@ int32_t main (const int32_t size, const char* const* const data)
     arguments.Add("-h", "--help", settings::HelpHandler, false);
     arguments.Add("-c", "--config", settings::ProgramConfigHandler, true, ARG_SINGLE);
     arguments.Add("-p", "--protocol", nullptr, true, ARG_SINGLE);
-    arguments.Add("-v", "--verbose", settings::LoggingHandler, false);
+    arguments.Add("-v", "--verbose", settings::LoggingHandler, false, ARG_ZERO_OR_SINGLE);
     arguments.Add("-o", "--output", nullptr, false, ARG_SINGLE);
     arguments.Add("-V", "--volume", nullptr, false, ARG_SINGLE);
     arguments.Add("-t1", "--test1", nullptr, false, ARG_MULTIPLE);

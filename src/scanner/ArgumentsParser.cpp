@@ -195,6 +195,7 @@ namespace analyzer::scanner::settings
                                     flagSearchNextValue = true;
                                     previousArg = it;
                                 }
+                                --idx;
                                 continue;
                             }
                         }

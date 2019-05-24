@@ -16,6 +16,10 @@
 #define ARGUMENT_ALIAS_NAME_LENGTH   16
 
 
+/**
+ * @enum ARGUMENTS_AMOUNT
+ * @brief Defines that describes the number of values after program argument.
+ */
 enum ARGUMENTS_AMOUNT : uint16_t
 {
     ARG_ZERO = 0x00,
@@ -28,6 +32,10 @@ enum ARGUMENTS_AMOUNT : uint16_t
     ARG_MULTIPLE = 0x07
 };
 
+/**
+ * @enum ERROR_REASONS
+ * @brief Reasons that describes why the error occurred while parse program arguments.
+ */
 enum ERROR_REASONS : uint16_t
 {
     ERROR_ARGUMENT_NOT_FOUND = 0x00,
@@ -40,6 +48,10 @@ enum ERROR_REASONS : uint16_t
 
 namespace analyzer::scanner::settings
 {
+    /**
+     * @class ArgumentsParser   ArgumentsParser.hpp   "include/scanner/ArgumentsParser.hpp"
+     * @brief Forward declaration of ArgumentsParser class.
+     */
     class ArgumentsParser;
 
     /**
@@ -51,13 +63,13 @@ namespace analyzer::scanner::settings
     using ArgumentHandler = bool (*) (std::string_view /*argumentValue*/) noexcept;
 
     /**
-     * @typedef bool (*ArgumentErrorHandler) (std::string_view, std::string_view) noexcept;
+     * @typedef void (*ArgumentErrorHandler) (const ArgumentsParser *, std::string_view, std::string_view, uint16_t) noexcept;
      * @brief Functor that handles error in inputted argument.
      *
      * @param [in] parser - Pointer to ArgumentsParser object which calls error handler.
      * @param [in] argumentName - Inputted argument's name.
      * @param [in] argumentValue - Inputted argument's value.
-     * @param [in] reason - Reason from ArgumentsParser that describes the place where error was occurred.
+     * @param [in] reason - Reason that describes why the error was occurred.
      */
     using ArgumentErrorHandler = void (*) (const ArgumentsParser * /*parser*/, std::string_view /*argumentName*/, std::string_view /*argumentValue*/, uint16_t /*reason*/) noexcept;
 
@@ -193,7 +205,7 @@ namespace analyzer::scanner::settings
          *
          * @return List of all registered arguments.
          */
-        inline const ArgumentsContainer & GetArguments(void) const noexcept { return argumentsStorage; }
+        inline const ArgumentsContainer& GetArguments(void) const noexcept { return argumentsStorage; }
 
         /**
          * @brief Method that initialize the pointer to the error handler function.

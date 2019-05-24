@@ -11,6 +11,7 @@
 #include <iostream>  // std::cerr.
 
 #include <Log.hpp>  // MACROS LOG_*.
+#include <Common.hpp>  // text::isNumber.
 
 #include "../../include/scanner/ArgumentsParser.hpp"  // std::string_view, settings::ArgumentsParser.
 
@@ -20,8 +21,10 @@ namespace analyzer::scanner::settings
     /**
      * @brief Function that handles error on incorrect program input.
      *
+     * @param [in] parser - Pointer to ArgumentsParser object which calls error handler.
      * @param [in] argumentName - Inputted argument's name.
      * @param [in] argumentValue - Inputted argument's value.
+     * @param [in] reason - Reason of occurred error (ERROR_REASONS).
      * @return Exit with error code from the program with help message.
      */
     [[noreturn]]
@@ -90,8 +93,46 @@ namespace analyzer::scanner::settings
     {
         using namespace analyzer::framework;
 
-        log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
+        if (argumentValue.empty() == true)
+        {
+            log::Logger::Instance().SetLogLevel(log::LEVEL::INFORMATION);
+            LOG_INFO("ArgumentsParser.LoggingHandler: Logger changed to INFORMATION level.");
+            return true;
+        }
 
+        if (argumentValue.size() != 1) { return false; }
+        if (common::text::isNumber(argumentValue[0]) == false) { return false; }
+
+        switch (static_cast<uint16_t>(argumentValue[0]) - 0x30)
+        {
+            case log::LEVEL::FATAL:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to FATAL level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::FATAL);
+                break;
+            case log::LEVEL::ERROR:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to ERROR level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::ERROR);
+                break;
+            case log::LEVEL::WARNING:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to WARNING level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::WARNING);
+                break;
+            case log::LEVEL::MAJOR:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to MAJOR level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::MAJOR);
+                break;
+            case log::LEVEL::INFORMATION:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to INFORMATION level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::INFORMATION);
+                break;
+            case log::LEVEL::TRACE:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to TRACE level.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
+                break;
+            default:
+                LOG_MAJOR("ArgumentsParser.LoggingHandler: Logger changed to MAJOR level by default.");
+                log::Logger::Instance().SetLogLevel(log::LEVEL::MAJOR);
+        }
         return true;
     }
 
