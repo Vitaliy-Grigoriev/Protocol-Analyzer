@@ -17,7 +17,10 @@ using namespace analyzer::framework::common::types;
 
 int32_t main (int32_t size, char** data)
 {
-    IntegerValue value(INTEGER_32BIT_VALUE);
+    int32_t inValue = -83689573;
+    IntegerValue value(inValue);
+
+    std::cout << value << std::endl;
 
 
     return EXIT_SUCCESS;

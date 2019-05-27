@@ -20,12 +20,14 @@ namespace analyzer::framework::common
     // Function that converts time point to calendar datetime in string ISO-8601 format.
     std::string clockToString (const std::chrono::system_clock::time_point& time) noexcept
     {
-        char buff[22] = { };
         time_t currTime = std::chrono::system_clock::to_time_t(time);
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()).count() % 1000;
-        struct tm* info = std::localtime(&currTime);
 
-        if (std::strftime(buff, sizeof(buff), "%F  %T.", info) > 0) {
+        struct tm info = { };
+        localtime_r(&currTime, &info);
+
+        char buff[22] = { };
+        if (std::strftime(buff, sizeof(buff), "%F  %T.", &info) > 0) {
             return std::string(buff) + std::to_string(ms);
         }
         return std::string();

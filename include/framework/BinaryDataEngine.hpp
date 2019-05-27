@@ -1662,28 +1662,56 @@ namespace analyzer::framework::common::types
          *
          * @return Internal data in uint8_t representation.
          */
-        std::optional<uint8_t> To8Bit(void) const noexcept;
+        std::optional<uint8_t> ToU8Bit(void) const noexcept;
 
         /**
          * @brief Method returns internal data in standard uint16_t type.
          *
          * @return Internal data in uint16_t representation.
          */
-        std::optional<uint16_t> To16Bit(void) const noexcept;
+        std::optional<uint16_t> ToU16Bit(void) const noexcept;
 
         /**
          * @brief Method returns internal data in standard uint32_t type.
          *
          * @return Internal data in uint32_t representation.
          */
-        std::optional<uint32_t> To32Bit(void) const noexcept;
+        std::optional<uint32_t> ToU32Bit(void) const noexcept;
 
         /**
          * @brief Method returns internal data in standard uint64_t type.
          *
          * @return Internal data in uint64_t representation.
          */
-        std::optional<uint64_t> To64Bit(void) const noexcept;
+        std::optional<uint64_t> ToU64Bit(void) const noexcept;
+
+        /**
+         * @brief Method returns internal data in standard int8_t type.
+         *
+         * @return Internal data in int8_t representation.
+         */
+        std::optional<int8_t> To8Bit(void) const noexcept;
+
+        /**
+         * @brief Method returns internal data in standard int16_t type.
+         *
+         * @return Internal data in int16_t representation.
+         */
+        std::optional<int16_t> To16Bit(void) const noexcept;
+
+        /**
+         * @brief Method returns internal data in standard int32_t type.
+         *
+         * @return Internal data in int32_t representation.
+         */
+        std::optional<int32_t> To32Bit(void) const noexcept;
+
+        /**
+         * @brief Method returns internal data in standard int64_t type.
+         *
+         * @return Internal data in int64_t representation.
+         */
+        std::optional<int64_t> To64Bit(void) const noexcept;
 
         /**
          * @brief Operator that returns the internal state of BinaryDataEngine class.

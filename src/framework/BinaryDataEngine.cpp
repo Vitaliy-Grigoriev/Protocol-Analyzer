@@ -277,27 +277,51 @@ namespace analyzer::framework::common::types
     }
 
     // Method returns internal data in standard uint8_t type.
-    std::optional<uint8_t> BinaryDataEngine::To8Bit(void) const noexcept
+    std::optional<uint8_t> BinaryDataEngine::ToU8Bit(void) const noexcept
     {
         return bitStreamInformation.Convert<uint8_t>();
     }
 
     // Method returns internal data in standard uint16_t type.
-    std::optional<uint16_t> BinaryDataEngine::To16Bit(void) const noexcept
+    std::optional<uint16_t> BinaryDataEngine::ToU16Bit(void) const noexcept
     {
         return bitStreamInformation.Convert<uint16_t>();
     }
 
     // Method returns internal data in standard uint32_t type.
-    std::optional<uint32_t> BinaryDataEngine::To32Bit(void) const noexcept
+    std::optional<uint32_t> BinaryDataEngine::ToU32Bit(void) const noexcept
     {
         return bitStreamInformation.Convert<uint32_t>();
     }
 
     // Method returns internal data in standard uint64_t type.
-    std::optional<uint64_t> BinaryDataEngine::To64Bit(void) const noexcept
+    std::optional<uint64_t> BinaryDataEngine::ToU64Bit(void) const noexcept
     {
         return bitStreamInformation.Convert<uint64_t>();
+    }
+
+    // Method returns internal data in standard int8_t type.
+    std::optional<int8_t> BinaryDataEngine::To8Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<int8_t>();
+    }
+
+    // Method returns internal data in standard int16_t type.
+    std::optional<int16_t> BinaryDataEngine::To16Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<int16_t>();
+    }
+
+    // Method returns internal data in standard int32_t type.
+    std::optional<int32_t> BinaryDataEngine::To32Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<int32_t>();
+    }
+
+    // Method returns internal data in standard int64_t type.
+    std::optional<int64_t> BinaryDataEngine::To64Bit(void) const noexcept
+    {
+        return bitStreamInformation.Convert<int64_t>();
     }
 
     // Operator that returns a const reference to an element by selected index.
