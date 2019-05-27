@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export CXX="/usr/bin/clang++"
-export BUILD_TYPE="Debug"
+export BUILD_TYPE=Release
 
 
 mkdir check && cd check

@@ -37,3 +37,4 @@ coverity-build-log.txt
 /cmake-build-debug*
 /cmake-build-release*
 /.scannerwork
+/infer-out

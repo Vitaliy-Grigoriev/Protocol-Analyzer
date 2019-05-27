@@ -5,7 +5,7 @@ export BUILD_TYPE="Debug"
 
 mkdir check && cd check && cmake -j4 ..
 
-scan-build --use-analyzer=${COMPILER} --show-description -analyze-headers \
+scan-build --use-analyzer=${CXX} --show-description -analyze-headers \
  -enable-checker alpha.clone.CloneChecker \
  -enable-checker alpha.core.BoolAssignment \
  -enable-checker alpha.core.CallAndMessageUnInitRefArg \
