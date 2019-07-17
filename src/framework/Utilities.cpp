@@ -6,7 +6,7 @@
 // This file is part of ProtocolAnalyzer open source project under MIT License.
 // ============================================================================
 
-#include <vector>
+#include <set>
 #include <unordered_map>
 
 #include "../../include/framework/Socket.hpp"
@@ -38,12 +38,12 @@ namespace analyzer::framework::utility
                 if (sock.SetInternalProtocol(bytes.data(), bytes.size()) == false) {
                     return std::set<std::string>();
                 }
-                if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
+                if (sock.Connect(host.c_str()) == false) { return { }; }
 
                 const std::string proto = sock.GetRawSelectedProtocol();
                 if (proto.empty() == false) {
                     result.emplace(protocol);
-                    LOG_INFO("Next protocol: ", proto, '.');
+                    LOG_TRACE("Next protocol: ", proto, '.');
                 }
                 sock.Close();
             }
@@ -57,19 +57,21 @@ namespace analyzer::framework::utility
         {
             LOG_TRACE("CheckSupportedTLSProtocols:   Start check...");
             std::unordered_map<std::string, uint16_t> protocols;
-            protocols["TLS 1.0"] = SSL_METHOD_TLS10;
-            protocols["TLS 1.1"] = SSL_METHOD_TLS11;
-            protocols["TLS 1.2"] = SSL_METHOD_TLS12;
-            //protocols["TLS 1.3"] == SSL_METHOD_TLS13;
+            protocols["TLS v1.0"] = SSL_METHOD_TLS10;
+            protocols["TLS v1.1"] = SSL_METHOD_TLS11;
+            protocols["TLS v1.2"] = SSL_METHOD_TLS12;
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10101000L)  // If OPENSSL version more then 1.1.1.
+            protocols["TLS v1.3"] = SSL_METHOD_TLS13;
+#endif
 
             std::set<std::string> result;
             for (const auto& [ protocol, method ] : protocols)
             {
                 net::SocketSSL sock(method);
-                if (sock.Connect(host.c_str()) == false) { return std::set<std::string>(); }
+                if (sock.Connect(host.c_str()) == false) { continue; }
 
                 result.emplace(protocol);
-                LOG_INFO("Next protocol: ", protocol, '.');
+                LOG_TRACE("Next protocol: ", protocol, '.');
                 sock.Close();
             }
             LOG_TRACE("CheckSupportedTLSProtocols:   End check...");

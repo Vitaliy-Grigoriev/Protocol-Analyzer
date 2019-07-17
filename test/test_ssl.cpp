@@ -18,7 +18,17 @@ using net::SocketSSL;
 int32_t main (int32_t size, char** data)
 {
     log::Logger::Instance().SwitchLoggingEngine();
-    log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
+    log::Logger::Instance().SetLogLevel(log::LEVEL::INFORMATION);
+
+    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS10) << std::endl;
+    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS11) << std::endl;
+    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS12) << std::endl;
+    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS13) << std::endl;
+
+    const auto versions = utility::CheckSupportedTLSProtocols("habrahabr.ru");
+    for (const auto& ver : versions) {
+        LOG_INFO("Find next TLS protocol version - ", ver);
+    }
 
     /*auto sockets = analyzer::framework::system::allocMemoryForArrayOfObjects<SocketSSL>(3, SSL_METHOD_TLS12);
     if (sockets == nullptr) {
@@ -29,24 +39,20 @@ int32_t main (int32_t size, char** data)
     auto request = [] (SocketSSL* sock, const std::string& domain) noexcept -> bool
     {
         if (sock->Connect(domain.c_str()) == false) {
-            std::cerr << "[error] Connection fail..." << std::endl;
             return false;
         }
 
         const std::string buffer = "GET / HTTP/1.1\r\nHost: " + domain + "\r\nConnection: keep-alive\r\nAccept: */*\r\nDNT: 1\r\n\r\n";
         int32_t result = sock->Send(buffer.c_str(), buffer.size());
         if (result == -1) {
-            std::cerr << "[error] Send fail..." << std::endl;
             return false;
         }
 
         char buff_receive[DEFAULT_BUFFER_SIZE] = { };
         result = sock->Recv(buff_receive, DEFAULT_BUFFER_SIZE, true);
         if (result == -1) {
-            std::cerr << "[error] Receive fail..." << std::endl;
             return false;
         }
-        std::cerr << '[' << domain << "] Received data length: " << result << std::endl;
         return true;
     };
 
@@ -54,14 +60,13 @@ int32_t main (int32_t size, char** data)
     //std::cerr << request(sockets[1].get(), "habrahabr.ru") << std::endl;
 
 
-    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS13) << std::endl;
     auto socket1 = system::allocMemoryForObject<SocketSSL>(SSL_METHOD_TLS13);
-    std::cerr << request(socket1.get(), "habrahabr.ru") << std::endl;
+    request(socket1.get(), "habrahabr.ru");
     socket1->Shutdown();
+
     auto socket2 = system::allocMemoryForObject<SocketSSL>(socket1->GetSessionSSL(), SSL_METHOD_TLS13);
     socket2->SetOnlySecureCiphers();
-    std::cerr << request(socket2.get(), "habrahabr.ru") << std::endl;
-    std::cerr << SSL_get_version(socket2->GetSSL()) << std::endl;
+    request(socket2.get(), "habrahabr.ru");
 
     return EXIT_SUCCESS;
 }

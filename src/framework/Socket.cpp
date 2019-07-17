@@ -38,7 +38,7 @@ namespace analyzer::framework::net
             close(fd); fd = INVALID_SOCKET;
             return;
         }
-        LOG_INFO("Socket.Socket [", fd, "]: Socket was created.");
+        LOG_TRACE("Socket.Socket [", fd, "]: Socket was created.");
 
         epfd = epoll_create1(0);
         if (epfd == INVALID_SOCKET)
