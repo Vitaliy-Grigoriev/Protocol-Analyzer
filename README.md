@@ -47,7 +47,7 @@
 --------------
 <h2><b>Requirements for building the project</b></h2>
 
-* OpenSSL >= 1.0.2h (libssl-dev);
+* OpenSSL >= 1.0.2h (libssl-dev) or 1.1.1 for using TLSv1.3;
 
 * CMake >= 3.8.0 (for C++17 standard support);
 
