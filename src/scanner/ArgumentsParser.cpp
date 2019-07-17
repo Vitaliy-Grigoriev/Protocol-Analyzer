@@ -135,7 +135,8 @@ namespace analyzer::scanner::settings
             // If entry found.
             else if (it != nullptr)
             {
-                if (flagSearchNextValue == true)
+                // Check the correctness of multi-values arguments.
+                if (flagSearchNextValue == true && previousArg != nullptr)
                 {
                     const ProgramArgumentEntry& entry = previousArg->first;
                     if ((entry.numberOfValues == ARG_DOUBLE && previousArg->second.size() != 2) ||

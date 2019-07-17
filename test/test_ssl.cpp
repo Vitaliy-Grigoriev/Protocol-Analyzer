@@ -11,40 +11,23 @@
 
 #include "FrameworkApi.hpp"
 
+using namespace analyzer::framework;
+using net::SocketSSL;
+
 
 int32_t main (int32_t size, char** data)
 {
-    /*const std::string host = "habrahabr.ru";
-    const auto protos = analyzer::framework::utility::CheckSupportedTLSProtocols(host);
-    if (protos.empty() == false)
-    {
-        std::cout << "Find next protocols on the host (" << host << "): " << std::endl;
-        for (auto&& p : protos) {
-            std::cout << p << std::endl;
-        }
-        std::cout << std::endl;
-    }*/
+    log::Logger::Instance().SwitchLoggingEngine();
+    log::Logger::Instance().SetLogLevel(log::LEVEL::TRACE);
 
-    auto sockets = analyzer::framework::system::allocMemoryForArrayOfObjects<analyzer::framework::net::SocketSSL>(3, SSL_METHOD_TLS11);
+    /*auto sockets = analyzer::framework::system::allocMemoryForArrayOfObjects<SocketSSL>(3, SSL_METHOD_TLS12);
     if (sockets == nullptr) {
         std::cerr << "[error] Alloc memory fail..." << std::endl;
         return EXIT_FAILURE;
-    }
+    }*/
 
-    auto request = [] (analyzer::framework::net::SocketSSL* sock, const std::string& domain) noexcept -> bool
+    auto request = [] (SocketSSL* sock, const std::string& domain) noexcept -> bool
     {
-#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x1000208fL)  // If OPENSSL version more then 1.0.2h.
-        if (sock->SetHttp_1_1_OnlyProtocol() == false) {
-            std::cerr << "[error] Set HTTP/1.1 protocol only failed..." << std::endl;
-            return EXIT_FAILURE;
-        }
-#endif
-
-        if (sock->SetOnlySecureCiphers() == false) {
-            std::cerr << "[error] Set secure ciphers failed..." << std::endl;
-            return EXIT_FAILURE;
-        }
-
         if (sock->Connect(domain.c_str()) == false) {
             std::cerr << "[error] Connection fail..." << std::endl;
             return false;
@@ -64,13 +47,21 @@ int32_t main (int32_t size, char** data)
             return false;
         }
         std::cerr << '[' << domain << "] Received data length: " << result << std::endl;
-
-        sock->Close();
         return true;
     };
 
-    std::cerr << request(sockets[0].get(), "tproger.ru") << std::endl;
-    std::cerr << request(sockets[1].get(), "habrahabr.ru") << std::endl;
+    //std::cerr << request(sockets[0].get(), "tproger.ru") << std::endl;
+    //std::cerr << request(sockets[1].get(), "habrahabr.ru") << std::endl;
+
+
+    std::cerr << SocketSSL::context.AllowSessionResumption(SSL_METHOD_TLS13) << std::endl;
+    auto socket1 = system::allocMemoryForObject<SocketSSL>(SSL_METHOD_TLS13);
+    std::cerr << request(socket1.get(), "habrahabr.ru") << std::endl;
+    socket1->Shutdown();
+    auto socket2 = system::allocMemoryForObject<SocketSSL>(socket1->GetSessionSSL(), SSL_METHOD_TLS13);
+    socket2->SetOnlySecureCiphers();
+    std::cerr << request(socket2.get(), "habrahabr.ru") << std::endl;
+    std::cerr << SSL_get_version(socket2->GetSSL()) << std::endl;
 
     return EXIT_SUCCESS;
 }

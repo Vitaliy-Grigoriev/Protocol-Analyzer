@@ -43,7 +43,8 @@
                     "CipherExclusionsByMask": "3DES;RC6",
                     "HashExclusionsByMask": "MD5;SHA1",
                     "PKIExclusionsByMask": "DH",
-                    "SSLClientCertificatePath": "full_path_to_certificate"
+                    "SSLClientCertificatePath": "full_path_to_certificate",
+                    "AllowSessionResumption": true
                 }
             },
             "Target":

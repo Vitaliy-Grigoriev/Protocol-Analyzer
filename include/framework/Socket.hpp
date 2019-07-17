@@ -27,14 +27,19 @@
 #define UDPv4 3
 #define UDPv6 4
 
-#define DEFAULT_PORT     80
-#define DEFAULT_PORT_TLS 443
+#define DEFAULT_PORT       80
+#define DEFAULT_PORT_TLS   443
 
-#define NUMBER_OF_CTX    3
-#define SSL_METHOD_TLS1  0  // 0x0301
-#define SSL_METHOD_TLS11 1  // 0x0302
-#define SSL_METHOD_TLS12 2  // 0x0303
-//#define SSL_METHOD_TLS13 3  // 0x0304
+#define NUMBER_OF_CTX      4
+#define SSL_METHOD_TLS10   0  // 0x0301
+#define SSL_METHOD_TLS11   1  // 0x0302
+#define SSL_METHOD_TLS12   2  // 0x0303
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10101000L)
+    #define NUMBER_OF_CTX      4
+    #define SSL_METHOD_TLS13   3  // 0x0304
+#else
+    #define NUMBER_OF_CTX    3
+#endif
 
 #define SOCKET_ERROR     (-1)
 #define INVALID_SOCKET   (-1)
@@ -391,6 +396,14 @@ namespace analyzer::framework::net
         SSLContext(void) noexcept;
         SSL_CTX * Get (std::size_t /*method*/) const noexcept;
         ~SSLContext(void) noexcept;
+
+        /**
+         * @brief Method that allows SSL session resumption by session ID for selected SSL method.
+         *
+         * @param [in] method - TLS
+         * @return TRUE - if SSL session resumption for selected SSL method is enabled, otherwise - FALSE.
+         */
+        bool AllowSessionResumption (uint16_t /*method*/) noexcept;
     };
 
 
@@ -403,8 +416,10 @@ namespace analyzer::framework::net
         // I/O object.
         BIO * bio = nullptr;
 
+    public:
         static SSLContext context;
 
+    private:
         // Returns true when the handshake is complete.
         bool IsHandshakeReady(void) const;
         // Provide handshake between hosts.
@@ -423,6 +438,12 @@ namespace analyzer::framework::net
         explicit SocketSSL (uint16_t     /*method*/  = SSL_METHOD_TLS12,
                             const char * /*ciphers*/ = nullptr,
                             uint32_t     /*timeout*/ = DEFAULT_TIMEOUT_SSL) noexcept;
+
+        // Constructor with previously established session.
+        explicit SocketSSL (SSL_SESSION * /*session*/,
+                            uint16_t      /*method*/  = SSL_METHOD_TLS12,
+                            const char *  /*ciphers*/ = nullptr,
+                            uint32_t      /*timeout*/ = DEFAULT_TIMEOUT_SSL) noexcept;
 
         // Connecting to external host.
         bool Connect (const char * /*host*/, uint16_t /*port*/ = DEFAULT_PORT_TLS) final;
@@ -475,8 +496,6 @@ namespace analyzer::framework::net
         ~SocketSSL(void) final;
     };
 
-
 }  // namespace net.
-
 
 #endif  // PROTOCOL_ANALYZER_SOCKET_HPP

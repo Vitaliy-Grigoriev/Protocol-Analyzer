@@ -332,24 +332,26 @@ namespace analyzer::framework::common::types
              *
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] value - Boolean value that will be checked. Default: true.
              * @param [in] isRelative - Boolean flag that indicates about the type of return index. Default: true.
              * @return Position of the first set bit in the selected interval of stored data.
              *
              * @note Method returns 'npos' value if there are no set bits on the specified interval.
              */
-            std::optional<std::size_t> GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool isRelative = true) const noexcept;
+            std::optional<std::size_t> GetFirstIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool /*value*/ = true, bool /*isRelative*/ = true) const noexcept;
 
             /**
              * @brief Method that returns position of the last set bit in the selected interval of stored data.
              *
              * @param [in] first - First index of bit in binary sequence from which sequent bits will be checked. Default: 0.
              * @param [in] last - Last index of bit in binary sequence to which previous bits will be checked. Default: npos.
+             * @param [in] value - Boolean value that will be checked. Default: true.
              * @param [in] isRelative - Boolean flag that indicates about the type of return index. Default: true.
              * @return Position of the last set bit in the selected interval of stored data.
              *
              * @note Method returns 'npos' value if there are no set bits on the specified interval.
              */
-            std::optional<std::size_t> GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool isRelative = true) const noexcept;
+            std::optional<std::size_t> GetLastIndex (std::size_t /*first*/ = 0, std::size_t /*last*/ = NPOS, bool /*value*/ = true, bool /*isRelative*/ = true) const noexcept;
 
             /**
              * @brief Method that outputs internal binary data in string format.

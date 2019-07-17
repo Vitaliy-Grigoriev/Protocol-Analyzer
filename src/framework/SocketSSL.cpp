@@ -26,7 +26,7 @@ namespace analyzer::framework::net
 
 
     SocketSSL::SocketSSL (const uint16_t method, const char* ciphers, const uint32_t timeout) noexcept
-            : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
+        : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
     {
         if (method >= NUMBER_OF_CTX) {
             LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: SSL input protocol type is invalid.");
@@ -67,6 +67,47 @@ namespace analyzer::framework::net
         SSL_set_connect_state(ssl);
     }
 
+    SocketSSL::SocketSSL (SSL_SESSION * const session, const uint16_t method, const char* ciphers, const uint32_t timeout) noexcept
+        : Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, timeout)
+    {
+        ssl = SSL_new(context.Get(method));
+        if (ssl == nullptr) {
+            LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'SSL_new' - ", CheckSSLErrors());
+            SSLCloseAfterError();
+            return;
+        }
+
+        if (ciphers != nullptr && SSL_set_cipher_list(ssl, ciphers) == 0)
+        {
+            LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'SSL_set_cipher_list' - ", CheckSSLErrors());
+            SSLCloseAfterError();
+            return;
+        }
+
+        // All errors processing OpenSSL library.
+        SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+        // Create new I/O object.
+        bio = BIO_new_socket(fd, BIO_NOCLOSE);
+        if (bio == nullptr) {
+            LOG_ERROR("SocketSSL.SocketSSL [", fd,"]: In function 'BIO_new_socket' - ", CheckSSLErrors());
+            SSLCloseAfterError();
+            return;
+        }
+
+        // Set non-blocking mode for bio.
+        BIO_set_nbio(bio, 1);
+        // Assign bio to ssl object.
+        SSL_set_bio(ssl, bio, bio);
+
+        if (session != nullptr) {
+            SSL_set_session(ssl, session);
+        }
+
+        // Set client mode for ssl object.
+        SSL_set_connect_state(ssl);
+    }
+
 
     // Connecting to external host.
     bool SocketSSL::Connect (const char* host, uint16_t port)
@@ -82,6 +123,11 @@ namespace analyzer::framework::net
         {
             SSLCloseAfterError();
             return false;
+        }
+
+        if (SSL_session_reused(ssl) == 1)
+        {
+            LOG_INFO("SocketSSL.Connect [", fd,"]: SSL session reused.");
         }
 
 #if defined(DEBUG)
@@ -477,21 +523,62 @@ namespace analyzer::framework::net
         OpenSSL_add_all_digests();
         OpenSSL_add_all_algorithms();
 
-        ctx[SSL_METHOD_TLS1] = SSL_CTX_new( TLSv1_client_method() );
-        if (ctx[SSL_METHOD_TLS1] == nullptr) {
+#if (defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10101000L)
+        ctx[SSL_METHOD_TLS10] = SSL_CTX_new(TLS_client_method());
+        if (ctx[SSL_METHOD_TLS10] == nullptr)
+        {
             LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.0)' - ", CheckSSLErrors());
             std::terminate();
         }
-        ctx[SSL_METHOD_TLS11] = SSL_CTX_new( TLSv1_1_client_method() );
-        if (ctx[SSL_METHOD_TLS11] == nullptr) {
+        SSL_CTX_set_min_proto_version(ctx[SSL_METHOD_TLS10], TLS1_VERSION);
+        SSL_CTX_set_max_proto_version(ctx[SSL_METHOD_TLS10], TLS1_VERSION);
+
+        ctx[SSL_METHOD_TLS11] = SSL_CTX_new(TLS_client_method());
+        if (ctx[SSL_METHOD_TLS11] == nullptr)
+        {
             LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.1)' - ", CheckSSLErrors());
             std::terminate();
         }
-        ctx[SSL_METHOD_TLS12] = SSL_CTX_new( TLSv1_2_client_method() );
-        if (ctx[SSL_METHOD_TLS12] == nullptr) {
+        SSL_CTX_set_min_proto_version(ctx[SSL_METHOD_TLS11], TLS1_1_VERSION);
+        SSL_CTX_set_max_proto_version(ctx[SSL_METHOD_TLS11], TLS1_1_VERSION);
+
+        ctx[SSL_METHOD_TLS12] = SSL_CTX_new(TLS_client_method());
+        if (ctx[SSL_METHOD_TLS12] == nullptr)
+        {
             LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.2)' - ", CheckSSLErrors());
             std::terminate();
         }
+        SSL_CTX_set_min_proto_version(ctx[SSL_METHOD_TLS12], TLS1_2_VERSION);
+        SSL_CTX_set_max_proto_version(ctx[SSL_METHOD_TLS12], TLS1_2_VERSION);
+
+        ctx[SSL_METHOD_TLS13] = SSL_CTX_new(TLS_client_method());
+        if (ctx[SSL_METHOD_TLS13] == nullptr)
+        {
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.3)' - ", CheckSSLErrors());
+            std::terminate();
+        }
+        SSL_CTX_set_min_proto_version(ctx[SSL_METHOD_TLS13], TLS1_3_VERSION);
+        SSL_CTX_set_max_proto_version(ctx[SSL_METHOD_TLS13], TLS1_3_VERSION);
+#else
+        ctx[SSL_METHOD_TLS10] = SSL_CTX_new(TLSv1_client_method());
+        if (ctx[SSL_METHOD_TLS10] == nullptr)
+        {
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.0)' - ", CheckSSLErrors());
+            std::terminate();
+        }
+        ctx[SSL_METHOD_TLS11] = SSL_CTX_new(TLSv1_1_client_method());
+        if (ctx[SSL_METHOD_TLS11] == nullptr)
+        {
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.1)' - ", CheckSSLErrors());
+            std::terminate();
+        }
+        ctx[SSL_METHOD_TLS12] = SSL_CTX_new(TLSv1_2_client_method());
+        if (ctx[SSL_METHOD_TLS12] == nullptr)
+        {
+            LOG_FATAL("SSLContext: In function 'SSL_CTX_new (TLSv1.2)' - ", CheckSSLErrors());
+            std::terminate();
+        }
+#endif
         LOG_INFO("SSLContext: Initialize SSL library is success.");
     }
 
@@ -503,10 +590,20 @@ namespace analyzer::framework::net
 
     SSLContext::~SSLContext(void) noexcept
     {
-        SSL_CTX_free( ctx[SSL_METHOD_TLS1] );
-        SSL_CTX_free( ctx[SSL_METHOD_TLS11] );
-        SSL_CTX_free( ctx[SSL_METHOD_TLS12] );
-        //SSL_CTX_free( ctx[SSL_METHOD_TLS13] );
+        SSL_CTX_free(ctx[SSL_METHOD_TLS10]);
+        SSL_CTX_free(ctx[SSL_METHOD_TLS11]);
+        SSL_CTX_free(ctx[SSL_METHOD_TLS12]);
+#if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
+        SSL_CTX_free(ctx[SSL_METHOD_TLS13]);
+#endif
+    }
+
+    bool SSLContext::AllowSessionResumption (const uint16_t method) noexcept
+    {
+        if (method < NUMBER_OF_CTX) {
+            return static_cast<bool>(SSL_CTX_set_session_cache_mode(ctx[method], SSL_SESS_CACHE_CLIENT));
+        }
+        return false;
     }
 
 #pragma clang diagnostic push

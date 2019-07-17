@@ -11,8 +11,8 @@ export BUILD_TYPE="Debug"
 
 mkdir check && cd check && cmake -j4 ..
 
-/usr/local/bin/cov-configure --gcc
-/usr/local/bin/cov-build --dir cov-int make -j4 && tar czvf project.tgz cov-int && curl \
+/usr/bin/cov-configure --gcc
+/usr/bin/cov-build --dir cov-int make -j4 && tar czvf project.tgz cov-int && curl \
   --form token=7wpvlRSdjmG7H2W5WL0fHw \
   --form email=Vit.link420@gmail.com \
   --form file=@project.tgz \
@@ -20,5 +20,5 @@ mkdir check && cd check && cmake -j4 ..
   --form description="$2" \
   https://scan.coverity.com/builds?project=Vitaliy-Grigoriev%2FProtocol-Analyzer && echo "Send packet success."
 
-  cp cov-int/build-log.txt ../coverity-build-log.txt
+cp cov-int/build-log.txt ../coverity-build-log.txt
 cd .. && rm -rf check

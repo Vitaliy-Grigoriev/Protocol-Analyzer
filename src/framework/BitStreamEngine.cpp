@@ -232,7 +232,7 @@ namespace analyzer::framework::common::types
     }
 
     // Method that returns position of the first set bit in the selected interval of stored data.
-    std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetFirstIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
+    std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetFirstIndex (const std::size_t first, std::size_t last, const bool value, const bool isRelative) const noexcept
     {
         if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return std::nullopt; }
@@ -240,7 +240,7 @@ namespace analyzer::framework::common::types
         std::size_t index = first;
         while (index <= last)
         {
-            if (GetBitValue(index) == true) {
+            if (GetBitValue(index) == value) {
                 return ((isRelative == true) ? index - first : index);
             }
             index++;
@@ -249,15 +249,15 @@ namespace analyzer::framework::common::types
     }
 
     // Method that returns position of the last set bit in the selected interval of stored data.
-    std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetLastIndex (const std::size_t first, std::size_t last, const bool isRelative) const noexcept
+    std::optional<std::size_t> BinaryDataEngine::BitStreamInformationEngine::GetLastIndex (const std::size_t first, std::size_t last, const bool value, const bool isRelative) const noexcept
     {
         if (last == NPOS) { last = Length() - 1; }
         if (first > last || last >= Length()) { return std::nullopt; }
 
-        std::size_t index = last;
-        while (index >= first)
+        int64_t index = last;
+        while (index >= static_cast<int64_t>(first))
         {
-            if (GetBitValue(index) == true) {
+            if (GetBitValue(index) == value) {
                 return ((isRelative == true) ? index - first : index);
             }
             index--;

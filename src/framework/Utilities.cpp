@@ -57,7 +57,7 @@ namespace analyzer::framework::utility
         {
             LOG_TRACE("CheckSupportedTLSProtocols:   Start check...");
             std::unordered_map<std::string, uint16_t> protocols;
-            protocols["TLS 1.0"] = SSL_METHOD_TLS1;
+            protocols["TLS 1.0"] = SSL_METHOD_TLS10;
             protocols["TLS 1.1"] = SSL_METHOD_TLS11;
             protocols["TLS 1.2"] = SSL_METHOD_TLS12;
             //protocols["TLS 1.3"] == SSL_METHOD_TLS13;

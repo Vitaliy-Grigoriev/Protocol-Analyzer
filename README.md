@@ -13,7 +13,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer/badge)](https://www.codefactor.io/repository/github/vitaliy-grigoriev/protocol-analyzer)
 
 
-<h3><b>Framework and Scanner under the deep development.</b> Version 0.0.10.</h3>
+<h3><b>Framework and Scanner under the deep development.</b> Version 0.0.12.</h3>
 
 --------------
 <h2><b>The main purposes of the framework</b></h2>
