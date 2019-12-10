@@ -13,14 +13,14 @@ set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib)
 
 # Select Analyzer Framework Module paths to source and include files.
 set(FRAMEWORK_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/framework)
-set(FRAMEWORK_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/framework)
+set(FRAMEWORK_SOURCES_PATH   ${PROJECT_SOURCE_DIR}/src/framework)
 # Select Analyzer Scanner Module paths to source and include files.
-set(SCANNER_INCLUDES_PATH ${PROJECT_SOURCE_DIR}/include/scanner)
-set(SCANNER_SOURCES_PATH    ${PROJECT_SOURCE_DIR}/src/scanner)
+set(SCANNER_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/scanner)
+set(SCANNER_SOURCES_PATH   ${PROJECT_SOURCE_DIR}/src/scanner)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
 
-# Info about compiler.
+# Info about a compiler.
 message("Compiler ID is '${CMAKE_CXX_COMPILER_ID}'.")
 
 # Choose build type.
@@ -47,12 +47,12 @@ set(ADDITIONAL_FLAGS   "-fsanitize=address  -fsanitize=leak  -fsanitize=undefine
 
 # Choose compile flags.
 set(CMAKE_CXX_FLAGS_DEBUG     "-std=c++17 -O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE   "-std=c++17 -O2 -DRELEASE -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE   "-std=c++17 -O2 -g -DRELEASE -DNDEBUG")
 if (CMAKE_CXX_COMPILER_ID   MATCHES   "GNU")
-    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}  -static-libstdc++ -static-libgcc   -Wall -Wextra -Wpedantic   ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_GCC} ${DISABLE_WARNINGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}  -fno-omit-frame-pointer -static-libstdc++ -static-libgcc   -Wall -Wextra -Wpedantic   ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_GCC} ${DISABLE_WARNINGS_DEBUG}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_GCC}")
 elseif (CMAKE_CXX_COMPILER_ID   MATCHES   "Clang")
-    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug   -Weverything -Wthread-safety   ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_CLANG} ${DISABLE_WARNINGS_DEBUG} ${DISABLE_WARNINGS_DEBUG_CLANG}")
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fstandalone-debug   -Weverything -Wthread-safety   ${ADDITIONAL_FLAGS} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_CLANG} ${DISABLE_WARNINGS_DEBUG} ${DISABLE_WARNINGS_DEBUG_CLANG}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ${DISABLE_WARNINGS} ${DISABLE_WARNINGS_CLANG}")
 elseif (CMAKE_CXX_COMPILER_ID   MATCHES   "Intel")
     set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -w3 -Wall -Wcheck   ${DISABLE_WARNINGS_INTEL}")
@@ -67,9 +67,13 @@ message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
 
 
 # Select Analyzer Framework source files.
-file(GLOB   FSOURCES   "${FRAMEWORK_SOURCES_PATH}/*.cpp")
+file(GLOB   FSOURCES   ${FRAMEWORK_SOURCES_PATH}/*.cpp
+                       ${FRAMEWORK_SOURCES_PATH}/common/*.cpp
+                       ${FRAMEWORK_SOURCES_PATH}/network/*.cpp)
 # Select Analyzer Framework include files.
-file(GLOB   FHEADERS   "${FRAMEWORK_INCLUDES_PATH}/*.hpp")
+file(GLOB   FHEADERS   ${FRAMEWORK_SOURCES_PATH}/*.hpp
+                       ${FRAMEWORK_SOURCES_PATH}/common/*.hpp
+                       ${FRAMEWORK_SOURCES_PATH}/network/*.hpp)
 # Ignore several source files.
 list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*BinaryDataEngineIterator.cpp$")
 list(FILTER   FSOURCES   EXCLUDE   REGEX   ".*Task.cpp$")
@@ -86,9 +90,9 @@ target_link_libraries(AnalyzerFramework   pthread ssl crypto)
 # Add include path of the Analyzer Framework library.
 include_directories(${FRAMEWORK_INCLUDES_PATH})
 # Select Analyzer Scanner source files.
-file(GLOB   SSOURCES   "${SCANNER_SOURCES_PATH}/*.cpp")
+file(GLOB   SSOURCES   ${SCANNER_SOURCES_PATH}/*.cpp)
 # Select Analyzer Scanner include files.
-file(GLOB   SHEADERS   "${SCANNER_INCLUDES_PATH}/*.hpp")
+file(GLOB   SHEADERS   ${SCANNER_INCLUDES_PATH}/*.hpp)
 
 # Build Analyzer Scanner Executable.
 add_executable(NetProtoFuzz   ${SSOURCES} ${SHEADERS})
@@ -96,67 +100,71 @@ add_executable(NetProtoFuzz   ${SSOURCES} ${SHEADERS})
 target_link_libraries(NetProtoFuzz   AnalyzerFramework)
 
 
-# Build test suites for Analyzer Framework library.
-set(SSL_TEST                  ${TESTS}/test_ssl.cpp)
-set(SOCKET_TEST               ${TESTS}/test_socket.cpp)
-set(NETLINK_TEST              ${TESTS}/test_netlink.cpp)
-set(COMMON_TEST               ${TESTS}/test_common.cpp)
-set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp)
-set(INTEGER_VALUE_TEST        ${TESTS}/test_integer_value.cpp)
-set(BINARY_STRUCTURED_DATA_ENGINE_TEST   ${TESTS}/test_binary_structured_data_engine.cpp)
-set(TIMING_TEST               ${TESTS}/test_timing.cpp)
-set(LOGGING_TEST              ${TESTS}/test_logging.cpp)
-set(ANYTHING_TEST             ${TESTS}/test_anything.cpp)
-set(CALLBACKS_TEST            ${TESTS}/test_callbacks.cpp)
-set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp)
-set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp)
-set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp)
+if (DEFINED   ENV{WITH_TESTS})
 
-add_executable(test_ssl                  ${SSL_TEST})
-add_executable(test_socket               ${SOCKET_TEST})
-add_executable(test_netlink              ${NETLINK_TEST})
-add_executable(test_common               ${COMMON_TEST})
-add_executable(test_timing               ${TIMING_TEST})
-add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
-add_executable(test_integer_value        ${INTEGER_VALUE_TEST})
-add_executable(test_binary_structured_data_engine   ${BINARY_STRUCTURED_DATA_ENGINE_TEST})
-add_executable(test_logging              ${LOGGING_TEST})
-add_executable(test_anything             ${ANYTHING_TEST})
-add_executable(test_callbacks            ${CALLBACKS_TEST})
-add_executable(test_uri_parser           ${URI_PARSER_TEST})
-add_executable(test_notification         ${NOTIFICATION_TEST})
-add_executable(test_http2_negotiation    ${HTTP2_NEGOTIATION_TEST})
+    # Build test suites for Analyzer Framework library.
+    set(SSL_TEST                  ${TESTS}/test_ssl.cpp)
+    set(SOCKET_TEST               ${TESTS}/test_socket.cpp)
+    set(NETLINK_TEST              ${TESTS}/test_netlink.cpp)
+    set(COMMON_TEST               ${TESTS}/test_common.cpp)
+    set(BINARY_DATA_ENGINE_TEST   ${TESTS}/test_binary_data_engine.cpp)
+    set(INTEGER_VALUE_TEST        ${TESTS}/test_integer_value.cpp)
+    set(BINARY_STRUCTURED_DATA_ENGINE_TEST   ${TESTS}/test_binary_structured_data_engine.cpp)
+    set(TIMING_TEST               ${TESTS}/test_timing.cpp)
+    set(LOGGING_TEST              ${TESTS}/test_logging.cpp)
+    set(ANYTHING_TEST             ${TESTS}/test_anything.cpp)
+    set(CALLBACKS_TEST            ${TESTS}/test_callbacks.cpp)
+    set(URI_PARSER_TEST           ${TESTS}/test_uri_parser.cpp)
+    set(NOTIFICATION_TEST         ${TESTS}/test_notification.cpp)
+    set(HTTP2_NEGOTIATION_TEST    ${TESTS}/test_http2_negotiation.cpp)
 
-set_target_properties(
-        test_ssl
-        test_socket
-        test_netlink
-        test_common
-        test_timing
-        test_binary_data_engine
-        test_integer_value
-        test_binary_structured_data_engine
-        test_logging
-        test_anything
-        test_callbacks
-        test_uri_parser
-        test_notification
-        test_http2_negotiation
-        PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY   ${EXECUTABLE_OUTPUT_PATH}/test_binaries
-)
+    add_executable(test_ssl                  ${SSL_TEST})
+    add_executable(test_socket               ${SOCKET_TEST})
+    add_executable(test_netlink              ${NETLINK_TEST})
+    add_executable(test_common               ${COMMON_TEST})
+    add_executable(test_timing               ${TIMING_TEST})
+    add_executable(test_binary_data_engine   ${BINARY_DATA_ENGINE_TEST})
+    add_executable(test_integer_value        ${INTEGER_VALUE_TEST})
+    add_executable(test_binary_structured_data_engine   ${BINARY_STRUCTURED_DATA_ENGINE_TEST})
+    add_executable(test_logging              ${LOGGING_TEST})
+    add_executable(test_anything             ${ANYTHING_TEST})
+    add_executable(test_callbacks            ${CALLBACKS_TEST})
+    add_executable(test_uri_parser           ${URI_PARSER_TEST})
+    add_executable(test_notification         ${NOTIFICATION_TEST})
+    add_executable(test_http2_negotiation    ${HTTP2_NEGOTIATION_TEST})
 
-target_link_libraries(test_ssl                 AnalyzerFramework)
-target_link_libraries(test_socket              AnalyzerFramework)
-target_link_libraries(test_netlink             AnalyzerFramework)
-target_link_libraries(test_common              AnalyzerFramework)
-target_link_libraries(test_binary_data_engine  AnalyzerFramework)
-target_link_libraries(test_integer_value       AnalyzerFramework)
-target_link_libraries(test_binary_structured_data_engine  AnalyzerFramework)
-target_link_libraries(test_timing              AnalyzerFramework)
-target_link_libraries(test_anything            AnalyzerFramework)
-target_link_libraries(test_logging             AnalyzerFramework)
-target_link_libraries(test_callbacks           AnalyzerFramework)
-target_link_libraries(test_uri_parser          AnalyzerFramework)
-target_link_libraries(test_notification        AnalyzerFramework)
-target_link_libraries(test_http2_negotiation   AnalyzerFramework)
+    set_target_properties(
+            test_ssl
+            test_socket
+            test_netlink
+            test_common
+            test_timing
+            test_binary_data_engine
+            test_integer_value
+            test_binary_structured_data_engine
+            test_logging
+            test_anything
+            test_callbacks
+            test_uri_parser
+            test_notification
+            test_http2_negotiation
+            PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY   ${EXECUTABLE_OUTPUT_PATH}/test_binaries
+    )
+
+    target_link_libraries(test_ssl                 AnalyzerFramework)
+    target_link_libraries(test_socket              AnalyzerFramework)
+    target_link_libraries(test_netlink             AnalyzerFramework)
+    target_link_libraries(test_common              AnalyzerFramework)
+    target_link_libraries(test_binary_data_engine  AnalyzerFramework)
+    target_link_libraries(test_integer_value       AnalyzerFramework)
+    target_link_libraries(test_binary_structured_data_engine  AnalyzerFramework)
+    target_link_libraries(test_timing              AnalyzerFramework)
+    target_link_libraries(test_anything            AnalyzerFramework)
+    target_link_libraries(test_logging             AnalyzerFramework)
+    target_link_libraries(test_callbacks           AnalyzerFramework)
+    target_link_libraries(test_uri_parser          AnalyzerFramework)
+    target_link_libraries(test_notification        AnalyzerFramework)
+    target_link_libraries(test_http2_negotiation   AnalyzerFramework)
+
+endif()
