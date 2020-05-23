@@ -159,7 +159,7 @@ matrix:
             - clang-8
             - libstdc++-8-dev
       env: CXX=clang++-8 BUILD_TYPE=Debug
-      
+
     - os: linux
       addons:
         apt:
