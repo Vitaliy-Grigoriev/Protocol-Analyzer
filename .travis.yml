@@ -1,5 +1,4 @@
 dist: bionic
-sudo: required
 language: cpp
 
 branches:
@@ -164,12 +163,12 @@ matrix:
       addons:
         apt:
           sources:
-              - ubuntu-toolchain-r-test
-              - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
-                key_url: https://apt.llvm.org/llvm-snapshot.gpg.key
-            packages:
-              - clang-9
-              - libstdc++-9-dev
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+              key_url: https://apt.llvm.org/llvm-snapshot.gpg.key
+          packages:
+            - clang-9
+            - libstdc++-9-dev
       env: CXX=clang++-9 BUILD_TYPE=Release
 
     - os: linux
