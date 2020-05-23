@@ -1,15 +1,16 @@
-cmake_minimum_required(VERSION   3.8)  # For support C++17 standard.
+cmake_minimum_required(VERSION   3.16.5)  # For support C++17 standard.
 project(ProtocolAnalyzer   CXX)
 
 # Select CPP standard.
 set(CMAKE_CXX_STANDARD   17)
-set(CMAKE_CXX_STANDARD_REQUIRED   ON)
+set(CMAKE_CXX_STANDARD_REQUIRED    ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS  ON)
 
 # Select output binary paths.
 set(EXECUTABLE_OUTPUT_PATH   ${PROJECT_SOURCE_DIR}/bin)
-# Select input system paths.
-set(CMAKE_SYSTEM_INCLUDE_PATH   /usr/include)
-set(CMAKE_SYSTEM_LIBRARY_PATH   /usr/lib)
+
+# Info about a compiler.
+message("[info] Compiler is '${CMAKE_CXX_COMPILER_ID}'.")
 
 # Select Analyzer Framework Module paths to source and include files.
 set(FRAMEWORK_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/framework)
@@ -19,18 +20,6 @@ set(SCANNER_INCLUDES_PATH   ${PROJECT_SOURCE_DIR}/include/scanner)
 set(SCANNER_SOURCES_PATH   ${PROJECT_SOURCE_DIR}/src/scanner)
 # Select path to tests sources.
 set(TESTS   ${PROJECT_SOURCE_DIR}/test)
-
-# Info about a compiler.
-message("Compiler ID is '${CMAKE_CXX_COMPILER_ID}'.")
-
-# Choose build type.
-if (DEFINED   ENV{BUILD_TYPE})  # If the custom build type is defined.
-    set(CMAKE_BUILD_TYPE   "$ENV{BUILD_TYPE}")
-    message("Build type is set to '${CMAKE_BUILD_TYPE}'.")
-else()  # If the custom build type is not defined.
-    set(CMAKE_BUILD_TYPE   "Release")
-    message("Build type is set to '${CMAKE_BUILD_TYPE}' by default.")
-endif()
 
 
 set(DISABLE_WARNINGS   "-Wno-unknown-pragmas -Wno-unused-parameter -Wno-zero-as-null-pointer-constant -Wno-deprecated-declarations")
@@ -61,9 +50,13 @@ else()
     set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -Wall")
 endif()
 
+
 # Output compile flags.
-message("Debug flags:   ${CMAKE_CXX_FLAGS_DEBUG}.")
-message("Release flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
+if (${CMAKE_BUILD_TYPE}   MATCHES   "Release")
+    message("[info] Compiler flags:   ${CMAKE_CXX_FLAGS_RELEASE}.")
+else()
+    message("[info] Compiler flags:   ${CMAKE_CXX_FLAGS_DEBUG}.")
+endif()
 
 
 # Select Analyzer Framework source files.

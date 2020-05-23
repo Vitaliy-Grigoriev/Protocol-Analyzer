@@ -22,7 +22,7 @@ matrix:
           packages:
             - g++-7
             - libstdc++-7-dev
-      env: COMPILER=g++-7 CXX=g++-7 BUILD_TYPE=Release
+      env: CXX=g++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -32,7 +32,7 @@ matrix:
           packages:
             - g++-7
             - libstdc++-7-dev
-      env: COMPILER=g++-7 CXX=g++-7 BUILD_TYPE=Debug
+      env: CXX=g++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -42,7 +42,7 @@ matrix:
           packages:
             - g++-8
             - libstdc++-8-dev
-      env: COMPILER=g++-8 CXX=g++-8 BUILD_TYPE=Release
+      env: CXX=g++-8 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -52,7 +52,7 @@ matrix:
           packages:
             - g++-8
             - libstdc++-8-dev
-      env: COMPILER=g++-8 CXX=g++-8 BUILD_TYPE=Debug
+      env: CXX=g++-8 BUILD_TYPE=Debug
       
     - os: linux
       addons:
@@ -62,7 +62,7 @@ matrix:
           packages:
             - g++-9
             - libstdc++-9-dev
-      env: COMPILER=g++-9 CXX=g++-9 BUILD_TYPE=Release
+      env: CXX=g++-9 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -72,7 +72,7 @@ matrix:
           packages:
             - g++-9
             - libstdc++-9-dev
-      env: COMPILER=g++-9 CXX=g++-9 BUILD_TYPE=Debug
+      env: CXX=g++-9 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -82,7 +82,7 @@ matrix:
           packages:
             - g++-10
             - libstdc++-10-dev
-      env: COMPILER=g++-10 CXX=g++-10 BUILD_TYPE=Release
+      env: CXX=g++-10 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -92,7 +92,7 @@ matrix:
           packages:
             - g++-10
             - libstdc++-10-dev
-      env: COMPILER=g++-10 CXX=g++-10 BUILD_TYPE=Debug
+      env: CXX=g++-10 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -103,7 +103,7 @@ matrix:
           packages:
             - clang-6.0
             - libstdc++-7-dev
-      env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Release
+      env: CXX=clang++-6.0 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -114,7 +114,7 @@ matrix:
           packages:
             - clang-6.0
             - libstdc++-7-dev
-      env: COMPILER=clang++-6.0 CXX=clang++-6.0 BUILD_TYPE=Debug
+      env: CXX=clang++-6.0 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -125,7 +125,7 @@ matrix:
           packages:
             - clang-7
             - libstdc++-7-dev
-      env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Release
+      env: CXX=clang++-7 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -136,7 +136,7 @@ matrix:
           packages:
             - clang-7
             - libstdc++-7-dev
-      env: COMPILER=clang++-7 CXX=clang++-7 BUILD_TYPE=Debug
+      env: CXX=clang++-7 BUILD_TYPE=Debug
 
     - os: linux
       addons:
@@ -147,7 +147,7 @@ matrix:
           packages:
             - clang-8
             - libstdc++-8-dev
-      env: COMPILER=clang++-8 CXX=clang++-8 BUILD_TYPE=Release
+      env: CXX=clang++-8 BUILD_TYPE=Release
 
     - os: linux
       addons:
@@ -158,7 +158,7 @@ matrix:
           packages:
             - clang-8
             - libstdc++-8-dev
-      env: COMPILER=clang++-8 CXX=clang++-8 BUILD_TYPE=Debug
+      env: CXX=clang++-8 BUILD_TYPE=Debug
       
     - os: linux
       addons:
@@ -225,7 +225,7 @@ matrix:
           build_command_prepend: cov-configure --comptype gcc --compiler gcc-8 --template && cmake -j4 .
           build_command: make -j4
           branch_pattern: master
-      env: COMPILER=g++-8 CXX=g++-8 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
+      env: CXX=g++-8 BUILD_TYPE=Debug COVERITY_SCAN_TOKEN=7wpvlRSdjmG7H2W5WL0fHw
 
 
 before_install:
@@ -241,7 +241,11 @@ install:
   - |
     CMAKE_URL="https://cmake.org/files/v3.17/cmake-3.17.2-Linux-x86_64.tar.gz"
     mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-    export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+
+
+before_script:
+  - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+  - cd ${TRAVIS_BUILD_DIR}
 
 
 script:
@@ -251,12 +255,12 @@ script:
         exit 0;
     fi
 
-  - cd ${TRAVIS_BUILD_DIR}
   - pwd
   - uname -a
   - cmake --version
   - ${CXX} --version
-  - bash build_travis.sh
+  - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_CXX_COMPILER=${CXX} -j4 .
+  - make -j4
 
 
 notifications:
